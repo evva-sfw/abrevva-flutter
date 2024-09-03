@@ -1,0 +1,84 @@
+PODS:
+  - abrevva (0.0.1):
+    - AbrevvaSDK (~> 1.0.23)
+    - Flutter
+  - AbrevvaSDK (1.0.23):
+    - CocoaMQTT
+    - CryptoSwift
+  - CocoaMQTT (2.1.6):
+    - CocoaMQTT/Core (= 2.1.6)
+  - CocoaMQTT/Core (2.1.6):
+    - MqttCocoaAsyncSocket (~> 1.0.8)
+  - CryptoSwift (1.8.3)
+  - CwlCatchException (2.2.0):
+    - CwlCatchExceptionSupport (~> 2.2.0)
+  - CwlCatchExceptionSupport (2.2.0)
+  - CwlMachBadInstructionHandler (2.2.0)
+  - CwlPosixPreconditionTesting (2.2.0)
+  - CwlPreconditionTesting (2.2.1):
+    - CwlCatchException (~> 2.2.0)
+    - CwlMachBadInstructionHandler (~> 2.2.0)
+    - CwlPosixPreconditionTesting (~> 2.2.0)
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - MqttCocoaAsyncSocket (1.0.8)
+  - Nimble (13.4.0):
+    - CwlPreconditionTesting (~> 2.2.0)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - Quick (7.6.2)
+
+DEPENDENCIES:
+  - abrevva (from `.symlinks/plugins/abrevva/ios`)
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - Nimble
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - Quick
+
+SPEC REPOS:
+  trunk:
+    - AbrevvaSDK
+    - CocoaMQTT
+    - CryptoSwift
+    - CwlCatchException
+    - CwlCatchExceptionSupport
+    - CwlMachBadInstructionHandler
+    - CwlPosixPreconditionTesting
+    - CwlPreconditionTesting
+    - MqttCocoaAsyncSocket
+    - Nimble
+    - Quick
+
+EXTERNAL SOURCES:
+  abrevva:
+    :path: ".symlinks/plugins/abrevva/ios"
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+
+SPEC CHECKSUMS:
+  abrevva: 38eae5fb79ed10512c25e274c81a4149cdaddfe7
+  AbrevvaSDK: 4edd60273dd1b2d171e8adb5a84756aa5084347c
+  CocoaMQTT: 1f206228b29318eabdacad0c2e4e88575922c27a
+  CryptoSwift: 967f37cea5a3294d9cce358f78861652155be483
+  CwlCatchException: 51bf8319009a31104ea6f0568730d1ecc25b6454
+  CwlCatchExceptionSupport: 1345d6adb01a505933f2bc972dab60dcb9ce3e50
+  CwlMachBadInstructionHandler: ea1030428925d9bf340882522af30712fb4bf356
+  CwlPosixPreconditionTesting: a125dee731883f2582715f548c6b6c92c7fde145
+  CwlPreconditionTesting: ccfd08aca58d14e04062b2a3dd2fd52e09857453
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+  MqttCocoaAsyncSocket: 77d3b74f76228dd5a05d1f9526eab101d415b30c
+  Nimble: c3d7c9848a0adae88a665ca52f8da23dd4d2cd94
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  Quick: b8bec97cd4b9f21da0472d45580f763b801fc353
+
+PODFILE CHECKSUM: 2473cbe46caf37b31902649c0f6da06656d387fc
+
+COCOAPODS: 1.14.3
