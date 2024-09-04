@@ -48,6 +48,7 @@ android {
 
     defaultConfig {
         minSdkVersion 30
+        consumerProguardFiles 'proguard-consumer-rules.pro'
     }
     repositories {
         google()
