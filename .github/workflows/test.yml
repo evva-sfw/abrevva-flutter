@@ -31,8 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: print pwd 
-        run: cd example/android && ls -la
       - name: Run Tests
         run: make test-android
   

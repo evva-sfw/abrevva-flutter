@@ -11,4 +11,4 @@ test-ios:
 		test || exit 1
 
 test-android:
-	cd example/android && ./gradlew :abrevva:testDebugUnitTest || exit 1
+	cd android && ./gradlew :abrevva:testDebugUnitTest || exit 1
