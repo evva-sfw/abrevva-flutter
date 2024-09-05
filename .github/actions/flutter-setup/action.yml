@@ -8,7 +8,7 @@ runs:
       uses: flutter-actions/setup-flutter@v3
       with:
         channel: stable
-        version: 3.3.0
+        version: latest
     - name: print pwd & file
       run: which dart && dart --version
       shell: bash 
