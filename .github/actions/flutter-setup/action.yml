@@ -10,7 +10,7 @@ runs:
         channel: stable
         version: 3.3.0
     - name: print pwd & file
-      run: pwd && ls -la
+      run: which dart && dart --version
       shell: bash 
     - name: Install dependencies
       run: flutter pub get
