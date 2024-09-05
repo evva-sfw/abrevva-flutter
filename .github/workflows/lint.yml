@@ -9,9 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/flutter-setup.yml
-        with:
-          destination: ubuntu-latest
+      - uses: ./.github/actions/flutter-setup
 
       - name: Analyze sources
         run: dart analyze

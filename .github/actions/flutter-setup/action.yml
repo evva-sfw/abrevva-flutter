@@ -1,0 +1,29 @@
+name: 'flutter-setup'
+description: 'installs flutter'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+        flutter-version: 3.3.0
+    - run: flutter --version
+
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - run: flutter pub get
+
+    - name: Cache pub-cache
+      id: pub-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.pub-cache
+        key: pub-cache--${{ hashFiles('pubspec.lock') }}
+
+    - name: Cache Flutter SDK
+      uses: actions/cache@v4
+      with:
+        path: ~/.flutter
+        key: flutter-sdk--${{ hashFiles('pubspec.lock') }}
