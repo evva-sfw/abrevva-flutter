@@ -11,14 +11,7 @@ runs:
         flutter-version: 3.3.0
     - run: flutter --version
       shell: bash
-
-    - name: Set up Dart
-      uses: dart-lang/setup-dart@v1
-      with:
-        sdk: stable
-    - run: flutter upgrade
-      shell: bash
-
+      
     - name: Cache pub-cache
       id: pub-cache
       uses: actions/cache@v4
