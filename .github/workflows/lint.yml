@@ -12,4 +12,4 @@ jobs:
       - uses: ./.github/actions/flutter-setup
 
       - name: Analyze sources
-        run: dart analyze
+        run: flutter analyze --no-fatal-infos 
