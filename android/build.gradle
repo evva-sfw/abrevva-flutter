@@ -59,7 +59,7 @@ android {
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'io.mockk:mockk:1.13.12'
         testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
-        implementation group: "com.evva.xesar", name: "abrevva-android-sdk", version: "1.0.19"
+        implementation group: "com.evva.xesar", name: "abrevva-sdk-android", version: "1.0.20"
     }
 
     testOptions {
