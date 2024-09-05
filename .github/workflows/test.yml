@@ -9,17 +9,17 @@ jobs:
   setup-web:
     uses: ./.github/workflows/flutter-setup.yml
     with:
-      destionation: ubuntu-latest
+      destination: ubuntu-latest
 
   setup-android:
     uses: ./.github/workflows/flutter-setup.yml
     with:
-      destionation: ubuntu-latest
+      destination: ubuntu-latest
 
   setup-macos:
     uses: ./.github/workflows/flutter-setup.yml
     with:
-      destionation: macos-latest
+      destination: macos-latest
 
   test-web:
     runs-on: ubuntu-latest

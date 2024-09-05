@@ -9,7 +9,7 @@ jobs:
   setup:
     uses: ./.github/workflows/flutter-setup.yml
     with:
-      destionation: ubuntu-latest
+      destination: ubuntu-latest
 
   lint:
     runs-on: ubuntu-latest
