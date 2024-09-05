@@ -9,9 +9,11 @@ runs:
       with:
         channel: stable
         version: 3.3.0
-
+    - name: print cwd & file
+      run: cwd && ls -la
+      shell: bash 
     - name: Install dependencies
-      run: flutter upgrade
+      run: flutter pub get
       shell: bash
   
     - name: Cache pub-cache
