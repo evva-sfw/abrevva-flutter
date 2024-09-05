@@ -10,7 +10,7 @@ runs:
         channel: stable
         version: latest
         cache: true
-        cahce-sdk: true
+        cache-sdk: true
         cache-key: flutter-cache--${{ hashFiles('pubspec.lock') }}
 
     - name: Install dependencies
