@@ -16,7 +16,7 @@ runs:
       uses: dart-lang/setup-dart@v1
       with:
         sdk: stable
-    - run: flutter pub upgrade
+    - run: flutter upgrade
       shell: bash
 
     - name: Cache pub-cache
