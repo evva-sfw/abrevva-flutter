@@ -4,14 +4,16 @@ runs:
   using: 'composite'
   steps:
     - uses: actions/checkout@v4
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
+    - name: Setup Flutter SDK
+      uses: flutter-actions/setup-flutter@v3
       with:
         channel: stable
-        flutter-version: 3.3.0
-    - run: flutter --version
+        version: 3.3.0
+
+    - name: Install dependencies
+      run: flutter pub get
       shell: bash
-      
+  
     - name: Cache pub-cache
       id: pub-cache
       uses: actions/cache@v4
