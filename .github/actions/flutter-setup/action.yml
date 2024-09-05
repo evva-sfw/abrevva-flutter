@@ -9,22 +9,10 @@ runs:
       with:
         channel: stable
         version: latest
-    - name: print pwd & file
-      run: which dart && dart --version
-      shell: bash 
+        cache: true
+        cahce-sdk: true
+        cache-key: flutter-cache--${{ hashFiles('pubspec.lock') }}
+
     - name: Install dependencies
       run: flutter pub get
       shell: bash
-  
-    - name: Cache pub-cache
-      id: pub-cache
-      uses: actions/cache@v4
-      with:
-        path: ~/.pub-cache
-        key: pub-cache--${{ hashFiles('pubspec.lock') }}
-
-    - name: Cache Flutter SDK
-      uses: actions/cache@v4
-      with:
-        path: ~/.flutter
-        key: flutter-sdk--${{ hashFiles('pubspec.lock') }}
