@@ -1,0 +1,22 @@
+name: Dart lint
+on:
+  pull_request:
+  # push:
+  #   branches: ["main"]
+  # pull_request:
+  #   branches: ["main"]
+jobs:
+  setup:
+    uses: ./.github/workflows/flutter-setup.yml
+    with:
+      destionation: ubuntu-latest
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Analyze sources
+        run: dart analyze
