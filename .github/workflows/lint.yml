@@ -8,7 +8,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/flutter-setup.yml
+      - uses: .github/workflows/flutter-setup.yml
         with:
           destination: ubuntu-latest
 
