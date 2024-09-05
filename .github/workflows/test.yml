@@ -31,8 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: Run Gradle
-        run: example/android/gradlew
       - name: Run Tests
         run: make test-android
   
