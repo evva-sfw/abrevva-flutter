@@ -10,10 +10,12 @@ runs:
         channel: stable
         flutter-version: 3.3.0
     - run: flutter --version
+      shell: bash
 
     - name: Set up Dart
       uses: dart-lang/setup-dart@v1
     - run: flutter pub get
+      shell: bash
 
     - name: Cache pub-cache
       id: pub-cache
