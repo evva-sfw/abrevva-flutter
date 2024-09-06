@@ -3,6 +3,7 @@ import Quick
 import Nimble
 import CoreBluetooth
 import AbrevvaSDK
+import Mockingbird
 
 @testable import abrevva
 

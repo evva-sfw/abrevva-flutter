@@ -22,6 +22,7 @@ PODS:
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
+  - MockingbirdFramework (0.20.0)
   - MqttCocoaAsyncSocket (1.0.8)
   - Nimble (13.4.0):
     - CwlPreconditionTesting (~> 2.2.0)
@@ -34,6 +35,7 @@ DEPENDENCIES:
   - abrevva (from `.symlinks/plugins/abrevva/ios`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - MockingbirdFramework (~> 0.20)
   - Nimble
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - Quick
@@ -48,6 +50,7 @@ SPEC REPOS:
     - CwlMachBadInstructionHandler
     - CwlPosixPreconditionTesting
     - CwlPreconditionTesting
+    - MockingbirdFramework
     - MqttCocoaAsyncSocket
     - Nimble
     - Quick
@@ -74,11 +77,12 @@ SPEC CHECKSUMS:
   CwlPreconditionTesting: ccfd08aca58d14e04062b2a3dd2fd52e09857453
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+  MockingbirdFramework: 54e35fbbb47b806c1a1fae2cf3ef99f6eceb55e5
   MqttCocoaAsyncSocket: 77d3b74f76228dd5a05d1f9526eab101d415b30c
   Nimble: c3d7c9848a0adae88a665ca52f8da23dd4d2cd94
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   Quick: b8bec97cd4b9f21da0472d45580f763b801fc353
 
-PODFILE CHECKSUM: 2473cbe46caf37b31902649c0f6da06656d387fc
+PODFILE CHECKSUM: fba33bd8c1993b4ccda57fd152f9a2ed8499132c
 
 COCOAPODS: 1.14.3

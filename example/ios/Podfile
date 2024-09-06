@@ -36,6 +36,7 @@ target 'Runner' do
     inherit! :search_paths
     pod 'Quick'
     pod 'Nimble'
+    pod 'MockingbirdFramework', '~> 0.20'
   end
 end
 
