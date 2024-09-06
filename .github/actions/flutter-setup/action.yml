@@ -11,7 +11,11 @@ runs:
         version: latest
         cache: true
         cache-sdk: true
-        cache-key: flutter-cache--${{ hashFiles('pubspec.lock') }}
+        cache-key: flutter-cache
+
+    - name: Update Flutter SDK
+      run: flutter upgrade
+      shell: bash
 
     - name: Install dependencies
       run: flutter pub get

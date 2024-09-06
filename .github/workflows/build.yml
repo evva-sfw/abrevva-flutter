@@ -1,0 +1,34 @@
+name: Test
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+jobs:
+  test-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: ./.github/actions/flutter-setup
+      - name: run web tests
+        run: flutter test -r expanded
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: ./.github/actions/flutter-setup
+      - name: Build android
+        run: flutter build apk
+  
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: ./.github/actions/flutter-setup
+      - name: Build ios
+        run: flutter build ios
+
