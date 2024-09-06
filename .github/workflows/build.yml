@@ -56,4 +56,4 @@ jobs:
         with:
           key: xcode-deriveddata
       - name: Build ios
-        run: cd .. && flutter build ios
+        run: flutter build ios
