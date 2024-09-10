@@ -1,15 +1,14 @@
-name: Lint
+name: Dart lint
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
 jobs:
-  lint:
+  Analyze_sources:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: ./.github/actions/flutter-setup
-      - name: Analyze sources
-        run: flutter analyze --no-fatal-infos --no-pub
+      - run: flutter analyze --no-fatal-infos --no-pub

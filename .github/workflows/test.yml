@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: ["main"]
 jobs:
-  test-web:
+  Web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,7 +14,7 @@ jobs:
       - name: run web tests
         run: flutter test -r expanded
 
-  test-android:
+  Android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
       - name: Run Tests
         run: make test-android
   
-  test-ios:
+  Ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
