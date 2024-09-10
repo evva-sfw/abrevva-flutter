@@ -57,3 +57,5 @@ jobs:
           key: xcode-deriveddata
       - name: Build ios
         run: cd example/ && flutter build ios --simulator
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_15.4.app
