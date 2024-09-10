@@ -57,7 +57,7 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import org.json.JSONArray
 
-public class AbrevvaBle:  FlutterActivity(), MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
+public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
     private lateinit var manager: BleManager
     private lateinit var aliases: Array<String>
