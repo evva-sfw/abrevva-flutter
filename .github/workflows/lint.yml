@@ -11,4 +11,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: ./.github/actions/flutter-setup
-      - run: flutter analyze --no-fatal-infos --no-pub
+      - run: flutter analyze

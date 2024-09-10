@@ -251,7 +251,7 @@ void main() {
 
     group("startEnabledNotifications", () {
       late MockFunction<void, bool> testCallback;
-      late var capturedFunction;
+      dynamic capturedFunction;
       setUp(() {
         testCallback = MockFunction<void, bool>();
 
