@@ -1,3 +1,4 @@
+# https://github.com/dorny/test-reporter?tab=readme-ov-file#recommended-setup-for-public-repositories
 name: 'Test Report'
 on:
   workflow_run:

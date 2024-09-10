@@ -13,6 +13,13 @@ jobs:
         uses: ./.github/actions/flutter-setup
       - name: run web tests & prepare test-results.json
         run: flutter test --file-reporter="json:test-results.json"
+      - name: Web Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Dart Tests             # Name of the check run which will be created
+          path: ./test-results.json    # Path to test results
+          reporter: dart-json          # Format of test results
 
   Test-Android:
     runs-on: ubuntu-latest
