@@ -12,7 +12,6 @@ jobs:
         uses: ./.github/actions/flutter-setup
       - name: run web tests & prepare test-results.json
         run: flutter test --file-reporter="json:test-results.json"
-      - run: gh workflow run test_report.yml
 
   Test-Android:
     runs-on: ubuntu-latest
