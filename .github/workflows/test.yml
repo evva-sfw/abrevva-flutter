@@ -1,20 +1,20 @@
-name: Test
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
 jobs:
-  Web:
+  Test-Web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: ./.github/actions/flutter-setup
-      - name: run web tests
-        run: flutter test -r expanded
+      - name: run web tests & prepare test-results.json
+        run: flutter test --file-reporter="json:test-results.json"
+      - run: gh workflow run test_report.yml
 
-  Android:
+  Test-Android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
       - name: Run Tests
         run: make test-android
   
-  Ios:
+  Test-Ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
