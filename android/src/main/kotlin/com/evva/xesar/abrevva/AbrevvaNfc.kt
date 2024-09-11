@@ -31,11 +31,12 @@ import java.util.Timer
 import java.util.TimerTask
 import kotlin.coroutines.coroutineContext
 
-class AbrevvaNfc: MethodCallHandler,
-    FlutterActivity() {
+class AbrevvaNfc: MethodCallHandler {
 
         private lateinit var contextMain: Context
         private lateinit var activityMain: Activity
+        private lateinit var intent: Intent
+
     public fun eventObserver(source:  LifecycleOwner, event:  Lifecycle.Event, context: Context, activity: Activity) {
         contextMain = context
         activityMain = activity

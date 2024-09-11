@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'package:abrevva/abrevva_param_classes.dart';
 import 'abrevva_platform_interface.dart';
 
