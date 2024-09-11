@@ -2,9 +2,9 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 
 enum ScanMode {
-  SCAN_MODE_LOW_POWER,
-  SCAN_MODE_BALANCED,
-  SCAN_MODE_LOW_LATENCY,
+  scanModeLowPower,
+  scanModeBalanced,
+  scanModeLowLatency,
 }
 
 class RequestBleDeviceParams {
@@ -71,6 +71,7 @@ class BleDevice {
   Function eq = const ListEquality().equals;
 
   @override
+  // ignore: hash_and_equals
   bool operator ==(Object other) {
     if (other is! BleDevice) return false;
     if (deviceId != other.deviceId) return false;
@@ -105,6 +106,7 @@ class ScanResult {
   });
 
   @override
+  // ignore: hash_and_equals
   bool operator ==(Object other) {
     if (other is! ScanResult) return false;
     if (device != other.device) return false;

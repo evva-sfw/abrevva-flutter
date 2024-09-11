@@ -1,0 +1,22 @@
+name: 'flutter-setup'
+description: 'installs flutter'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+    - name: Setup Flutter SDK
+      uses: flutter-actions/setup-flutter@v3
+      with:
+        channel: stable
+        version: latest
+        cache: true
+        cache-sdk: true
+        cache-key: flutter-cache
+
+    - name: Update Flutter SDK
+      run: flutter upgrade
+      shell: bash
+
+    - name: Install dependencies
+      run: flutter pub get
+      shell: bash

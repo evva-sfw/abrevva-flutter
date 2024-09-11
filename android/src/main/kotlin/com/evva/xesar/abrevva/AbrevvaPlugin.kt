@@ -3,18 +3,7 @@ package com.evva.xesar.abrevva
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.media.metrics.Event
-import android.nfc.NfcAdapter
-import android.os.Bundle
-import android.os.PersistableBundle
-import androidx.annotation.RequiresPermission
-import androidx.core.app.OnNewIntentProvider
-import androidx.core.util.Consumer
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ProcessLifecycleOwner
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -22,17 +11,9 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.embedding.engine.plugins.lifecycle.HiddenLifecycleReference
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 
-class AbrevvaPlugin: FlutterPlugin, FlutterActivity(), ActivityAware {
+
+class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     private lateinit var channelCrypto: MethodChannel
     private lateinit var channelNfc: MethodChannel
     private lateinit var channelBle: MethodChannel

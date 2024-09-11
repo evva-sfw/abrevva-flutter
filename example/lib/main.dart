@@ -80,6 +80,7 @@ class _BleState extends State<BleWidget> {
     try {
       _ble.initialize(false);
     } catch (e) {
+      // ignore: avoid_print
       print(e);
     }
   }
