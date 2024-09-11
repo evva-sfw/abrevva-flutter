@@ -1,0 +1,89 @@
+{
+    "$schema": "https://unpkg.com/release-it@17/schema/release-it.json",
+    "hooks": {
+        "after:bump": [
+            "rm -f *.tgz",
+            "dart pub global activate cider",
+            "flutter pub publish --to-archive abrevva.tgz",
+            "npx auto-changelog -v ${version} -c .auto-changelog"
+        ]
+    },
+    "git": {
+        "commitMessage": "chore: release ${version}",
+        "tagName": "${version}",
+        "commitArgs": [
+            "-S"
+        ],
+        "tagArgs": [
+            "-s"
+        ]
+    },
+    "github": {
+        "release": true,
+        "assets": [
+            "*.tgz"
+        ],
+        "tokenRef": "BOT_GITHUB_TOKEN"
+    },
+    "plugins": {
+        "@release-it/bumper": {
+            "in": {
+                "file": "pubspec.yaml",
+                "path": "version"
+            },
+            "out": {
+                "file": "pubspec.yaml",
+                "path": "version"
+            }
+        },
+        "@release-it/conventional-changelog": {
+            "ignoreRecommendedBump": true,
+            "infile": "CHANGELOG.md",
+            "preset": {
+                "name": "conventionalcommits",
+                "types": [
+                    {
+                        "type": "feat",
+                        "section": "🎉 Features"
+                    },
+                    {
+                        "type": "fix",
+                        "section": "🐛 Bug Fixes"
+                    },
+                    {
+                        "type": "perf",
+                        "section": "⚡️ Performance Improvements"
+                    },
+                    {
+                        "type": "revert",
+                        "section": "⏪️ Reverts"
+                    },
+                    {
+                        "type": "docs",
+                        "section": "📝 Documentation"
+                    },
+                    {
+                        "type": "style",
+                        "section": "🎨 Styles"
+                    },
+                    {
+                        "type": "refactor",
+                        "section": "🔀 Code Refactoring"
+                    },
+                    {
+                        "type": "test",
+                        "section": "🧪 Tests"
+                    },
+                    {
+                        "type": "build",
+                        "section": "⚙️ Build System"
+                    },
+                    {
+                        "type": "ci",
+                        "section": "🚀 Continuous Integration"
+                    }
+                ]
+            }
+        }
+    }
+}
