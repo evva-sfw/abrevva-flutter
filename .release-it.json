@@ -9,6 +9,9 @@
             "npx auto-changelog -v ${version} -c .auto-changelog"
         ]
     },
+    "npm": {
+        "skipChecks": true
+    },
     "git": {
         "commitMessage": "chore: release ${version}",
         "tagName": "${version}",
