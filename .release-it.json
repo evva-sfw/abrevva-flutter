@@ -12,7 +12,7 @@
     "npm": {
         "skipChecks": true,
         "publish": false,
-        "ignoreVersion": true
+        "allowSameVersion": true
     },
     "git": {
         "commitMessage": "chore: release ${version}",
