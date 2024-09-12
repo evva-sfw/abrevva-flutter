@@ -66,6 +66,10 @@ jobs:
           git config user.name "${{ steps.import-gpg.outputs.name }}"
           git config user.email "${{ steps.import-gpg.outputs.email }}"
 
+      - uses: dart-lang/setup-dart@v1
+
+      - run: dart pub get
+
       - name: Install dependencies
         run: npm i
 
