@@ -3,7 +3,8 @@
     "hooks": {
         "after:bump": [
             "rm -f *.tgz",
-            "dart pub global activate cider",
+            "flutter pub get",
+            "dart run cider",
             "flutter pub publish --to-archive abrevva.tgz",
             "npx auto-changelog -v ${version} -c .auto-changelog"
         ]
@@ -16,7 +17,8 @@
         ],
         "tagArgs": [
             "-s"
-        ]
+        ],
+        "push": false
     },
     "github": {
         "release": true,
