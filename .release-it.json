@@ -10,7 +10,8 @@
         ]
     },
     "npm": {
-        "skipChecks": true
+        "skipChecks": true,
+        "publish": false
     },
     "git": {
         "commitMessage": "chore: release ${version}",
