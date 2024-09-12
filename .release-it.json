@@ -4,10 +4,10 @@
         "after:bump": [
             "rm -f *.tgz",
             "flutter pub get",
-            "dart run cider",
             "flutter pub publish --to-archive abrevva_${version}.tgz",
-            "npx auto-changelog -v ${version} -c .auto-changelog "
-        ]
+            "npx auto-changelog -v ${version} -c .auto-changelog"
+        ],
+        "before:github:release": "flutter pub publish --force"
     },
     "npm": {
         "skipChecks": true,
@@ -34,11 +34,11 @@
     "plugins": {
         "@release-it/bumper": {
             "in": {
-                "file": "pubspec.yaml",
+                "file": "./pubspec.yaml",
                 "path": "version"
             },
             "out": {
-                "file": "pubspec.yaml",
+                "file": "./pubspec.yaml",
                 "path": "version"
             }
         },
