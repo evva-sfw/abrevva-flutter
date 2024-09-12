@@ -1,16 +1,6 @@
-name: 'Semantic PR Title'
-
+name: Semantic PR
 on:
-  pull_request_target:
-    types:
-      - opened
-      - edited
-      - synchronize
-      - reopened
-
-permissions:
-  pull-requests: read
-
+  workflow_call:
 jobs:
   main:
     name: Validate PR title
