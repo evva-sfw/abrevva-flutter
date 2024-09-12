@@ -4,8 +4,8 @@
         "after:bump": [
             "rm -f *.tgz",
             "flutter pub get",
-            "flutter pub publish --to-archive abrevva_${version}.tgz",
-            "npx auto-changelog -v ${version} -c .auto-changelog"
+            "npx auto-changelog -v ${version} -c .auto-changelog",
+            "flutter pub publish --to-archive abrevva_${version}.tgz"
         ],
         "before:github:release": "flutter pub publish --force"
     },
