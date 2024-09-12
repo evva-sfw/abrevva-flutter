@@ -15,6 +15,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: pub.dev # is configured in repo settings with secrets
     permissions:
       contents: write
       id-token: write
@@ -24,14 +25,17 @@ jobs:
         with:
           fetch-depth: 0
           ssh-key: ${{ secrets.BOT_SSH_PRIVATE_KEY }}
+
       - name: Debug inputs
         run: |
           echo "Type of release:${{ github.event.inputs.input_version }} from user ${GITHUB_ACTOR}"
           git config --list
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+
       - name: Cache node_modules
         id: node-modules
         uses: actions/cache@v4
@@ -41,6 +45,7 @@ jobs:
             test-app/node_modules
             .yarn/cache
           key: node-modules
+
       - name: Import GPG key
         id: import-gpg
         uses: crazy-max/ghaction-import-gpg@v6
