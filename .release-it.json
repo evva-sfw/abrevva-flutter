@@ -5,7 +5,7 @@
             "rm -f *.tgz",
             "flutter pub get",
             "dart run cider",
-            "flutter pub publish --to-archive abrevva.tgz",
+            "flutter pub publish --to-archive abrevva_${version}.tgz",
             "npx auto-changelog -v ${version} -c .auto-changelog"
         ]
     },
