@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: ["main"]
 jobs:
-  Build-Android:
+  android-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
           key: androidSdk
       - name: Build android
         run: cd example/ && flutter build apk
-  Build-Ios:
+  ios-build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4

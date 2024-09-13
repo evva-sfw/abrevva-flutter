@@ -1,5 +1,5 @@
 # https://github.com/dorny/test-reporter?tab=readme-ov-file#recommended-setup-for-public-repositories
-name: 'Test Report'
+name: 'test-report'
 on:
   workflow_run:
     workflows: ['Test']
@@ -10,7 +10,7 @@ permissions:
   actions: read
   checks: write
 jobs:
-  report:
+  test-report-dart:
     runs-on: ubuntu-latest
     steps:
     - uses: dorny/test-reporter@v1
