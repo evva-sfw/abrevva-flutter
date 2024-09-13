@@ -1,0 +1,9 @@
+name: cache
+on:
+  pull_request:
+    types:
+      - closed
+jobs:
+  cache_cleanup:
+    name: Clean up cache
+    uses: evva-sfw/.github/clean-cache.yml@main
