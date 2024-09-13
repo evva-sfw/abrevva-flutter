@@ -1,4 +1,4 @@
-name: 'semantic'
+name: semantic
 
 on:
   pull_request_target:
@@ -12,7 +12,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  semantic-pr:
+  semantic_pr:
     name: Validate PR title
     runs-on: ubuntu-latest
     steps:

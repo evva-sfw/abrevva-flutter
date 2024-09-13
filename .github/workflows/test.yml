@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: ["main"]
 jobs:
-  test-web:
+  test_web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
           name: test-results.json
           path: ./test-results.json
 
-  test-android:
+  test_android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
       - name: Run Tests
         run: make test-android
   
-  test-ios:
+  test_ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
