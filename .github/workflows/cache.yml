@@ -6,4 +6,4 @@ on:
 jobs:
   cache_cleanup:
     name: Clean up cache
-    uses: evva-sfw/.github/clean-cache.yml@main
+    uses: evva-sfw/.github/cache.yml@main
