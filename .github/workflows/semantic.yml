@@ -10,4 +10,4 @@ permissions:
   pull-requests: read
 jobs:
   semantic_pr-name:
-    uses: evva-sfw/.github/semantic.yml@main
+    uses: evva-sfw/.github/workflows/semantic.yml@main
