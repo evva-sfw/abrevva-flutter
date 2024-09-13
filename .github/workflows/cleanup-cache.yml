@@ -1,9 +1,0 @@
-name: cleanup caches by a branch
-on:
-  pull_request:
-    types:
-      - closed
-jobs:
-  main:
-    name: Clean up cache
-    uses: evva-sfw/.github/clean-cache.yml
