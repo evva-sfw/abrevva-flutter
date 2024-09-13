@@ -11,4 +11,4 @@ permissions:
 jobs:
   semantic-pr:
     name: Validate PR title
-    uses: evva-sfw/.github/semantic-pr.yml
+    uses: evva-sfw/.github/semantic-pr.yml@main
