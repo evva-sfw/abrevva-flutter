@@ -9,6 +9,6 @@ on:
 permissions:
   pull-requests: read
 jobs:
-  semantic-pr:
+  semantic_pr-name:
     name: Validate PR title
     uses: evva-sfw/.github/semantic-pr.yml@main
