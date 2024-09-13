@@ -13,14 +13,9 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
-    - name: Download test results
-      uses: actions/download-artifact@v3
-      with:
-        name: test-results.json
-        path: ./
     - uses: dorny/test-reporter@v1
       with:
-        artifact: test-results            # artifact name
+        artifact: test-results.json        # artifact name
         name: Dart Tests                  # Name of the check run which will be created
         path: './test-results.json'       # Path to test results (inside artifact .zip)
         reporter: dart-json               # Format of test results
