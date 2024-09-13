@@ -1,8 +1,8 @@
 # https://github.com/dorny/test-reporter?tab=readme-ov-file#recommended-setup-for-public-repositories
-name: 'Test Report'
+name: test-report
 on:
   workflow_run:
-    workflows: ['Test']
+    workflows: ['test']
     types:
       - completed
 permissions:
@@ -10,12 +10,12 @@ permissions:
   actions: read
   checks: write
 jobs:
-  report:
+  test-report_dart:
     runs-on: ubuntu-latest
     steps:
     - uses: dorny/test-reporter@v1
       with:
-        artifact: test-results            # artifact name
+        artifact: test-results.json        # artifact name
         name: Dart Tests                  # Name of the check run which will be created
         path: './test-results.json'       # Path to test results (inside artifact .zip)
         reporter: dart-json               # Format of test results

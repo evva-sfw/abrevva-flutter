@@ -1,11 +1,11 @@
-name: Dart lint
+name: lint
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
 jobs:
-  Analyze_sources:
+  lint_dart:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
