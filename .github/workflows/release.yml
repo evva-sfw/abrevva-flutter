@@ -68,7 +68,7 @@ jobs:
 
       - uses: dart-lang/setup-dart@v1
 
-      - run: dart pub get
+      - run: flutter pub get
 
       - name: Install dependencies
         run: npm i
