@@ -14,9 +14,9 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'gradle'
+          java-version: "17"
+          distribution: "temurin"
+          cache: "gradle"
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       - name: Cache Android SDK
@@ -35,7 +35,7 @@ jobs:
         uses: ./.github/actions/flutter-setup
       - uses: SwiftyLab/setup-swift@latest
         with:
-          swift-version: '5.10.0'
+          swift-version: "5.10.0"
       - name: Get Swift Version
         run: swift --version
       - name: Get Xcode version

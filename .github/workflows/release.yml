@@ -80,4 +80,4 @@ jobs:
       - name: Attest
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: '${{ github.workspace }}/*.tgz'
+          subject-path: "${{ github.workspace }}/*.tgz"

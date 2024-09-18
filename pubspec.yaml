@@ -5,8 +5,8 @@ description: >-
 version: 0.0.1
 homepage: https://github.com/evva-sfw/abrevva-flutter
 environment:
-  sdk: '>=3.2.6 <4.0.0'
-  flutter: '>=3.3.0'
+  sdk: ">=3.2.6 <4.0.0"
+  flutter: ">=3.3.0"
 dependencies:
   flutter:
     sdk: flutter
