@@ -66,8 +66,20 @@ jobs:
           git config user.name "${{ steps.import-gpg.outputs.name }}"
           git config user.email "${{ steps.import-gpg.outputs.email }}"
 
-      - name: Setup Flutter
-        uses: ./.github/actions/flutter-setup
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v3
+        with:
+          channel: stable
+          version: latest
+          cache: true
+          cache-sdk: true
+          cache-key: flutter-cache
+
+      - name: Update Flutter SDK
+        run: flutter upgrade
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Install dependencies
         run: npm i
