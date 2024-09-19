@@ -35,7 +35,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          
+
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v3
         with:
@@ -86,7 +86,7 @@ jobs:
           git config --list
 
       - name: Run release-it
-        run: npx release-it ${{ github.event.inputs.input_version }} --ci
+        run: npx release-it ${{ github.event.inputs.input_version }} --ci -V
         env:
           BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
 
