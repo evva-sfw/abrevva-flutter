@@ -16,7 +16,8 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          path: main
       - name: Debug inputs
         run: |
           echo "Type of release:  from user ${GITHUB_ACTOR}"
