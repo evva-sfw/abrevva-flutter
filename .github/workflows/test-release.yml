@@ -61,5 +61,5 @@ jobs:
           git config user.name "test name"
           git config user.email "test email"
 
-      - name: git config list
-        run: git config --list
+      - name: release-it --dry-run
+        run: npx release-it --dry-run
