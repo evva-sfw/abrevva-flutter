@@ -35,9 +35,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v3
+        with:
+          channel: stable
+          version: latest
+          cache: true
+          cache-sdk: true
+          cache-key: flutter-cache
 
-      - name: Setup Flutter
-        uses: ./.github/actions/flutter-setup/action.yml
+      - name: Update Flutter SDK
+        run: flutter upgrade
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Cache node_modules
         id: node-modules
