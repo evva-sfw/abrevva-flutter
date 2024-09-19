@@ -36,6 +36,9 @@ jobs:
         with:
           node-version: lts/*
 
+      - name: Setup Flutter
+        uses: ./.github/actions/flutter-setup/action1.yml
+
       - name: Cache node_modules
         id: node-modules
         uses: actions/cache@v4
@@ -61,16 +64,14 @@ jobs:
           echo "name:        ${{ steps.import-gpg.outputs.name }}"
           echo "email:       ${{ steps.import-gpg.outputs.email }}"
 
+      - name: Install dependencies
+        run: npm i
+
       - name: git config
         run: |
           git config user.name "${{ steps.import-gpg.outputs.name }}"
           git config user.email "${{ steps.import-gpg.outputs.email }}"
-
-      - name: Setup Flutter
-        uses: ./.github/actions/flutter-setup
-
-      - name: Install dependencies
-        run: npm i
+          git config --list
 
       - name: Run release-it
         run: npx release-it ${{ github.event.inputs.input_version }} --ci
