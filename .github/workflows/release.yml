@@ -37,7 +37,7 @@ jobs:
           node-version: lts/*
 
       - name: Setup Flutter
-        uses: ./.github/actions/flutter-setup/action1.yml
+        uses: ./.github/actions/flutter-setup/action.yml
 
       - name: Cache node_modules
         id: node-modules
