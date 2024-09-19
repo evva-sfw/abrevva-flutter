@@ -7,7 +7,10 @@
             "npx auto-changelog -v ${version} -c .auto-changelog",
             "flutter pub publish --to-archive abrevva_${version}.tgz"
         ],
-        "before:github:release": "flutter pub publish --force"
+        "after:version:afterRelease": [
+            "git checkout refs/tags/${version}",
+            "flutter pub publish --force"
+        ]
     },
     "npm": {
         "skipChecks": true,
