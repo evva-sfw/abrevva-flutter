@@ -79,6 +79,8 @@ jobs:
       - name: Install dependencies
         run: npm i
 
+      - uses: flutter-actions/setup-pubdev-credentials@v1
+
       - name: git config
         run: |
           git config user.name "${{ steps.import-gpg.outputs.name }}"
