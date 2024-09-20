@@ -1,44 +1,11 @@
 
 
-## 0.0.2 (2024-09-20)
-
-
-### 🎉 Features
-
-* git workflows ([#4](https://github.com/evva-sfw/abrevva-flutter/issues/4)) ([f557ff8](https://github.com/evva-sfw/abrevva-flutter/commit/f557ff8c28fbe215a8f3e67d8f30b9de7c67a995))
-* initial commit ([525a81f](https://github.com/evva-sfw/abrevva-flutter/commit/525a81f3200efaed07c11dda56ff71c5c9ae416c))
-
-
-### 🐛 Bug Fixes
-
-* added proguard consumer rules ([985ac4c](https://github.com/evva-sfw/abrevva-flutter/commit/985ac4ce7cabdb45ba18f735fc423a4367f4f8e1))
-* changed cache worklow path ([#13](https://github.com/evva-sfw/abrevva-flutter/issues/13)) ([c0680b1](https://github.com/evva-sfw/abrevva-flutter/commit/c0680b13930bcb6b2e164eac1d3b38b3162bb5a4))
-* corrected path for semantic workflow ([#17](https://github.com/evva-sfw/abrevva-flutter/issues/17)) ([113aa61](https://github.com/evva-sfw/abrevva-flutter/commit/113aa61987b2ba9126a28020bf52446fbecb47bb))
-
-
-### ⚙️ Build System
-
-* **deps:** bump flutter_lints from 2.0.3 to 4.0.0 ([#5](https://github.com/evva-sfw/abrevva-flutter/issues/5)) ([5c3f017](https://github.com/evva-sfw/abrevva-flutter/commit/5c3f017f7ff3f0d97b8580083bbfa36721e8c23f))
+## [0.0.3](https://github.com/evva-sfw/abrevva-flutter/compare/0.0.2...0.0.3) (2024-09-20)
 
 
 ### 🚀 Continuous Integration
 
-* add name to package.json ([#18](https://github.com/evva-sfw/abrevva-flutter/issues/18)) ([2dd2a4f](https://github.com/evva-sfw/abrevva-flutter/commit/2dd2a4f9378e864e5143a5a3f439fb5826ee5e39))
-* add pubdev credentials setup to release workflow ([#25](https://github.com/evva-sfw/abrevva-flutter/issues/25)) ([9a64ca0](https://github.com/evva-sfw/abrevva-flutter/commit/9a64ca07ca1995024ac153885106e382263f3a3f))
-* add semantic pr title check ([#1](https://github.com/evva-sfw/abrevva-flutter/issues/1)) ([d555530](https://github.com/evva-sfw/abrevva-flutter/commit/d5555304bc91399d9601c30ea94be076653f769a))
-* checkout git tag for flutter to be able to publish ([#26](https://github.com/evva-sfw/abrevva-flutter/issues/26)) ([7acd230](https://github.com/evva-sfw/abrevva-flutter/commit/7acd2303edb04fb9946226d873954412e6222aa5))
-* create artifact for test results ([#9](https://github.com/evva-sfw/abrevva-flutter/issues/9)) ([4ac0ce9](https://github.com/evva-sfw/abrevva-flutter/commit/4ac0ce916211530dda99f25853cb1dd99c39bc4b))
-* fix flutter setup for release pipeline ([#15](https://github.com/evva-sfw/abrevva-flutter/issues/15)) ([332ce6e](https://github.com/evva-sfw/abrevva-flutter/commit/332ce6e51db730482354b4f31f31b9235dcab744))
-* fix flutter setup in release workflow ([#20](https://github.com/evva-sfw/abrevva-flutter/issues/20)) ([e46256e](https://github.com/evva-sfw/abrevva-flutter/commit/e46256ebffd1574127b232962056f11669e6b300))
-* fix install cmd for dart deps ([#14](https://github.com/evva-sfw/abrevva-flutter/issues/14)) ([ef21999](https://github.com/evva-sfw/abrevva-flutter/commit/ef21999b91c2f6a8527eb513bd88b3e40b8035a4))
-* increase verbose on release-it ([#24](https://github.com/evva-sfw/abrevva-flutter/issues/24)) ([a028353](https://github.com/evva-sfw/abrevva-flutter/commit/a028353df2d104f7c9712d2b7d767a2e9be91f91))
-* rearrange release steps to fix missing git config author ([#19](https://github.com/evva-sfw/abrevva-flutter/issues/19)) ([10d884c](https://github.com/evva-sfw/abrevva-flutter/commit/10d884c9218c1d3b51716bc28f5a827f18592600))
-* release-it workflow setup ([#6](https://github.com/evva-sfw/abrevva-flutter/issues/6)) ([7d30dc1](https://github.com/evva-sfw/abrevva-flutter/commit/7d30dc1b8858b6b7f1b9ceda67f889f9a50811f7))
-* separate release-it and pub.dev publish to comply with dev.pub settings ([#27](https://github.com/evva-sfw/abrevva-flutter/issues/27)) ([b3ff221](https://github.com/evva-sfw/abrevva-flutter/commit/b3ff221456080f171bb08e6f5b7555863a797683))
-* sync npm package jsons ([#16](https://github.com/evva-sfw/abrevva-flutter/issues/16)) ([4a75b71](https://github.com/evva-sfw/abrevva-flutter/commit/4a75b71705dedf69112114e0bb123da73f12edb0))
-* test if workflow breaks because of custom action ([#22](https://github.com/evva-sfw/abrevva-flutter/issues/22)) ([cd9556d](https://github.com/evva-sfw/abrevva-flutter/commit/cd9556d449163a864ef9038ea9d228355e2d14cd))
-* **test:** fixed typo in Test Workflow; renamed all workflow and jobnames ([#10](https://github.com/evva-sfw/abrevva-flutter/issues/10)) ([dd8fc9f](https://github.com/evva-sfw/abrevva-flutter/commit/dd8fc9f3661225b8209e652d7792200aafc51512))
-* **workflow:** added cleanup cache workflow & switched to global workflows ([#12](https://github.com/evva-sfw/abrevva-flutter/issues/12)) ([a996417](https://github.com/evva-sfw/abrevva-flutter/commit/a9964174f28d737c0e996757e7bb975dd41e30fb))
+* move pub.dev workflow to workflow folder ([#28](https://github.com/evva-sfw/abrevva-flutter/issues/28)) ([e913662](https://github.com/evva-sfw/abrevva-flutter/commit/e9136622fc0645d08e944ce18904d1b7b05adf43))
 
 ### Changelog
 
@@ -46,7 +13,13 @@ All notable changes to this project will be documented in this file. Dates are d
 
 Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
+#### [0.0.3](https://github.com/evva-sfw/abrevva-flutter/compare/0.0.2...0.0.3)
+
+- ci: move pub.dev workflow to workflow folder [`#28`](https://github.com/evva-sfw/abrevva-flutter/pull/28)
+
 #### 0.0.2
+
+> 20 September 2024
 
 - ci: separate release-it and pub.dev publish to comply with dev.pub settings [`#27`](https://github.com/evva-sfw/abrevva-flutter/pull/27)
 - ci: checkout git tag for flutter to be able to publish [`#26`](https://github.com/evva-sfw/abrevva-flutter/pull/26)
