@@ -2,7 +2,7 @@
 name: test-report
 on:
   workflow_run:
-    workflows: ['test']
+    workflows: ["test"]
     types:
       - completed
 permissions:
@@ -13,9 +13,9 @@ jobs:
   test-report_dart:
     runs-on: ubuntu-latest
     steps:
-    - uses: dorny/test-reporter@v1
-      with:
-        artifact: test-results.json        # artifact name
-        name: Dart Tests                  # Name of the check run which will be created
-        path: './test-results.json'       # Path to test results (inside artifact .zip)
-        reporter: dart-json               # Format of test results
+      - uses: dorny/test-reporter@v1
+        with:
+          artifact: test-results.json # artifact name
+          name: Dart Tests # Name of the check run which will be created
+          path: "./test-results.json" # Path to test results (inside artifact .zip)
+          reporter: dart-json # Format of test results

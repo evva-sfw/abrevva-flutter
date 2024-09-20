@@ -36,6 +36,21 @@ jobs:
         with:
           node-version: lts/*
 
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v3
+        with:
+          channel: stable
+          version: latest
+          cache: true
+          cache-sdk: true
+          cache-key: flutter-cache
+
+      - name: Update Flutter SDK
+        run: flutter upgrade
+
+      - name: Install dependencies
+        run: flutter pub get
+
       - name: Cache node_modules
         id: node-modules
         uses: actions/cache@v4
@@ -61,23 +76,23 @@ jobs:
           echo "name:        ${{ steps.import-gpg.outputs.name }}"
           echo "email:       ${{ steps.import-gpg.outputs.email }}"
 
+      - name: Install dependencies
+        run: npm i
+
+      - uses: flutter-actions/setup-pubdev-credentials@v1
+
       - name: git config
         run: |
           git config user.name "${{ steps.import-gpg.outputs.name }}"
           git config user.email "${{ steps.import-gpg.outputs.email }}"
-
-      - name: Setup Flutter
-        uses: ./.github/actions/flutter-setup
-
-      - name: Install dependencies
-        run: npm i
+          git config --list
 
       - name: Run release-it
-        run: npx release-it ${{ github.event.inputs.input_version }} --ci
+        run: npx release-it ${{ github.event.inputs.input_version }} --ci -V
         env:
           BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
 
       - name: Attest
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: '${{ github.workspace }}/*.tgz'
+          subject-path: "${{ github.workspace }}/*.tgz"

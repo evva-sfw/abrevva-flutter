@@ -6,8 +6,7 @@
             "flutter pub get",
             "npx auto-changelog -v ${version} -c .auto-changelog",
             "flutter pub publish --to-archive abrevva_${version}.tgz"
-        ],
-        "before:github:release": "flutter pub publish --force"
+        ]
     },
     "npm": {
         "skipChecks": true,
@@ -17,13 +16,14 @@
     "git": {
         "commitMessage": "chore: release ${version}",
         "tagName": "${version}",
+        "tag": true,
         "commitArgs": [
             "-S"
         ],
         "tagArgs": [
             "-s"
         ],
-        "push": false
+        "push": true
     },
     "github": {
         "release": true,

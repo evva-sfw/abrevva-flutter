@@ -1,0 +1,33 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*" # Tag must be the trigger, defined on pub.dev in the package settings
+# https://dart.dev/tools/pub/automated-publishing#hardening-security-with-tag-protection-rules-on-github
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pub.dev # is configured in repo settings with secrets
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ssh-key: ${{ secrets.BOT_SSH_PRIVATE_KEY }}
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v3
+        with:
+          channel: stable
+          version: latest
+          cache: true
+          cache-sdk: true
+          cache-key: flutter-cache
+
+      - run: flutter pub get
+
+      - uses: flutter-actions/setup-pubdev-credentials@v1
+
+      - run: flutter pub publish --force
