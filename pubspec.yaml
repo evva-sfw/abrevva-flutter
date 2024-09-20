@@ -2,11 +2,11 @@ name: abrevva
 description: >-
   The EVVA Flutter Module is a collection of tools to work with electronical
   EVVA access components. It allows for scanning and connecting via BLE.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/evva-sfw/abrevva-flutter
 environment:
-  sdk: ">=3.2.6 <4.0.0"
-  flutter: ">=3.3.0"
+  sdk: '>=3.2.6 <4.0.0'
+  flutter: '>=3.3.0'
 dependencies:
   flutter:
     sdk: flutter
@@ -18,7 +18,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ">=2.0.0 <5.0.0"
+  flutter_lints: '>=2.0.0 <5.0.0'
   test: ^1.24.9
 flutter:
   plugin:
