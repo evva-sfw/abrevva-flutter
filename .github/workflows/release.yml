@@ -29,7 +29,6 @@ jobs:
       - name: Debug inputs
         run: |
           echo "Type of release:${{ github.event.inputs.input_version }} from user ${GITHUB_ACTOR}"
-          git config --list
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -85,10 +84,9 @@ jobs:
         run: |
           git config user.name "${{ steps.import-gpg.outputs.name }}"
           git config user.email "${{ steps.import-gpg.outputs.email }}"
-          git config --list
 
       - name: Run release-it
-        run: npx release-it ${{ github.event.inputs.input_version }} --ci -V
+        run: npx release-it ${{ github.event.inputs.input_version }} --ci
         env:
           BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
 
