@@ -2,6 +2,8 @@
   <h1 align="center">EVVA Flutter Plugin</h1>
 </p>
 
+Don't merge this, its just a test to trigger a workflow!
+
 <p align="center">
   <a href="https://pub.dev/packages/abrevva">
     <img alt="Pub Version" src="https://img.shields.io/pub/v/abrevva"></a>
