@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">EVVA Flutter Plugin</h1>
+  <h1 align="center">Abrevva Flutter Plugin</h1>
 </p>
 
 <p align="center">
