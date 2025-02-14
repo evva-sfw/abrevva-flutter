@@ -25,59 +25,6 @@ class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   group('AbrevvaCrypto Tests', () {
-    MethodChannelAbrevvaNfcPlatform platform =
-        MethodChannelAbrevvaNfcPlatform();
-    const MethodChannel channel = MethodChannel('AbrevvaNfc');
-
-    setUp(() {
-      platform = MethodChannelAbrevvaNfcPlatform();
-      platform.methodChannel = channel;
-    });
-
-    test('read', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'read') {
-          handlerCalled = true;
-        }
-        return null;
-      });
-
-      await platform.read();
-
-      expect(handlerCalled, true);
-    });
-    test('connect', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'connect') {
-          handlerCalled = true;
-        }
-        return null;
-      });
-
-      await platform.connect();
-
-      expect(handlerCalled, true);
-    });
-    test('disconnect', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'disconnect') {
-          handlerCalled = true;
-        }
-        return null;
-      });
-
-      await platform.disconnect();
-
-      expect(handlerCalled, true);
-    });
-  });
-  group('AbrevvaCrypto Tests', () {
     MethodChannelAbrevvaCrypto platform = MethodChannelAbrevvaCrypto();
     const MethodChannel channel = MethodChannel('AbrevvaCrypto');
 

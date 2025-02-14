@@ -104,31 +104,6 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
   }
 }
 
-class MethodChannelAbrevvaNfcPlatform extends AbrevvaNfcPlatform {
-  /// The method channel used to interact with the native platform.
-  var _methodChannel = const MethodChannel('AbrevvaNfc');
-  set methodChannel(MethodChannel channel) => _methodChannel = channel;
-
-  @override
-  Future<void> read() async {
-    await _methodChannel.invokeMethod<void>('read');
-  }
-
-  @override
-  Future<Map<dynamic, dynamic>?> connect() async {
-    final deriveData =
-        await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('connect');
-    return deriveData;
-  }
-
-  @override
-  Future<Map<dynamic, dynamic>?> disconnect() async {
-    final deriveData =
-        await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('disconnect');
-    return deriveData;
-  }
-}
-
 class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   /// The method channel used to interact with the native platform.
   var _methodChannel = const MethodChannel('AbrevvaBle');

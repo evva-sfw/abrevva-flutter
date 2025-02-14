@@ -15,13 +15,11 @@ import io.flutter.plugin.common.MethodChannel
 
 class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     private lateinit var channelCrypto: MethodChannel
-    private lateinit var channelNfc: MethodChannel
     private lateinit var channelBle: MethodChannel
 
     private lateinit var eventBle: EventChannel
 
     private var abrevvaCrypto = AbrevvaCrypto()
-    private var abrevvaNfc = AbrevvaNfc()
     private var abrevvaBle = AbrevvaBle()
 
     private lateinit var context: Context
@@ -30,7 +28,6 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
 
     val lifecycleObserver = LifecycleEventObserver { source, event ->
         abrevvaBle.eventObserver(source, event, context, activity, channelBle)
-        abrevvaNfc.eventObserver(source, event, context, activity)
     }
 
     @SuppressLint("MissingPermission")
@@ -41,9 +38,6 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
         channelCrypto = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaCrypto")
         channelCrypto.setMethodCallHandler(abrevvaCrypto)
 
-        channelNfc = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaNfc")
-        channelNfc.setMethodCallHandler(abrevvaNfc)
-
         channelBle = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaBle")
         channelBle.setMethodCallHandler(abrevvaBle)
 
@@ -53,7 +47,6 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channelCrypto.setMethodCallHandler(null)
-        channelNfc.setMethodCallHandler(null)
         channelBle.setMethodCallHandler(null)
 
         eventBle.setStreamHandler(null)
@@ -61,10 +54,6 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
-        binding.addOnNewIntentListener {
-            abrevvaNfc.observerOnNewIntent(it)
-            true
-        }
 
         (binding.lifecycle as HiddenLifecycleReference)
             .lifecycle

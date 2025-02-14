@@ -32,7 +32,6 @@ import java.util.UUID
 import com.evva.xesar.abrevva.ble.BleManager
 import com.evva.xesar.abrevva.util.bytesToString
 import com.evva.xesar.abrevva.util.stringToBytes
-import com.evva.xesar.abrevva.nfc.toHexString
 import com.hivemq.client.internal.netty.ContextFuture
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin

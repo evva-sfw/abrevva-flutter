@@ -52,20 +52,6 @@ class AbrevvaCrypto {
   }
 }
 
-class AbrevvaNfc {
-  Future<void> read() {
-    return AbrevvaNfcPlatform.instance.read();
-  }
-
-  Future<Map<dynamic, dynamic>?> connect() {
-    return AbrevvaNfcPlatform.instance.connect();
-  }
-
-  Future<Map<dynamic, dynamic>?> disconnect() {
-    return AbrevvaNfcPlatform.instance.disconnect();
-  }
-}
-
 class AbrevvaBle {
   Future<Map<dynamic, dynamic>?> initialize(bool androidNeverForLocation) {
     return AbrevvaBlePlatform.instance.initialize(androidNeverForLocation);

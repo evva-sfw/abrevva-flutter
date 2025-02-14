@@ -68,40 +68,6 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
   }
 }
 
-abstract class AbrevvaNfcPlatform extends PlatformInterface {
-  /// Constructs a .
-  AbrevvaNfcPlatform() : super(token: _token);
-
-  static final Object _token = Object();
-
-  static AbrevvaNfcPlatform _instance = MethodChannelAbrevvaNfcPlatform();
-
-  /// The default instance of [AbrevvaNfcPlatformPlatform] to use.
-  ///
-  /// Defaults to [MethodChannelAbrevvaNfcPlatform].
-  static AbrevvaNfcPlatform get instance => _instance;
-
-  /// Platform-specific implementations should set this with their own
-  /// platform-specific class that extends [AbrevvaNfcPlatform] when
-  /// they register themselves.
-  static set instance(AbrevvaNfcPlatform instance) {
-    PlatformInterface.verifyToken(instance, _token);
-    _instance = instance;
-  }
-
-  Future<void> read() {
-    throw UnimplementedError('read() has not been implemented.');
-  }
-
-  Future<Map<dynamic, dynamic>?> connect() {
-    throw UnimplementedError('connect() has not been implemented.');
-  }
-
-  Future<Map<dynamic, dynamic>?> disconnect() {
-    throw UnimplementedError('disconnect() has not been implemented.');
-  }
-}
-
 abstract class AbrevvaBlePlatform extends PlatformInterface {
   /// Constructs a .
   AbrevvaBlePlatform() : super(token: _token);
@@ -110,7 +76,7 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
 
   static AbrevvaBlePlatform _instance = MethodChannelAbrevvaBlePlatform();
 
-  /// The default instance of [AbrevvaNfcPlatformPlatform] to use.
+  /// The default instance of [AbrevvaBlePlatform] to use.
   ///
   /// Defaults to [MethodChannelAbrevvaBlePlatform].
   static AbrevvaBlePlatform get instance => _instance;
