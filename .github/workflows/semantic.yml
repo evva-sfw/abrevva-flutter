@@ -11,4 +11,4 @@ permissions:
 jobs:
   semantic_pr-name:
     name: semantic_pr-name
-    uses: evva-sfw/workflows/.github/workflows/semantic.yml@main
+    uses: evva-sfw/workflows/.github/workflows/call_semantic.yml@main

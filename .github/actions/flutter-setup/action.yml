@@ -3,9 +3,9 @@ description: 'installs flutter'
 runs:
   using: 'composite'
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
     - name: Setup Flutter SDK
-      uses: flutter-actions/setup-flutter@v3
+      uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 # v4.0
       with:
         channel: stable
         version: latest
