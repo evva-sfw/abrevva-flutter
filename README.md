@@ -61,7 +61,7 @@ import 'package:abrevva/abrevva.dart';
 async function scanForBleDevices(androidNeverForLocation: Boolean = true, timeout: Number) {
   await AbrevvaBle.initialize(androidNeverForLocation);
 
-  AbrevvaBle.requestLEScan( 
+  AbrevvaBle.startScan( 
     RequestBleDeviceParams(),
     (scanResult: ScanResult) => {
         console.log(`Discovered Device: ${scanResult.bleDevice.deviceId}`);

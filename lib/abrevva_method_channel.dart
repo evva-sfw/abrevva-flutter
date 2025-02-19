@@ -1,5 +1,7 @@
 //import 'dart:html';
 
+import 'dart:ffi';
+
 import 'package:abrevva/abrevva_param_classes.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -13,94 +15,148 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
   set methodChannel(MethodChannel channel) => _methodChannel = channel;
 
   @override
-  Future<Map<dynamic, dynamic>?> random(int numBytes) async {
-    return _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('random', {'numBytes': numBytes});
+  Future<StringResult> random(int numBytes) async {
+    final result =  await _methodChannel
+        .invokeMethod<Map<dynamic, dynamic>>('random', {'numBytes': numBytes});
+    if (result == null || result["value"] == null) {
+      throw PlatformException(code: "random(): Error retrieving StringResult");
+    }
+    return StringResult(result["value"]);
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> generateKeyPair() async {
-    return _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('generateKeyPair');
+  Future<KeyPairResult> generateKeyPair() async {
+    final result = await _methodChannel
+        .invokeMethod<Map<dynamic, dynamic>>('generateKeyPair');
+    if (result == null 
+      || result["privateKey"] == null
+      || result["publicKey"] == null
+      ) {
+      throw PlatformException(code: "generateKeyPair(): Error retrieving KeyPairResult");
+    }
+    return KeyPairResult(result["privateKey"], result["publicKey"]);
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> encrypt(
+  Future<EncryptResult> encrypt(
       String key, String iv, String adata, String pt, int tagLength) async {
-    final encryptData =
-        await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('encrypt', {
+    final result =
+        await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('encrypt', {
       'key': key,
       'iv': iv,
       'adata': adata,
       'pt': pt,
       'tagLength': tagLength,
     });
-    return encryptData;
+    if (result == null 
+      || result["cipherText"] == null
+      || result["authTag"] == null
+      ) {
+      throw PlatformException(code: "encrypt(): Error retrieving EncryptResult");
+    }
+    return EncryptResult(result["cipherText"], result["authTag"]);
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> decrypt(
+  Future<DecryptResult> decrypt(
       String key, String iv, String adata, String ct, int tagLength) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('decrypt', {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('decrypt', {
       'key': key,
       'iv': iv,
       'adata': adata,
       'ct': ct,
       'tagLength': tagLength,
     });
+    if (result == null 
+      || result["plainText"] == null
+      || result["authOk"] == null
+      ) {
+      throw PlatformException(code: "decrypt(): Error retrieving DecryptResult");
+    }
+    return DecryptResult(result["plainText"], result["authOk"]);
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> encryptFile(
+  Future<Bool> encryptFile(
       String sharedSecret, String ptPath, String ctPath) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('encryptFile', {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('encryptFile', {
       'sharedSecret': sharedSecret,
       'ptPath': ptPath,
       'ctPath': ctPath,
     });
+    if (result == null 
+      || result["opOk"] == null
+      ) {
+      throw PlatformException(code: "encryptFile(): Error retrieving opOk");
+    }
+    return result["opOk"];
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> computeSharedSecret(
+  Future<StringResult> computeSharedSecret(
       String privateKey, String peerPublicKey) async {
-    return _methodChannel
+    final result = await  _methodChannel
         .invokeMethod<Map<dynamic, dynamic>?>('computeSharedSecret', {
       'privateKey': privateKey,
       'peerPublicKey': peerPublicKey,
     });
+    if ( result == null 
+      || result["sharedSecret"] == null
+      ) {
+      throw PlatformException(code: "computeSharedSecret(): Error retrieving sharedSecret");
+      }
+      return StringResult(result["sharedSecret"]);
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> decryptFile(
+  Future<Bool> decryptFile(
       String sharedSecret, String ctPath, String adata, String ptPath) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('decryptFile', {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('decryptFile', {
       'sharedSecret': sharedSecret,
       'ctPath': ctPath,
       'adata': adata,
       'ptPath': ptPath,
     });
+    if (result == null 
+      || result["opOk"] == null
+      ) {
+      throw PlatformException(code: "decryptFile(): Error retrieving opOk");
+    }
+    return result["opOk"];
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> decryptFileFromURL(
+  Future<Bool> decryptFileFromURL(
       String sharedSecret, String url, String ptPath) async {
-    return _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('decryptFileFromURL', {
+    final result = await  _methodChannel
+        .invokeMethod<Map<dynamic, dynamic>>('decryptFileFromURL', {
       'sharedSecret': sharedSecret,
       'url': url,
       'ptPath': ptPath,
     });
+    if (result == null 
+      || result["opOk"] == null
+      ) {
+      throw PlatformException(code: "decryptFile(): Error retrieving opOk");
+    }
+    return result["opOk"];
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> derive(
+  Future<StringResult> derive(
       String key, String salt, String info, int length) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('derive', {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('derive', {
       'key': key,
       'salt': salt,
       'info': info,
       'length': length,
     });
+    if (result == null 
+      || result["value"] == null
+      ) {
+      throw PlatformException(code: "decryptFile(): Error retrieving value");
+    }
+    return StringResult(result["value"]);
   }
 }
 
@@ -109,227 +165,337 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   var _methodChannel = const MethodChannel('AbrevvaBle');
   set methodChannel(MethodChannel channel) => _methodChannel = channel;
 
-  var _eventChannel = const EventChannel('AbrevvaBleEvents');
-  set eventChannel(EventChannel channel) => _eventChannel = channel;
+  final _notificationStreams = <String, dynamic>{};
+  final _connectStreams = <String, dynamic>{};
+  dynamic _enabledNotificationStream;
+
+  /// Setter are neccessary for testing
+  var _connectEventChannel = const EventChannel('connectEventChannel');
+  set connectEventChannel(EventChannel channel) => _connectEventChannel = channel;
+
+  var _startScanEventChannel = const EventChannel('startScanEventChannel');
+  set startScanEventChannel(EventChannel channel) => _startScanEventChannel = channel;
+
+  var _startNotificationsEventChannel = const EventChannel('startNotificationsEventChannel');
+  set startNotificationsEventChannel(EventChannel channel) => _startNotificationsEventChannel = channel;
+
+  var _startEnabledNotificationsEventChannel = const EventChannel('startEnabledNotificationsEventChannel');
+  set startEnabledNotificationsEventChannel(EventChannel channel) => _startEnabledNotificationsEventChannel = channel;
 
   @override
-  Future<Map<dynamic, dynamic>?> initialize(
+  Future<void> initialize( // TODO: ANDROID PERMISSIONS
       bool androidNeverForLocation) async {
-    final ret = _methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
+    return await _methodChannel.invokeMethod<void>(
         'initialize', {'androidNeverForLocation': androidNeverForLocation});
-    return ret;
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> isEnabled() async {
-    final deriveData =
-        await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('isEnabled');
-    return deriveData;
+  Future<bool> isEnabled() async {
+    return await _methodChannel
+      .invokeMethod<bool?>('isEnabled') ?? false;
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> isLocationEnabled() async {
-    final deriveData = await _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('isLocationEnabled');
-    return deriveData;
+  Future<bool> isLocationEnabled() async {
+    return await _methodChannel
+      .invokeMethod<bool?>('isLocationEnabled') ?? false;
   }
 
   @override
   Future<void> startEnabledNotifications(
       void Function(bool result) callback) async {
-    var cancelStream = false;
-    var brodcastStream = _eventChannel.receiveBroadcastStream(
-        {'callbackName': 'onEnabledChanged'}).listen((event) {
-      if (event["status"] != "error") {
-        callback(event['value']);
+      _enabledNotificationStream =_startEnabledNotificationsEventChannel.receiveBroadcastStream().listen((event) {
+      if (event["value"] == null) {
+        throw PlatformException(code: "startEnabledNotifications(): Error retrieving value");
       }
-      cancelStream = true;
+      callback(event['value']);
+    });
+    return await _methodChannel.invokeMethod<void>('startEnabledNotifications');
+  }
+
+  @override
+  Future<void> stopEnabledNotifications() async {
+    _enabledNotificationStream.cancel();
+    return await _methodChannel
+        .invokeMethod<void>('stopEnabledNotifications');
+  }
+
+  @override
+  Future<void> openLocationSettings() async {
+    return await _methodChannel
+        .invokeMethod<void>('openLocationSettings');
+  }
+
+  @override
+  Future<void> openBluetoothSettings() async {
+    return await _methodChannel
+        .invokeMethod<void>('openBluetoothSettings');
+  }
+
+  @override
+  Future<void> openAppSettings() async {
+    return await _methodChannel
+        .invokeMethod<void>('openAppSettings');
+  }
+
+  BatteryStatus _getBatteryStatusHelper(String? status)  {
+    if (status == null){
+      return BatteryStatus.unknown;
+    }
+    else if (status == 'battery-full') {
+      return BatteryStatus.batteryFull;
+    }
+    else {
+      return BatteryStatus.batteryEmpty;
+    }
+  }
+
+  ComponentType _getComponentType(String? type){
+    return type == null ? ComponentType.unknown : ComponentType.values.byName(type);
+  }
+
+  BleDevice _mapScanResult(Map<Object?, Object?> data) {
+      Map<Object?, Object?> advertismentData = data["advertisementData"] as Map<Object?, Object?> ;
+      Map<Object?, Object?> mfData = advertismentData["manufacturerData"] as Map<Object?, Object?> ;
+      final advertData = BleDeviceAdvertisementData(
+        companyIdentifier: mfData["companyIdentifier"] as int?,
+        version: mfData["version"] as int?,
+        componentType: _getComponentType(mfData["componentType"] as String?),
+        mainFirmwareVersionMajor: mfData["mainFirmwareVersionMajor"] as int?,
+        mainFirmwareVersionMinor:  mfData["mainFirmwareVersionMinor"] as int?,
+        mainFirmwareVersionPatch:  mfData["mainFirmwareVersionPatch"] as int?,
+        componentHAL:  mfData["componentHAL"] as int?,
+        batteryStatus:  _getBatteryStatusHelper(mfData["batteryStatus"] as String?),
+        mainConstructionMode:  mfData["mainConstructionMode"] as bool?,
+        subConstructionMode:  mfData["subConstructionMode"] as bool?,
+        isOnline:  mfData["isOnline"] as bool?,
+        officeModeEnabled:  mfData["officeModeEnabled"] as bool?,
+        twoFactorRequired:  mfData["twoFactorRequired"] as bool?,
+        officeModeActive:  mfData["officeModeActive"] as bool?,
+        identifier:  mfData["identifier"] as String?,
+        subFirmwareVersionMajor:  mfData["subFirmwareVersionMajor"] as int?,
+        subFirmwareVersionMinor:  mfData["subFirmwareVersionMinor"] as int?,
+        subFirmwareVersionPatch:  mfData["subFirmwareVersionPatch"] as int?,
+        subComponentIdentifier:  mfData["subComponentIdentifier"] as String?,
+        );
+     return BleDevice(
+          deviceId:  data["deviceId"] as String,
+          name: data["name"] as String?,
+          advertisementData: advertData
+          );
+  }
+
+  @override
+  Future<void> startScan({
+      required void Function(BleDevice result) onScanResult,
+      void Function(bool success)? onScanStart,
+      void Function(bool success)? onScanStop,
+      String? macFilter,
+      bool? allowDuplicates,
+      int? timeout,
+    }) async {
+    dynamic brodcastStream;
+
+    brodcastStream =
+        _startScanEventChannel.receiveBroadcastStream().listen((result) {
+          switch (result["event"]) {
+            case "onScanResult":
+              onScanResult(_mapScanResult(result["value"]));
+              break;
+            case "onScanStart":
+              onScanStart?.call(result["value"] as bool);
+              break;
+            case "onScanStop":
+                  brodcastStream.cancel();
+                onScanStop?.call(result["value"] as bool);
+              break;
+            default:
+              return;
+          }
     });
 
-    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      if (cancelStream) {
-        brodcastStream.cancel();
-        timer.cancel();
-      }
+    return await _methodChannel.invokeMethod<void>('startScan', {
+      'macFilter': macFilter,
+      'allowDuplicates': allowDuplicates,
+      'timeout': timeout
     });
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> stopEnabledNotifications() async {
-    return _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('stopEnabledNotifications');
+  Future<String?> stopScan() async {
+    return _methodChannel.invokeMethod<String?>('stopScan');
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> openLocationSettings() async {
-    return _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('openLocationSettings');
-  }
+  Future<bool> connect(
+    String deviceId,
+    int timeout,
+    void Function(String address)? onDisconnect,
+    ) async {
 
-  @override
-  Future<Map<dynamic, dynamic>?> openBluetoothSettings() async {
-    return _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('openBluetoothSettings');
-  }
-
-  @override
-  Future<Map<dynamic, dynamic>?> openAppSettings() async {
-    return _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('openAppSettings');
-  }
-
-  @override
-  Future<void> requestLEScan(RequestBleDeviceParams options,
-      void Function(ScanResult result) callback) async {
-    var optionsMap = options.getMap();
-
-    optionsMap['callbackName'] = 'requestLEScan';
-    var cancelStream = false;
-
-    var brodcastStream =
-        _eventChannel.receiveBroadcastStream(optionsMap).listen((event) {
-      if (event == null) {
-        return;
-      }
-      if (event["status"] != null) {
-        cancelStream = true;
-        return;
+      if (onDisconnect != null) {
+        _connectStreams[deviceId] =
+          _connectEventChannel.receiveBroadcastStream().listen((result) {
+          if (result["value"] == null) {
+            throw PlatformException(code: "startEnabledNotifications(): Error retrieving value");
+          }
+          final addr = result["value"] as String;
+          _connectStreams[addr]?.cancel();
+          _connectStreams.remove(addr);
+          onDisconnect.call(addr);
+        });
       }
 
-      var bleDeviceMap = event["device"];
-      var scanResults = ScanResult(
-        device: BleDevice(
-          deviceId: bleDeviceMap["deviceId"]!!,
-          name: bleDeviceMap["name"],
-          uuids: bleDeviceMap["uuids"]?.split(':'),
-        ),
-        localName: event["localName"],
-        rssi: event["rssi"],
-        txPower: event["txPower"],
-        manufacturerData: event["manufacturerData"]?.cast<String, String>(),
-        uuids: event["uuids"]?.split(':'),
-        rawAdvertisement: event["rawAdvertisement"],
-      );
-      callback(scanResults);
-    });
-
-    var timeout = Duration(milliseconds: options.timeout ?? 10000);
-    Timer(timeout, () => brodcastStream.cancel());
-
-    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      if (cancelStream) {
-        brodcastStream.cancel();
-        timer.cancel();
+      final result = await _methodChannel.invokeMethod<bool?>('connect', {
+        'deviceId': deviceId,
+        'timeout': timeout,
+      });
+      if (result == null) {
+        throw PlatformException(code: "decryptFile(): Error retrieving value");
       }
-    });
+      return result;
   }
 
   @override
-  Future<String?> stopLEScan() async {
-    return _methodChannel.invokeMethod<String?>('stopLEScan');
-  }
-
-  @override
-  Future<Map<dynamic, dynamic>?> connect(String deviceId, int timeout) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('connect', {
+  Future<bool> disconnect(String deviceId) async {
+    final result = await _methodChannel.invokeMethod<bool?>('disconnect', {
       'deviceId': deviceId,
-      'timeout': timeout,
     });
+    if (result == null) {
+      throw PlatformException(code: "decryptFile(): Error retrieving value");
+    }
+    return result;
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> disconnect(String deviceId) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('disconnect', {
-      'deviceId': deviceId,
-    });
+  Future<List<Uint8>> read(
+      String deviceId,
+      String service,
+      String characteristic,
+      int timeout
+    ) async {
+      final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('read', {
+        'deviceId': deviceId,
+        'service': service,
+        'characteristic': characteristic,
+        'timeout': timeout,
+      });
+      if (result == null
+        || result["value"] == null
+      ) {
+        throw PlatformException(code: "decryptFile(): Error retrieving value");
+      }
+      return result["value"] as List<Uint8>;
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> read(String deviceId, String service,
-      String characteristic, int timeout) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('read', {
-      'deviceId': deviceId,
-      'service': service,
-      'characteristic': characteristic,
-      'timeout': timeout,
-    });
+  Future<void> write(
+      String deviceId,
+      String service,
+      String characteristic,
+      String value,
+      int timeout
+    ) async {
+      return await _methodChannel.invokeMethod<void>('write', {
+        'deviceId': deviceId,
+        'service': service,
+        'characteristic': characteristic,
+        'value': value,
+        'timeout': timeout,
+      });
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> write(String deviceId, String service,
-      String characteristic, String value, int timeout) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('write', {
-      'deviceId': deviceId,
-      'service': service,
-      'characteristic': characteristic,
-      'value': value,
-      'timeout': timeout,
-    });
-  }
-
-  @override
-  Future<Map<dynamic, dynamic>?> disengage(
+  Future<DisengageStatusType> disengage(
       String mobileId,
       String mobileDeviceKey,
       String mobileGroupId,
       String mobileAccessData,
-      bool isPermanentRelease) async {
-    return _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('disengage', {
+      bool isPermanentRelease
+    ) async {
+    final result = await _methodChannel.invokeMethod<String?>('disengage', {
       'mobileId': mobileId,
       'mobileDeviceKey': mobileDeviceKey,
       'mobileGroupId': mobileGroupId,
       'mobileAccessData': mobileAccessData,
       'isPermanentRelease': isPermanentRelease,
     });
+    if (result == null) {
+      throw PlatformException(code: "decryptFile(): Error retrieving value");
+    }
+    return DisengageStatusType.values.byName(result);
   }
-
+  
   @override
-  Future<void> startNotifications(StartNotificationsParams options,
-      void Function(ReadResult result) callback) async {
-    var optionsMap = options.getMap();
-    optionsMap['callbackName'] = 'startNotifications';
+  Future<bool> startNotifications( //TODO: gut testen
+      String deviceId,
+      String service,
+      String characteristic,
+      int timeout,
+      void Function(String result) callback) async {
 
-    bool cancelStream = false;
 
-    var brodcastStream =
-        _eventChannel.receiveBroadcastStream(optionsMap).listen((event) {
-      if (event == null || event["status"] == "success") {
+    final key = "notification|$deviceId|$service|$characteristic";
+    _notificationStreams[key] =
+        _startNotificationsEventChannel.receiveBroadcastStream().listen((event) {
+      if (event == null || event["status"] == "error") {
+        _notificationStreams[key].cancel();
         return;
       }
-      if (event["status"] == "error") {
-        cancelStream = true;
-        return;
-      }
-      callback(event['value']);
-      cancelStream = true;
-    });
-
-    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      if (cancelStream) {
-        brodcastStream.cancel();
-        timer.cancel();
+      if (event[key]){
+        callback(event[key]["value"]);
       }
     });
-  }
 
-  @override
-  Future<Map<dynamic, dynamic>?> stopNotifications(String deviceId,
-      String service, String characteristic, int timeout) async {
-    final deriveData = await _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>('stopNotifications', {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('startNotifications',
+    {
       'deviceId': deviceId,
       'service': service,
       'characteristic': characteristic,
       'timeout': timeout,
     });
-    return deriveData;
+    if (result == null 
+      || result["value"] == null
+      ) {
+      throw PlatformException(code: "startNotifications(): Error retrieving value");
+    }
+    return result["value"];
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> signalize(String deviceId) async {
-    final deriveData = await _methodChannel
-        .invokeMethod<Map<dynamic, dynamic>?>(
+  Future<bool> stopNotifications(
+    String deviceId,
+      String service,
+      String characteristic, 
+      int timeout
+      ) async {
+        final key = "notification|$deviceId|$service|$characteristic";
+        _notificationStreams[key].cancel();
+        _notificationStreams.remove(key);
+
+        final result = await _methodChannel
+        .invokeMethod<Map<dynamic, dynamic>?>('stopNotifications', {
+          'deviceId': deviceId,
+          'service': service,
+          'characteristic': characteristic,
+          'timeout': timeout,
+        });
+        if (result == null 
+          || result["value"] == null
+          ) {
+          throw PlatformException(code: "stopNotifications(): Error retrieving value");
+        }
+        return result["value"];  
+  }
+
+  @override
+  Future<bool> signalize(String deviceId) async {
+    final result = await _methodChannel
+        .invokeMethod<bool?>(
             'signalize', {'deviceId': deviceId});
-    return deriveData;
+    if (result == null) {
+      throw PlatformException(code: "stopNotifications(): Error retrieving value");
+    }
+    return result;
   }
 }

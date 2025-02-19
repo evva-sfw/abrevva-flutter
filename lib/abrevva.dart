@@ -1,67 +1,69 @@
+import 'dart:ffi';
+
 import 'package:abrevva/abrevva_param_classes.dart';
 import 'abrevva_platform_interface.dart';
 
 class AbrevvaCrypto {
-  Future<Map<dynamic, dynamic>?> random(int numBytes) {
+  Future<StringResult> random(int numBytes) {
     return AbrevvaCryptoPlatform.instance.random(numBytes);
   }
 
-  Future<Map<dynamic, dynamic>?> generateKeyPair() {
+  Future<KeyPairResult> generateKeyPair() {
     return AbrevvaCryptoPlatform.instance.generateKeyPair();
   }
 
-  Future<Map<dynamic, dynamic>?> encrypt(
+  Future<EncryptResult> encrypt(
       String key, String iv, String adata, String pt, int tagLength) {
     return AbrevvaCryptoPlatform.instance
         .encrypt(key, iv, adata, pt, tagLength);
   }
 
-  Future<Map<dynamic, dynamic>?> decrypt(
+  Future<DecryptResult> decrypt(
       String key, String iv, String adata, String ct, int tagLength) {
     return AbrevvaCryptoPlatform.instance
         .decrypt(key, iv, adata, ct, tagLength);
   }
 
-  Future<Map<dynamic, dynamic>?> computeSharedSecret(
+  Future<StringResult> computeSharedSecret(
       String privateKey, String peerPublicKey) {
     return AbrevvaCryptoPlatform.instance
         .computeSharedSecret(privateKey, peerPublicKey);
   }
 
-  Future<Map<dynamic, dynamic>?> encryptFile(
+  Future<Bool> encryptFile(
       String sharedSecret, String ptPath, String ctPath) {
     return AbrevvaCryptoPlatform.instance
         .encryptFile(sharedSecret, ptPath, ctPath);
   }
 
-  Future<Map<dynamic, dynamic>?> decryptFile(
+  Future<Bool> decryptFile(
       String sharedSecret, String ctPath, String adata, String ptPath) {
     return AbrevvaCryptoPlatform.instance
         .decryptFile(sharedSecret, ctPath, adata, ptPath);
   }
 
-  Future<Map<dynamic, dynamic>?> decryptFileFromURL(
+  Future<Bool> decryptFileFromURL(
       String sharedSecret, String url, String ptPath) {
     return AbrevvaCryptoPlatform.instance
         .decryptFileFromURL(sharedSecret, url, ptPath);
   }
 
-  Future<Map<dynamic, dynamic>?> derive(
+  Future<StringResult> derive(
       String key, String salt, String info, int length) {
     return AbrevvaCryptoPlatform.instance.derive(key, salt, info, length);
   }
 }
 
 class AbrevvaBle {
-  Future<Map<dynamic, dynamic>?> initialize(bool androidNeverForLocation) {
+  Future<void> initialize(bool androidNeverForLocation) {
     return AbrevvaBlePlatform.instance.initialize(androidNeverForLocation);
   }
 
-  Future<Map<dynamic, dynamic>?> isEnabled() {
+  Future<bool> isEnabled() {
     return AbrevvaBlePlatform.instance.isEnabled();
   }
 
-  Future<Map<dynamic, dynamic>?> isLocationEnabled() {
+  Future<bool> isLocationEnabled() {
     return AbrevvaBlePlatform.instance.isLocationEnabled();
   }
 
@@ -69,52 +71,68 @@ class AbrevvaBle {
     return AbrevvaBlePlatform.instance.startEnabledNotifications(callback);
   }
 
-  Future<Map<dynamic, dynamic>?> stopEnabledNotifications() {
+  Future<void> stopEnabledNotifications() {
     return AbrevvaBlePlatform.instance.stopEnabledNotifications();
   }
 
-  Future<Map<dynamic, dynamic>?> openLocationSettings() {
+  Future<void> openLocationSettings() {
     return AbrevvaBlePlatform.instance.openLocationSettings();
   }
 
-  Future<Map<dynamic, dynamic>?> openBluetoothSettings() {
+  Future<void> openBluetoothSettings() {
     return AbrevvaBlePlatform.instance.openBluetoothSettings();
   }
 
-  Future<Map<dynamic, dynamic>?> openAppSettings() {
+  Future<void> openAppSettings() {
     return AbrevvaBlePlatform.instance.openAppSettings();
   }
 
-  Future<void> requestLEScan(RequestBleDeviceParams options,
-      void Function(ScanResult result) callback) {
-    return AbrevvaBlePlatform.instance.requestLEScan(options, callback);
+  Future<void> startScan({
+      required void Function(BleDevice result) onScanResult,
+      void Function(bool success)? onScanStart,
+      void Function(bool success)? onScanStop,
+      String? macFilter,
+      bool? allowDuplicates,
+      int? timeout,
+    }) {
+    return AbrevvaBlePlatform.instance.startScan(
+      onScanResult: onScanResult,
+      onScanStop: onScanStop, 
+      macFilter: macFilter,
+      allowDuplicates: allowDuplicates, 
+      timeout: timeout
+    );
   }
 
-  Future<String?> stopLEScan() {
-    return AbrevvaBlePlatform.instance.stopLEScan();
+  Future<String?> stopScan() {
+    return AbrevvaBlePlatform.instance.stopScan();
   }
 
-  Future<Map<dynamic, dynamic>?> connect(String deviceId, int timeout) {
-    return AbrevvaBlePlatform.instance.connect(deviceId, timeout);
+  Future<bool> connect(String deviceId, int timeout, void Function(String address)? onDisconnect) {
+    return AbrevvaBlePlatform.instance.connect(deviceId, timeout, onDisconnect);
   }
 
-  Future<Map<dynamic, dynamic>?> disconnect(String deviceId) {
+  Future<bool> disconnect(String deviceId) {
     return AbrevvaBlePlatform.instance.disconnect(deviceId);
   }
 
-  Future<Map<dynamic, dynamic>?> read(
-      String deviceId, String service, String characteristic, int timeout) {
-    return AbrevvaBlePlatform.instance
+  Future<List<Uint8>> read(
+      String deviceId, 
+      String service,
+      String characteristic,
+      int timeout
+    ) {
+      return AbrevvaBlePlatform.instance
         .read(deviceId, service, characteristic, timeout);
   }
 
-  Future<Map<dynamic, dynamic>?> write(String deviceId, String service,
+  Future<void> write(String deviceId, String service,
       String characteristic, String value, int timeout) {
     return AbrevvaBlePlatform.instance
         .write(deviceId, service, characteristic, value, timeout);
   }
 
-  Future<Map<dynamic, dynamic>?> disengage(
+  Future<DisengageStatusType> disengage(
       String mobileId,
       String mobileDeviceKey,
       String mobileGroupId,
@@ -124,18 +142,29 @@ class AbrevvaBle {
         mobileGroupId, mobileAccessData, isPermanentRelease);
   }
 
-  Future<void> startNotifications(StartNotificationsParams options,
-      void Function(ReadResult result) callback) {
-    return AbrevvaBlePlatform.instance.startNotifications(options, callback);
+  Future<void> startNotifications(
+      String deviceId,
+      String service,
+      String characteristic,
+      int timeout,
+      void Function(String result) callback
+    ) {
+    return AbrevvaBlePlatform.instance.startNotifications(
+      deviceId,
+      service,
+      characteristic,
+      timeout,
+      callback
+    );
   }
 
-  Future<Map<dynamic, dynamic>?> stopNotifications(
+  Future<bool> stopNotifications(
       String deviceId, String service, String characteristic, int timeout) {
     return AbrevvaBlePlatform.instance
         .stopNotifications(deviceId, service, characteristic, timeout);
   }
 
-  Future<Map<dynamic, dynamic>?> signalize(String deviceId) {
+  Future<bool> signalize(String deviceId) {
     return AbrevvaBlePlatform.instance.signalize(deviceId);
   }
 }
