@@ -56,6 +56,7 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import org.json.JSONArray
 
+@OptIn(ExperimentalStdlibApi::class)
 public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
     private lateinit var manager: BleManager
@@ -91,7 +92,7 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
             "openLocationSettings" -> openLocationSettings(result)
             "openBluetoothSettings" -> openBluetoothSettings(result)
             "openAppSettings" -> openAppSettings(result)
-            "stopLEScan" -> stopLEScan(result)
+            "stopScan" -> stopScan(result)
             "connect" -> connect(call, result)
             "disconnect" -> disconnect(call, result)
             "read" -> read(call, result)
@@ -99,6 +100,7 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
             "disengage" -> disengage(call, result)
             "stopNotifications" -> stopNotifications(call, result)
             "signalize" -> signalize(call, result)
+            "checkSdkVersion" -> checkSdkVersion(call, result)
             else -> {
                 result.notImplemented()
             }
@@ -108,7 +110,7 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
         this.events = events
         val mapArgs = arguments as  Map<*, *>
         when(mapArgs["callbackName"]){
-            "requestLEScan" -> requestLEScan((mapArgs["timeout"] as Int).toLong())
+            "startScan" -> startScan((mapArgs["timeout"] as Int).toLong())
             "onEnabledChanged" -> enabledNotifications()
             "startNotifications" -> startNotifications(mapArgs, events)
             else -> {
@@ -124,44 +126,12 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
         aliases = arrayOf()
     }
 
-
-    fun  initialize(call: MethodCall, result: MethodChannel.Result) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val neverForLocation = call.argument<Boolean>("androidNeverForLocation") ?: false
-            println("neverForLocation: $neverForLocation")
-            this.aliases = if (neverForLocation) {
-                arrayOf(
-                    android.Manifest.permission.BLUETOOTH_SCAN,
-                    android.Manifest.permission.BLUETOOTH_CONNECT,
-                )
-            } else {
-                arrayOf(
-                    android.Manifest.permission.BLUETOOTH_SCAN,
-                    android.Manifest.permission.BLUETOOTH_CONNECT,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                )
-            }
-        } else {
-            this.aliases = arrayOf(
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-            )
-        }
-
-        this.aliases.forEach {
-            if (ContextCompat.checkSelfPermission(contextMain, it) == PackageManager.PERMISSION_DENIED){
-                ActivityCompat.requestPermissions(
-                    activityMain,
-                    this.aliases,
-                    1
-                )
-                return@initialize
-            }
-        }
-        result.success(mapOf("status" to "success"))
+    fun checkSdkVersion(call: MethodCall, result: MethodChannel.Result) {
+      result.success(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
     }
+
+    // Runtime Permissions are handled in dart
+    fun  initialize(call: MethodCall, result: MethodChannel.Result) {}
 
     private fun runInitialization(call: MethodCall, result: MethodChannel.Result) {
         if (!activityMain.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -203,11 +173,11 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
         activityMain.startActivity(intent)
     }
 
-    fun requestLEScan(timeout: Long) {
+    fun startScan(timeout: Long) {
             manager.startScan({ success: Boolean ->
                 activityMain.runOnUiThread {
                     if (!success) {
-                        events?.success(mapOf("status" to "error", "description"  to "requestLEScan(): failed to start"))
+                        events?.success(mapOf("status" to "error", "description"  to "startScan(): failed to start"))
                     }
                 }
             }, { result: BleScanResult ->
@@ -230,7 +200,7 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
             )
         }
 
-    fun stopLEScan(result: MethodChannel.Result) {
+    fun stopScan(result: MethodChannel.Result) {
         manager.stopScan()
     }
 

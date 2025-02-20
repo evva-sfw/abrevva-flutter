@@ -37,9 +37,9 @@ class AbrevvaCrypto {
   }
 
   Future<bool> decryptFile(
-      String sharedSecret, String ctPath, String adata, String ptPath) {
+      String sharedSecret, String ctPath, String ptPath) {
     return AbrevvaCryptoPlatform.instance
-        .decryptFile(sharedSecret, ctPath, adata, ptPath);
+        .decryptFile(sharedSecret, ctPath, ptPath);
   }
 
   Future<bool> decryptFileFromURL(

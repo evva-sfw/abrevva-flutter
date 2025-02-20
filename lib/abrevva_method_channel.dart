@@ -1,10 +1,12 @@
 //import 'dart:html';
 
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:abrevva/abrevva_param_classes.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'abrevva_platform_interface.dart';
 
@@ -110,11 +112,10 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
 
   @override
   Future<bool> decryptFile(
-      String sharedSecret, String ctPath, String adata, String ptPath) async {
+      String sharedSecret, String ctPath, String ptPath) async {
     final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('decryptFile', {
       'sharedSecret': sharedSecret,
       'ctPath': ctPath,
-      'adata': adata,
       'ptPath': ptPath,
     });
     if (result == null 
@@ -183,10 +184,27 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   set startEnabledNotificationsEventChannel(EventChannel channel) => _startEnabledNotificationsEventChannel = channel;
 
   @override
-  Future<void> initialize( // TODO: ANDROID PERMISSIONS
+  Future<void> initialize(
       bool androidNeverForLocation) async {
-    return await _methodChannel.invokeMethod<void>(
-        'initialize', {'androidNeverForLocation': androidNeverForLocation});
+        if (Platform.isAndroid) {
+          List<Permission> permissions = [];
+          if (await _methodChannel.invokeMethod<bool?>('checkSdkVersion') ?? false){
+            permissions.add(Permission.bluetoothScan);
+            permissions.add(Permission.bluetoothConnect);
+            if (androidNeverForLocation) {
+              permissions.add(Permission.location);
+            }
+          }
+          else {
+              permissions.add(Permission.location);
+          }
+          await permissions.request();
+          return;
+        }
+        else {
+        return await _methodChannel.invokeMethod<void>(
+            'initialize', {'androidNeverForLocation': androidNeverForLocation});
+        }
   }
 
   @override

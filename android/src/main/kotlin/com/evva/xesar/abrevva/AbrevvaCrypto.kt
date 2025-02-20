@@ -215,8 +215,6 @@ class AbrevvaCrypto : MethodCallHandler {
             writeToFile(ctPath, url)
 
         } catch (e: IOException) {
-            print("REACHED")
-
             result.error("decryptFileFromURL(): failed to load data from url", null, null)
             return
         }

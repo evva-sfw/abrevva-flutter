@@ -55,7 +55,7 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
   }
 
   Future<bool> decryptFile(
-      String sharedSecret, String ctPath, String adata, String ptPath) {
+      String sharedSecret, String ctPath, String ptPath) {
     throw UnimplementedError('decryptFile() has not been implemented.');
   }
 
