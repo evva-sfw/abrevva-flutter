@@ -391,7 +391,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return nil
         }
-        let services = optionsSwift["services"] as? [String] ?? [] // TODO: Check if works as intended
+        let services = optionsSwift["services"] as? [String] ?? [] 
         let serviceUUIDs = services.map { service -> CBUUID in
             return CBUUID(string: service)
         }

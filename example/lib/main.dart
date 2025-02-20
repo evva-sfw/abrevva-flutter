@@ -85,17 +85,14 @@ class _BleState extends State<BleWidget> {
     }
   }
 
-  void disengage(String mobileId) async {
-    await _ble.stopScan();
-    await _ble.disengage('deviceId', 'mobileId', 'derivedKey', 'groupId', 'accessData', true);
-  }
-
   List<BleDevice> scanResultList = [];
 
   Future<void> _scanForDevices() async {
     scanResultList.clear();
     return await _ble.startScan( onScanResult: (device) {
-      scanResultList.add(device);
+      setState(() {
+              scanResultList.add(device);
+      });
     });
   }
 
@@ -120,9 +117,9 @@ class _BleState extends State<BleWidget> {
               return ListTile(
                 onTap: () {
                   _ble.stopScan();
-                  disengage(result.deviceId);
+                  _ble.disengage('deviceId', 'mobileId', 'mobileDeviceKey', 'mobileGroupId', 'mobileAccessData', true);
                 },
-                title: Text(result.deviceId),
+                title: Text("${result.advertisementData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
                 subtitle: Text('${result.advertisementData?.companyIdentifier}'),
               );
             }),

@@ -188,24 +188,25 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       bool androidNeverForLocation) async {
         if (Platform.isAndroid) {
           List<Permission> permissions = [];
-          if (await _methodChannel.invokeMethod<bool?>('checkSdkVersion') ?? false){
+          final eval = await _methodChannel.invokeMethod<bool?>('evaluateSdkVersion') ?? false;
+          if (eval) {
             permissions.add(Permission.bluetoothScan);
             permissions.add(Permission.bluetoothConnect);
-            if (androidNeverForLocation) {
-              permissions.add(Permission.location);
-            }
+          } else {
+            permissions.add(Permission.bluetooth);
           }
-          else {
-              permissions.add(Permission.location);
-          }
+
+          if (androidNeverForLocation){
+            permissions.add(Permission.location);
+          };
+          
           await permissions.request();
-          return;
-        }
-        else {
-        return await _methodChannel.invokeMethod<void>(
-            'initialize', {'androidNeverForLocation': androidNeverForLocation});
-        }
-  }
+          return; 
+          } else {
+            return await _methodChannel.invokeMethod<void>(
+              'initialize', {'androidNeverForLocation': androidNeverForLocation});
+          }
+      }
 
   @override
   Future<bool> isEnabled() async {
@@ -356,7 +357,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
         _connectStreams[deviceId] =
           _connectEventChannel.receiveBroadcastStream().listen((result) {
           if (result["value"] == null) {
-            throw PlatformException(code: "startEnabledNotifications(): Error retrieving value");
+            throw PlatformException(code: "connect(): Error retrieving value");
           }
           final addr = result["value"] as String;
           _connectStreams[addr]?.cancel();
@@ -424,8 +425,17 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       });
   }
 
+  String _toCamelCase(String input) {
+    List<String> words = input.toLowerCase().split('_');
+    for (int i = 1; i < words.length; i++) {
+      words[i] = words[i].substring(0, 1).toUpperCase() + words[i].substring(1);
+    }
+    return words.join('');
+  }
+
   @override
   Future<DisengageStatusType> disengage(
+      String deviceId,
       String mobileId,
       String mobileDeviceKey,
       String mobileGroupId,
@@ -433,6 +443,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       bool isPermanentRelease
     ) async {
     final result = await _methodChannel.invokeMethod<String?>('disengage', {
+      'deviceId': deviceId,
       'mobileId': mobileId,
       'mobileDeviceKey': mobileDeviceKey,
       'mobileGroupId': mobileGroupId,
@@ -442,11 +453,11 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
     if (result == null) {
       throw PlatformException(code: "disengage(): Error retrieving value");
     }
-    return DisengageStatusType.values.byName(result);
+    return DisengageStatusType.values.byName(_toCamelCase(result));
   }
   
   @override
-  Future<bool> startNotifications( //TODO: gut testen
+  Future<bool> startNotifications(
       String deviceId,
       String service,
       String characteristic,
