@@ -87,7 +87,7 @@ class _BleState extends State<BleWidget> {
 
   void disengage(String mobileId) async {
     await _ble.stopScan();
-    await _ble.disengage('mobileId', 'derivedKey', 'groupId', 'accessData', true);
+    await _ble.disengage('deviceId', 'mobileId', 'derivedKey', 'groupId', 'accessData', true);
   }
 
   List<BleDevice> scanResultList = [];

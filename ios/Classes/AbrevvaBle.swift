@@ -157,7 +157,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
       self.bleDeviceMap[device.getAddress()] = device
       self.startScanStreamHandler.eventSink?(["event": "onScanResult", "value" : self.getAdvertismentData(device) ])
     }, { error in
-      self.startScanStreamHandler.eventSink?(["event": "onScanStart", "value" : error == nil ])
+      self.startScanStreamHandler.eventSink?(["event": "onScanStart", "value" : error == nil])
     }, { error in
       self.startScanStreamHandler.eventSink?(["event": "onScanStop", "value" : error == nil])
     },
@@ -165,6 +165,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     allowDuplicates,
     timeout
     )
+    result(nil)
   }
 
     @objc

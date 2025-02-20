@@ -165,6 +165,7 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
   }
 
   Future<DisengageStatusType> disengage(
+      String deviceId,
       String mobileId,
       String mobileDeviceKey,
       String mobileGroupId,

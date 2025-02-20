@@ -97,6 +97,7 @@ class AbrevvaBle {
     }) {
     return AbrevvaBlePlatform.instance.startScan(
       onScanResult: onScanResult,
+      onScanStart: onScanStart,
       onScanStop: onScanStop, 
       macFilter: macFilter,
       allowDuplicates: allowDuplicates, 
@@ -133,12 +134,13 @@ class AbrevvaBle {
   }
 
   Future<DisengageStatusType> disengage(
+      String deviceId,
       String mobileId,
       String mobileDeviceKey,
       String mobileGroupId,
       String mobileAccessData,
       bool isPermanentRelease) {
-    return AbrevvaBlePlatform.instance.disengage(mobileId, mobileDeviceKey,
+    return AbrevvaBlePlatform.instance.disengage(deviceId, mobileId, mobileDeviceKey,
         mobileGroupId, mobileAccessData, isPermanentRelease);
   }
 
