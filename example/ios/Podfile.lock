@@ -29,6 +29,8 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
   - Quick (7.6.2)
 
 DEPENDENCIES:
@@ -38,6 +40,7 @@ DEPENDENCIES:
   - MockingbirdFramework (~> 0.20)
   - Nimble
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - Quick
 
 SPEC REPOS:
@@ -64,6 +67,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   abrevva: 9db5b1cf938e00b7cba18c80965a6034a60faf8e
@@ -81,6 +86,7 @@ SPEC CHECKSUMS:
   MqttCocoaAsyncSocket: 77d3b74f76228dd5a05d1f9526eab101d415b30c
   Nimble: 317d713c30c3336dd8571da1889f7ec3afc626e8
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   Quick: b8bec97cd4b9f21da0472d45580f763b801fc353
 
 PODFILE CHECKSUM: 559782b2e82784886f5b494f6aca98193defe307
