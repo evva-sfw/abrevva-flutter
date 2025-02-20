@@ -198,7 +198,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
 
           if (androidNeverForLocation){
             permissions.add(Permission.location);
-          };
+          }
           
           await permissions.request();
           return; 

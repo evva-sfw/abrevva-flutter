@@ -143,7 +143,7 @@ void main() {
         };
       });
 
-      await platform.decryptFile('sharedSecret', 'ctPath', 'adata', 'ptPath');
+      await platform.decryptFile('sharedSecret', 'ctPath', 'ptPath');
 
       expect(handlerCalled, true);
     });
