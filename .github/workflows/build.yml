@@ -8,20 +8,20 @@ jobs:
   build_android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup Flutter
         uses: ./.github/actions/flutter-setup
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
           java-version: "17"
           distribution: "temurin"
           cache: "gradle"
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
       - name: Cache Android SDK
         id: androidSdk
-        uses: actions/cache@v4
+        uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
         with:
           path: ~/Android/Sdk
           key: androidSdk
@@ -30,7 +30,7 @@ jobs:
   build_ios:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup Flutter
         uses: ./.github/actions/flutter-setup
       - uses: SwiftyLab/setup-swift@latest
@@ -46,12 +46,12 @@ jobs:
         run: cd example/ios ; pod install
       - name: Cache Pods
         id: pods
-        uses: actions/cache@v4
+        uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
         with:
           path: example/ios/Pods
           key: pods-cache--${{ hashFiles('example/ios/podfile.lock') }}
       - name: Cache Xcode DerivedData
-        uses: irgaly/xcode-cache@v1.7.2
+        uses: irgaly/xcode-cache@fd644652c5d3fd1f794edcdf839eb1dc03a9021f # v1.8.1
         with:
           key: xcode-deriveddata
       - name: Build ios
