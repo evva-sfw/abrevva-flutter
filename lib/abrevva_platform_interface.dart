@@ -44,7 +44,7 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
     throw UnimplementedError('decrypt() has not been implemented.');
   }
 
-  Future<Bool> encryptFile(
+  Future<bool> encryptFile(
       String sharedSecret, String ptPath, String ctPath) {
     throw UnimplementedError('encryptFile() has not been implemented.');
   }
@@ -54,12 +54,12 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
     throw UnimplementedError('computeSharedSecret() has not been implemented.');
   }
 
-  Future<Bool> decryptFile(
+  Future<bool> decryptFile(
       String sharedSecret, String ctPath, String adata, String ptPath) {
     throw UnimplementedError('decryptFile() has not been implemented.');
   }
 
-  Future<Bool> decryptFileFromURL(
+  Future<bool> decryptFileFromURL(
       String sharedSecret, String url, String ptPath) {
     throw UnimplementedError('decryptFileFromURL() has not been implemented.');
   }

@@ -30,19 +30,19 @@ class AbrevvaCrypto {
         .computeSharedSecret(privateKey, peerPublicKey);
   }
 
-  Future<Bool> encryptFile(
+  Future<bool> encryptFile(
       String sharedSecret, String ptPath, String ctPath) {
     return AbrevvaCryptoPlatform.instance
         .encryptFile(sharedSecret, ptPath, ctPath);
   }
 
-  Future<Bool> decryptFile(
+  Future<bool> decryptFile(
       String sharedSecret, String ctPath, String adata, String ptPath) {
     return AbrevvaCryptoPlatform.instance
         .decryptFile(sharedSecret, ctPath, adata, ptPath);
   }
 
-  Future<Bool> decryptFileFromURL(
+  Future<bool> decryptFileFromURL(
       String sharedSecret, String url, String ptPath) {
     return AbrevvaCryptoPlatform.instance
         .decryptFileFromURL(sharedSecret, url, ptPath);

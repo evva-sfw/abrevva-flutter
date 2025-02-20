@@ -77,7 +77,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
   }
 
   @override
-  Future<Bool> encryptFile(
+  Future<bool> encryptFile(
       String sharedSecret, String ptPath, String ctPath) async {
     final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('encryptFile', {
       'sharedSecret': sharedSecret,
@@ -109,7 +109,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
   }
 
   @override
-  Future<Bool> decryptFile(
+  Future<bool> decryptFile(
       String sharedSecret, String ctPath, String adata, String ptPath) async {
     final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('decryptFile', {
       'sharedSecret': sharedSecret,
@@ -126,7 +126,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
   }
 
   @override
-  Future<Bool> decryptFileFromURL(
+  Future<bool> decryptFileFromURL(
       String sharedSecret, String url, String ptPath) async {
     final result = await  _methodChannel
         .invokeMethod<Map<dynamic, dynamic>>('decryptFileFromURL', {
@@ -205,7 +205,8 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   Future<void> startEnabledNotifications(
       void Function(bool result) callback) async {
       _enabledNotificationStream =_startEnabledNotificationsEventChannel.receiveBroadcastStream().listen((event) {
-      if (event["value"] == null) {
+      if ( event == null 
+        || event["value"] == null) {
         throw PlatformException(code: "startEnabledNotifications(): Error retrieving value");
       }
       callback(event['value']);
@@ -215,7 +216,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
 
   @override
   Future<void> stopEnabledNotifications() async {
-    _enabledNotificationStream.cancel();
+    _enabledNotificationStream?.cancel();
     return await _methodChannel
         .invokeMethod<void>('stopEnabledNotifications');
   }
@@ -351,7 +352,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
         'timeout': timeout,
       });
       if (result == null) {
-        throw PlatformException(code: "decryptFile(): Error retrieving value");
+        throw PlatformException(code: "connect(): Error retrieving value");
       }
       return result;
   }
@@ -362,7 +363,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       'deviceId': deviceId,
     });
     if (result == null) {
-      throw PlatformException(code: "decryptFile(): Error retrieving value");
+      throw PlatformException(code: "disconnect(): Error retrieving value");
     }
     return result;
   }
@@ -383,7 +384,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       if (result == null
         || result["value"] == null
       ) {
-        throw PlatformException(code: "decryptFile(): Error retrieving value");
+        throw PlatformException(code: "read(): Error retrieving value");
       }
       return result["value"] as List<Uint8>;
   }
@@ -421,7 +422,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       'isPermanentRelease': isPermanentRelease,
     });
     if (result == null) {
-      throw PlatformException(code: "decryptFile(): Error retrieving value");
+      throw PlatformException(code: "disengage(): Error retrieving value");
     }
     return DisengageStatusType.values.byName(result);
   }
@@ -439,7 +440,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
     _notificationStreams[key] =
         _startNotificationsEventChannel.receiveBroadcastStream().listen((event) {
       if (event == null || event["status"] == "error") {
-        _notificationStreams[key].cancel();
+        _notificationStreams[key]?.cancel();
         return;
       }
       if (event[key]){
@@ -470,7 +471,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       int timeout
       ) async {
         final key = "notification|$deviceId|$service|$characteristic";
-        _notificationStreams[key].cancel();
+        _notificationStreams[key]?.cancel();
         _notificationStreams.remove(key);
 
         final result = await _methodChannel
