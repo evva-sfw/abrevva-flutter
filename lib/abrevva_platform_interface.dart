@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'abrevva_method_channel.dart';
@@ -24,81 +26,47 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<Map<dynamic, dynamic>?> random(int numBytes) {
+  Future<StringResult> random(int numBytes) {
     throw UnimplementedError('random() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> generateKeyPair() {
+  Future<KeyPairResult> generateKeyPair() {
     throw UnimplementedError('random() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> encrypt(
+  Future<EncryptResult> encrypt(
       String key, String iv, String adata, String pt, int tagLength) {
     throw UnimplementedError('encrypt() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> decrypt(
+  Future<DecryptResult> decrypt(
       String key, String iv, String adata, String ct, int tagLength) {
     throw UnimplementedError('decrypt() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> encryptFile(
+  Future<bool> encryptFile(
       String sharedSecret, String ptPath, String ctPath) {
     throw UnimplementedError('encryptFile() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> computeSharedSecret(
+  Future<StringResult> computeSharedSecret(
       String privateKey, String peerPublicKey) {
     throw UnimplementedError('computeSharedSecret() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> decryptFile(
-      String sharedSecret, String ctPath, String adata, String ptPath) {
+  Future<bool> decryptFile(
+      String sharedSecret, String ctPath, String ptPath) {
     throw UnimplementedError('decryptFile() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> decryptFileFromURL(
+  Future<bool> decryptFileFromURL(
       String sharedSecret, String url, String ptPath) {
     throw UnimplementedError('decryptFileFromURL() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> derive(
+  Future<StringResult> derive(
       String key, String salt, String info, int length) {
     throw UnimplementedError('derive() has not been implemented.');
-  }
-}
-
-abstract class AbrevvaNfcPlatform extends PlatformInterface {
-  /// Constructs a .
-  AbrevvaNfcPlatform() : super(token: _token);
-
-  static final Object _token = Object();
-
-  static AbrevvaNfcPlatform _instance = MethodChannelAbrevvaNfcPlatform();
-
-  /// The default instance of [AbrevvaNfcPlatformPlatform] to use.
-  ///
-  /// Defaults to [MethodChannelAbrevvaNfcPlatform].
-  static AbrevvaNfcPlatform get instance => _instance;
-
-  /// Platform-specific implementations should set this with their own
-  /// platform-specific class that extends [AbrevvaNfcPlatform] when
-  /// they register themselves.
-  static set instance(AbrevvaNfcPlatform instance) {
-    PlatformInterface.verifyToken(instance, _token);
-    _instance = instance;
-  }
-
-  Future<void> read() {
-    throw UnimplementedError('read() has not been implemented.');
-  }
-
-  Future<Map<dynamic, dynamic>?> connect() {
-    throw UnimplementedError('connect() has not been implemented.');
-  }
-
-  Future<Map<dynamic, dynamic>?> disconnect() {
-    throw UnimplementedError('disconnect() has not been implemented.');
   }
 }
 
@@ -110,7 +78,7 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
 
   static AbrevvaBlePlatform _instance = MethodChannelAbrevvaBlePlatform();
 
-  /// The default instance of [AbrevvaNfcPlatformPlatform] to use.
+  /// The default instance of [AbrevvaBlePlatform] to use.
   ///
   /// Defaults to [MethodChannelAbrevvaBlePlatform].
   static AbrevvaBlePlatform get instance => _instance;
@@ -123,15 +91,15 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<Map<dynamic, dynamic>?> initialize(bool androidNeverForLocation) {
+  Future<void> initialize(bool androidNeverForLocation) {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> isEnabled() {
+  Future<bool> isEnabled() {
     throw UnimplementedError('isEnabled() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> isLocationEnabled() {
+  Future<bool> isLocationEnabled() {
     throw UnimplementedError('isLocationEnabled() has not been implemented.');
   }
 
@@ -140,7 +108,7 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
         'startEnabledNotifications() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> stopEnabledNotifications() {
+  Future<void> stopEnabledNotifications() {
     throw UnimplementedError(
         'stopEnabledNotifications() has not been implemented.');
   }
@@ -149,48 +117,55 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
     throw UnimplementedError('runInitialization() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> openLocationSettings() {
+  Future<void> openLocationSettings() {
     throw UnimplementedError(
         'openLocationSettings() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> openBluetoothSettings() {
+  Future<void> openBluetoothSettings() {
     throw UnimplementedError(
         'openBluetoothSettings() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> openAppSettings() {
+  Future<void> openAppSettings() {
     throw UnimplementedError('openAppSettings() has not been implemented.');
   }
 
-  Future<void> requestLEScan(RequestBleDeviceParams options,
-      void Function(ScanResult result) callback) {
-    throw UnimplementedError('requestLEScan() has not been implemented.');
+  Future<void> startScan({
+      required void Function(BleDevice result) onScanResult,
+      void Function(bool success)? onScanStart,
+      void Function(bool success)? onScanStop,
+      String? macFilter,
+      bool? allowDuplicates,
+      int? timeout,
+    }) {
+    throw UnimplementedError('startScan() has not been implemented.');
   }
 
-  Future<String?> stopLEScan() {
-    throw UnimplementedError('stopLEScan() has not been implemented.');
+  Future<String?> stopScan() {
+    throw UnimplementedError('stopScan() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> connect(String deviceId, int timeout) {
+  Future<bool> connect(String deviceId, int timeout, void Function(String address)? onDisconnect) {
     throw UnimplementedError('connect() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> disconnect(String deviceId) {
+  Future<bool> disconnect(String deviceId) {
     throw UnimplementedError('disconnect() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> read(
+  Future<List<Uint8>> read(
       String deviceId, String service, String characteristic, int timeout) {
     throw UnimplementedError('read() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> write(String deviceId, String service,
+  Future<void> write(String deviceId, String service,
       String characteristic, String value, int timeout) {
     throw UnimplementedError('write() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> disengage(
+  Future<DisengageStatusType> disengage(
+      String deviceId,
       String mobileId,
       String mobileDeviceKey,
       String mobileGroupId,
@@ -199,17 +174,22 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
     throw UnimplementedError('disengage() has not been implemented.');
   }
 
-  Future<void> startNotifications(StartNotificationsParams options,
-      void Function(ReadResult result) callback) {
+  Future<void> startNotifications(
+      String deviceId,
+      String service,
+      String characteristic,
+      int timeout,
+      void Function(String result) callback
+    ) {
     throw UnimplementedError('startNotifications() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> stopNotifications(
+  Future<bool> stopNotifications(
       String deviceId, String service, String characteristic, int timeout) {
     throw UnimplementedError('startNotifications() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> signalize(String deviceId) {
+  Future<bool> signalize(String deviceId) {
     throw UnimplementedError('deviceId() has not been implemented.');
   }
 }

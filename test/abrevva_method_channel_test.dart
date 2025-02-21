@@ -18,65 +18,14 @@ class MockFunction<T, U> extends Mock implements Func<T, U> {}
 
 class MockEventChannel extends Mock implements EventChannel {}
 
+class MockFuture<T> extends Mock implements Future<T> {}
+
 class MockStream<T> extends Mock implements Stream<T> {}
 
 class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  group('AbrevvaCrypto Tests', () {
-    MethodChannelAbrevvaNfcPlatform platform =
-        MethodChannelAbrevvaNfcPlatform();
-    const MethodChannel channel = MethodChannel('AbrevvaNfc');
-
-    setUp(() {
-      platform = MethodChannelAbrevvaNfcPlatform();
-      platform.methodChannel = channel;
-    });
-
-    test('read', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'read') {
-          handlerCalled = true;
-        }
-        return null;
-      });
-
-      await platform.read();
-
-      expect(handlerCalled, true);
-    });
-    test('connect', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'connect') {
-          handlerCalled = true;
-        }
-        return null;
-      });
-
-      await platform.connect();
-
-      expect(handlerCalled, true);
-    });
-    test('disconnect', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'disconnect') {
-          handlerCalled = true;
-        }
-        return null;
-      });
-
-      await platform.disconnect();
-
-      expect(handlerCalled, true);
-    });
-  });
   group('AbrevvaCrypto Tests', () {
     MethodChannelAbrevvaCrypto platform = MethodChannelAbrevvaCrypto();
     const MethodChannel channel = MethodChannel('AbrevvaCrypto');
@@ -92,7 +41,7 @@ void main() {
         if (methodCall.method == 'random') {
           handlerCalled = true;
         }
-        return null;
+        return {"value": "abcde"};
       });
 
       await platform.random(5);
@@ -106,7 +55,10 @@ void main() {
         if (methodCall.method == 'generateKeyPair') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'privateKey': 'privateKey',
+          'publicKey': 'publicKey'
+        };
       });
 
       await platform.generateKeyPair();
@@ -120,7 +72,10 @@ void main() {
         if (methodCall.method == 'encrypt') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'cipherText': 'cipherText',
+          'authTag': 'authTag'
+        };
       });
 
       await platform.encrypt('key', 'iv', 'adata', 'pt', 0);
@@ -134,7 +89,10 @@ void main() {
         if (methodCall.method == 'decrypt') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'plainText': 'plainText',
+          'authOk': 'authOk'
+        };
       });
 
       await platform.decrypt('key', 'iv', 'adata', 'ct', 0);
@@ -148,7 +106,9 @@ void main() {
         if (methodCall.method == 'encryptFile') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'opOk': true
+        };
       });
 
       await platform.encryptFile('sharedSecret', 'ptPath', 'ctPath');
@@ -162,7 +122,9 @@ void main() {
         if (methodCall.method == 'computeSharedSecret') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'sharedSecret': 'sharedSecret'
+        };
       });
 
       await platform.computeSharedSecret('privateKey', 'publicKey');
@@ -176,10 +138,12 @@ void main() {
         if (methodCall.method == 'decryptFile') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'opOk': true
+        };
       });
 
-      await platform.decryptFile('sharedSecret', 'ctPath', 'adata', 'ptPath');
+      await platform.decryptFile('sharedSecret', 'ctPath', 'ptPath');
 
       expect(handlerCalled, true);
     });
@@ -190,7 +154,9 @@ void main() {
         if (methodCall.method == 'decryptFileFromURL') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'opOk': true
+        };
       });
 
       await platform.decryptFileFromURL('sharedSecret', 'url', 'ptPath');
@@ -204,10 +170,12 @@ void main() {
         if (methodCall.method == 'decryptFile') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'opOk': true
+        };
       });
 
-      await platform.decryptFile('sharedSecret', 'ctPath', 'adata', 'ptPath');
+      await platform.decryptFile('sharedSecret', 'ctPath', 'ptPath');
 
       expect(handlerCalled, true);
     });
@@ -218,7 +186,9 @@ void main() {
         if (methodCall.method == 'derive') {
           handlerCalled = true;
         }
-        return null;
+        return {
+          'value': 'value'
+        };
       });
 
       await platform.derive('key', 'salt', 'info', 0);
@@ -230,111 +200,132 @@ void main() {
     MethodChannelAbrevvaBlePlatform platform =
         MethodChannelAbrevvaBlePlatform();
     const MethodChannel channel = MethodChannel('AbrevvaBle');
-    late var eventChannel = MockEventChannel();
+    late var mockEventChannel = MockEventChannel();
     late var mockStream = MockStream<dynamic>();
+    late var mockStreamSubscription = MockStreamSubscription();
+    late MockFunction<void, bool> testCallback;
+    dynamic capturedFunction;
+
+    void simulateNativeMethodCall(String functionName, dynamic output){
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          return methodCall.method == functionName ? output : null;
+        }
+      );
+    }
 
     setUp(() {
       platform = MethodChannelAbrevvaBlePlatform();
       platform.methodChannel = channel;
-      registerFallbackValue(ScanResult(device: BleDevice(deviceId: 'fakeId')));
-      platform.eventChannel = eventChannel;
-      when(() => eventChannel.receiveBroadcastStream(any()))
+      registerFallbackValue(BleDevice(deviceId: "deviceId"));
+      platform.startEnabledNotificationsEventChannel = mockEventChannel;
+      platform.connectEventChannel = mockEventChannel;
+      platform.startNotificationsEventChannel = mockEventChannel;
+      platform.startScanEventChannel = mockEventChannel;
+      when(() => mockEventChannel.receiveBroadcastStream(any()))
           .thenAnswer((_) => mockStream);
+      mockStreamSubscription = MockStreamSubscription();
       when(() => mockStream.listen(captureAny()))
-          .thenReturn(MockStreamSubscription());
+          .thenReturn(mockStreamSubscription);
+      testCallback = MockFunction<void, bool>();
+
     });
 
     tearDown(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, null);
+      capturedFunction = null;
     });
-
+        
     group("startEnabledNotifications", () {
-      late MockFunction<void, bool> testCallback;
-      dynamic capturedFunction;
-      setUp(() {
-        testCallback = MockFunction<void, bool>();
-
-        platform.startEnabledNotifications(testCallback.invoke);
-
-        capturedFunction =
-            verify(() => mockStream.listen(captureAny())).captured.single;
-      });
-
       test('should not call callback on error', () async {
-        capturedFunction({'status': 'error'});
+        simulateNativeMethodCall('startEnabledNotifications', null);
 
+        try {
+          platform.startEnabledNotifications(testCallback.invoke);
+          fail("startEnabledNotifications(): should have thrown");
+        // ignore: empty_catches
+        } catch (e) {}
         verifyNever(() => testCallback.invoke(any()));
+   
       });
 
       test('should call callback if no error occurred', () async {
-        capturedFunction({'status': 'ok', 'value': true});
+        simulateNativeMethodCall('startEnabledNotifications', {
+          'value': true
+        });
+
+        await platform.startEnabledNotifications(testCallback.invoke);
+        capturedFunction =
+              verify(() => mockStream.listen(captureAny())).captured.last;
+          capturedFunction({
+          'value': true
+        });
 
         verify(() => testCallback.invoke(any())).called(1);
       });
     });
     group('startNotifications', () {
       test('callback should not be called on error', () {
-        final testCallback = MockFunction<void, ScanResult>();
-        platform.requestLEScan(RequestBleDeviceParams(), testCallback.invoke);
+        final testCallback = MockFunction<void, String>();
+        simulateNativeMethodCall('startNotifications', {
+          'value': true
+        });
+        
+        platform.startNotifications('deviceId', 'service', 'char', 1000, testCallback.invoke);
         final capturedFunction =
             verify(() => mockStream.listen(captureAny())).captured.single;
-
+        when(() => mockStreamSubscription.cancel()).thenAnswer((_) => MockFuture());
         capturedFunction({'status': 'error'});
 
         verifyNever(() => testCallback.invoke(any()));
       });
     });
-    group("requestLEScan", () {
-      test('callback should not be called on error', () {
-        final testCallback = MockFunction<void, ScanResult>();
-        platform.requestLEScan(RequestBleDeviceParams(), testCallback.invoke);
+    group("startScan", () {
+      test('callback should not be called on error', () async {
+        simulateNativeMethodCall('startScan', {});
+        final onScanResultCallback = MockFunction<void, BleDevice>();
+        await platform.startScan(onScanResult: onScanResultCallback.invoke);
         final capturedFunction =
             verify(() => mockStream.listen(captureAny())).captured.single;
 
         capturedFunction({'status': 'error'});
 
-        verifyNever(() => testCallback.invoke(any()));
+        verifyNever(() => onScanResultCallback.invoke(any()));
       });
 
       test(
           'callback should be called and ScanResult should contain correct data',
           () {
-        ScanResult callbackResults =
-            ScanResult(device: BleDevice(deviceId: 'id'));
+        simulateNativeMethodCall('startScan', {});
+        BleDevice callbackResults =
+            BleDevice(deviceId: "id");
         final event = {
-          'device': {
+          'event': 'onScanResult',
+          'value': {
             'deviceId': 'deviceId',
             'name': 'name',
-            'uuids': 'uuid1:uuid2:uuid3',
-          },
-          'localName': 'localName',
-          'rssi': 24,
-          'txPower': 42,
-          'uuids': 'uuid1:uuid2:uuid3',
-          'manufacturerData': {'mfdata': 'string'},
-          'rawAdvertisement': 'rawDataString'
+            'advertisementData': {
+              'manufacturerData': {
+                'companyIdentifier': 123,
+                'isOnline': true,
+                'identifier': 'identifierString'
+              }
+            }
+          }
         };
-        testCallback(ScanResult result) => callbackResults = result;
-        platform.requestLEScan(RequestBleDeviceParams(), testCallback);
+        testCallback(BleDevice result) => callbackResults = result;
+        platform.startScan(onScanResult: testCallback);
         final capturedFunction =
-            verify(() => mockStream.listen(captureAny())).captured.single;
+            verify(() => mockStream.listen(captureAny())).captured.last;
 
         capturedFunction(event);
 
-        final expectedResult = ScanResult(
-            device: BleDevice(
-                deviceId: 'deviceId',
-                name: 'name',
-                uuids: 'uuid1:uuid2:uuid3'.split(':')),
-            localName: 'localName',
-            rssi: 24,
-            txPower: 42,
-            manufacturerData: {'mfdata': 'string'},
-            uuids: ['uuid1', 'uuid2', 'uuid3'],
-            rawAdvertisement: 'rawDataString');
-
-        expect(expectedResult, callbackResults);
+        expect(callbackResults.deviceId, 'deviceId');
+        expect(callbackResults.name, 'name');
+        expect(callbackResults.advertisementData?.isOnline, true);
+        expect(callbackResults.advertisementData?.companyIdentifier, 123);
+        expect(callbackResults.advertisementData?.identifier, 'identifierString');
       });
     });
     test('isEnabled', () async {
@@ -374,6 +365,7 @@ void main() {
         }
         return null;
       });
+      when(() => mockStreamSubscription.cancel()).thenAnswer((_) => MockFuture());
 
       await platform.stopEnabledNotifications();
 
@@ -421,17 +413,17 @@ void main() {
 
       expect(handlerCalled, true);
     });
-    test('stopLEScan', () async {
+    test('stopScan', () async {
       bool handlerCalled = false;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'stopLEScan') {
+        if (methodCall.method == 'stopScan') {
           handlerCalled = true;
         }
         return null;
       });
 
-      await platform.stopLEScan();
+      await platform.stopScan();
 
       expect(handlerCalled, true);
     });
@@ -450,18 +442,11 @@ void main() {
       expect(handlerCalled, true);
     });
     test('disconnect', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'disconnect') {
-          handlerCalled = true;
-        }
-        return null;
-      });
+      simulateNativeMethodCall('disconnect', true);
 
-      await platform.disconnect('deviceId');
+      final result = await platform.disconnect('deviceId');
 
-      expect(handlerCalled, true);
+      expect(result, true);
     });
     test('write', () async {
       bool handlerCalled = false;
@@ -479,19 +464,13 @@ void main() {
     });
 
     test('stopNotifications', () async {
-      bool handlerCalled = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'stopNotifications') {
-          handlerCalled = true;
-        }
-        return null;
-      });
+      simulateNativeMethodCall('stopNotifications', {'value': true});
+      when(() => mockStreamSubscription.cancel()).thenAnswer((_) => MockFuture());
 
-      await platform.stopNotifications(
+      final result = await platform.stopNotifications(
           'deviceId', 'service', 'characteristic', 0);
 
-      expect(handlerCalled, true);
+      expect(result, true);
     });
   });
 }

@@ -1,4 +1,5 @@
-name: semantic
+
+name: 'Semantic PR Title'
 on:
   pull_request_target:
     types:

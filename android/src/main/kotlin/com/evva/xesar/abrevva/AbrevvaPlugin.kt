@@ -15,13 +15,14 @@ import io.flutter.plugin.common.MethodChannel
 
 class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     private lateinit var channelCrypto: MethodChannel
-    private lateinit var channelNfc: MethodChannel
     private lateinit var channelBle: MethodChannel
 
-    private lateinit var eventBle: EventChannel
+  private lateinit var connectEventChannel: EventChannel
+  private lateinit var startScanEventChannel: EventChannel
+  private lateinit var startNotificationsEventChannel: EventChannel
+  private lateinit var startEnabledNotificationsEventChannel: EventChannel
 
     private var abrevvaCrypto = AbrevvaCrypto()
-    private var abrevvaNfc = AbrevvaNfc()
     private var abrevvaBle = AbrevvaBle()
 
     private lateinit var context: Context
@@ -30,7 +31,6 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
 
     val lifecycleObserver = LifecycleEventObserver { source, event ->
         abrevvaBle.eventObserver(source, event, context, activity, channelBle)
-        abrevvaNfc.eventObserver(source, event, context, activity)
     }
 
     @SuppressLint("MissingPermission")
@@ -41,30 +41,32 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
         channelCrypto = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaCrypto")
         channelCrypto.setMethodCallHandler(abrevvaCrypto)
 
-        channelNfc = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaNfc")
-        channelNfc.setMethodCallHandler(abrevvaNfc)
-
         channelBle = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaBle")
         channelBle.setMethodCallHandler(abrevvaBle)
 
-        eventBle = EventChannel(flutterPluginBinding.binaryMessenger, "AbrevvaBleEvents")
-        eventBle.setStreamHandler(abrevvaBle)
+      connectEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "connectEventChannel")
+      startScanEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "startScanEventChannel")
+      startNotificationsEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "startNotificationsEventChannel")
+      startEnabledNotificationsEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "startEnabledNotificationsEventChannel")
+
+      connectEventChannel.setStreamHandler(abrevvaBle.connectStreamHandler)
+      startScanEventChannel.setStreamHandler(abrevvaBle.startScanStreamHandler)
+      startNotificationsEventChannel.setStreamHandler(abrevvaBle.startNotificationsStreamHandler)
+      startEnabledNotificationsEventChannel.setStreamHandler(abrevvaBle.startEnabledNotificationsStreamHandler)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channelCrypto.setMethodCallHandler(null)
-        channelNfc.setMethodCallHandler(null)
         channelBle.setMethodCallHandler(null)
 
-        eventBle.setStreamHandler(null)
+      connectEventChannel.setStreamHandler(null)
+      startScanEventChannel.setStreamHandler(null)
+      startNotificationsEventChannel.setStreamHandler(null)
+      startEnabledNotificationsEventChannel.setStreamHandler(null)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
-        binding.addOnNewIntentListener {
-            abrevvaNfc.observerOnNewIntent(it)
-            true
-        }
 
         (binding.lifecycle as HiddenLifecycleReference)
             .lifecycle
