@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup Flutter
         uses: ./.github/actions/flutter-setup
-      - uses: SwiftyLab/setup-swift@latest
+      - uses: SwiftyLab/setup-swift@5825efd16e0e9f41c4e9b94658b7973e16410d5b # v1.9.1
         with:
           swift-version: "5.10.0"
       - name: Get Swift Version
