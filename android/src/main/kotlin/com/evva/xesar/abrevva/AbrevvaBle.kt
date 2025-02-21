@@ -199,7 +199,6 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler {
       val macFilter = call.argument<String>("macFilter")
       val allowDuplicates = call.argument<Boolean>("allowDuplicates") ?: false
       val timeout = call.argument<Long>("timeout") ?: 10_000
-      println("Starting Scan...")
       manager.startScan(
         { device ->
           activityMain.runOnUiThread {
