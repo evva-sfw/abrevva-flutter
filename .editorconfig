@@ -11,7 +11,7 @@ trim_trailing_whitespace = true
 [*.java]
 ij_java_imports_layout = $*, |, javax.**, java.**, |, *
 
-[*.gradle]
+[{*.gradle,*.kt,*.kts}]
 indent_size = 4
 
 [{*.json,*.jschema}]
@@ -20,3 +20,9 @@ indent_size = 4
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
+
+[Makefile]
+indent_size = 4
+
+[*.swift]
+indent_size = 4
