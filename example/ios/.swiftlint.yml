@@ -1,0 +1,46 @@
+disabled_rules:
+  - comma
+  - control_statement
+  - identifier_name
+  - for_where
+  - function_parameter_count
+  - inclusive_language
+opt_in_rules:
+  - empty_count
+analyzer_rules: # rules run by `swiftlint analyze`
+  - explicit_self
+included:
+  - ../../ios
+excluded:
+  - Carthage
+  - Pods
+allow_zero_lintable_files: false
+strict: false
+force_cast: warning
+force_try:
+  severity: warning
+line_length: 120
+type_body_length:
+  warning: 550
+  error: 650
+file_length:
+  warning: 600
+  error: 1200
+function_body_length:
+  warning: 100
+  error: 200
+type_name:
+  min_length: 4
+  max_length:
+    warning: 40
+    error: 50
+  excluded: iPhone
+  allowed_symbols: ["_"]
+identifier_name:
+  min_length:
+    error: 4
+  excluded:
+    - id
+    - URL
+    - GlobalAPIKey
+reporter: "xcode"

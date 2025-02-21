@@ -3,25 +3,24 @@ import Foundation
 import AbrevvaSDK
 import CoreBluetooth
 
-
 internal class AbrevvaBleStreamHandler: NSObject, FlutterStreamHandler {
-  internal var eventSink: FlutterEventSink?
-  
-  func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-    self.eventSink = events
-    return nil
-  }
-  
-  func onCancel(withArguments arguments: Any?) -> FlutterError? {
-    eventSink = nil
-    return nil
-  }
+    internal var eventSink: FlutterEventSink?
+
+    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = events
+        return nil
+    }
+
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        eventSink = nil
+        return nil
+    }
 }
 
 public class AbrevvaBle: NSObject, FlutterPlugin {
     public static func register(with registrar: any FlutterPluginRegistrar) {
-      
-  }
+
+    }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
@@ -56,11 +55,11 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         case "signalize":
             signalize(call, result: result)
         case "startEnabledNotifications":
-          startEnabledNotifications(call, result: result)
+            startEnabledNotifications(call, result: result)
         case "startScan":
-          startScan(call, result: result)
+            startScan(call, result: result)
         case "startNotifications":
-          startNotifications(call, result: result)
+            startNotifications(call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -79,7 +78,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     func initialize(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         self.bleManager = BleManager { success, message in
             if success {
-              result(success)
+                result(success)
             } else {
                 result(FlutterError(code: message!, message: nil, details: nil))
             }
@@ -100,11 +99,11 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
 
     @objc
     func startEnabledNotifications(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-      guard let bleManager = self.getBleManager(result) else { return }
-      bleManager.registerStateReceiver { enabled in
-        self.startEnabledNotificationsEventChannel.eventSink?(["value": enabled])
-      }
-      result(nil)
+        guard let bleManager = self.getBleManager(result) else { return }
+        bleManager.registerStateReceiver { enabled in
+            self.startEnabledNotificationsEventChannel.eventSink?(["value": enabled])
+        }
+        result(nil)
     }
 
     @objc
@@ -133,7 +132,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
 
         DispatchQueue.main.async {
             if UIApplication.shared.canOpenURL(settingsURL) {
-                UIApplication.shared.open(settingsURL, completionHandler: { success in
+                UIApplication.shared.open(settingsURL, completionHandler: { _ in
                     result(nil)
                 })
             } else {
@@ -143,30 +142,30 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     }
 
     @objc
-  func startScan(_ call: FlutterMethodCall,  result: @escaping FlutterResult) {
-    guard let bleManager = self.getBleManager(result) else { return }
-    guard let args = call.arguments as? [String: Any] else {
-        result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
-        return
+    func startScan(_ call: FlutterMethodCall,  result: @escaping FlutterResult) {
+        guard let bleManager = self.getBleManager(result) else { return }
+        guard let args = call.arguments as? [String: Any] else {
+            result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
+            return
+        }
+        let macFilter = args["macFilter"] as? String ?? nil
+        let allowDuplicates = args["allowDuplicates"] as? Bool ?? false
+        let timeout =   args["timeout"] as? Int ?? 10000
+
+        bleManager.startScan({ device in
+            self.bleDeviceMap[device.getAddress()] = device
+            self.startScanStreamHandler.eventSink?(["event": "onScanResult", "value": self.getAdvertismentData(device) ])
+        }, { error in
+            self.startScanStreamHandler.eventSink?(["event": "onScanStart", "value": error == nil])
+        }, { error in
+            self.startScanStreamHandler.eventSink?(["event": "onScanStop", "value": error == nil])
+        },
+        macFilter,
+        allowDuplicates,
+        timeout
+        )
+        result(nil)
     }
-    let macFilter = args["macFilter"] as? String ?? nil
-    let allowDuplicates = args["allowDuplicates"] as? Bool ?? false
-    let timeout =   args["timeout"] as? Int ?? 10000
-    
-    bleManager.startScan({ device in
-      self.bleDeviceMap[device.getAddress()] = device
-      self.startScanStreamHandler.eventSink?(["event": "onScanResult", "value" : self.getAdvertismentData(device) ])
-    }, { error in
-      self.startScanStreamHandler.eventSink?(["event": "onScanStart", "value" : error == nil])
-    }, { error in
-      self.startScanStreamHandler.eventSink?(["event": "onScanStop", "value" : error == nil])
-    },
-    macFilter,
-    allowDuplicates,
-    timeout
-    )
-    result(nil)
-  }
 
     @objc
     func stopScan(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -179,22 +178,22 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard self.getBleManager(result) != nil else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
-        
+
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return
         }
-        
+
         let timeout = optionsSwift["timeout"] as? Int ?? 10_000
 
         Task {
             let success = await self.bleManager!.connect(
-              device, { address in
-                self.connectStreamHandler.eventSink?(["value" : address ])
-              },
-              timeout
-          )
-          result(success)
+                device, { address in
+                    self.connectStreamHandler.eventSink?(["value": address ])
+                },
+                timeout
+            )
+            result(success)
         }
     }
 
@@ -218,7 +217,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         guard self.getBleManager(result) != nil else { return }
         guard let device = self.getDevice(call, result: result) else { return }
         guard let characteristic = self.getCharacteristic(call, result: result) else { return }
-        
+
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return
@@ -228,7 +227,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         Task {
             let data = await device.read(characteristic.0, characteristic.1, timeout)
             if data != nil {
-                result(["value": [UInt8](data!)]);
+                result(["value": [UInt8](data!)])
             } else {
                 result(FlutterError(code: "read(): failed to read data", message: nil, details: nil))
             }
@@ -271,12 +270,12 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     func disengage(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard self.getBleManager(result) != nil else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
-        
+
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return
         }
-        
+
         let mobileID = optionsSwift["mobileId"] as? String ?? ""
         let mobileDeviceKey = optionsSwift["mobileDeviceKey"] as? String ?? ""
         let mobileGroupID = optionsSwift["mobileGroupId"] as? String ?? ""
@@ -299,36 +298,36 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
 
     @objc
     func startNotifications(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-      guard let args = call.arguments as? [String: Any] else {
-          result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
-          return
-      }
+        guard let args = call.arguments as? [String: Any] else {
+            result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
+            return
+        }
         guard self.getBleManager(result) != nil else { return }
         guard let device = self.getDevice(args) else { return }
         guard let characteristic = self.getCharacteristic(args) else { return }
-        
+
         let timeout = args["timeout"] as? Int ?? nil
 
-      Task {
-        let success = await device.setNotifications(characteristic.0, characteristic.1, true, { value in
-          let key =
-          "notification|\(device.getAddress())|" +
-          "\(characteristic.0.uuidString.lowercased())|" +
-          "\(characteristic.1.uuidString.lowercased())"
-          DispatchQueue.main.async {
-            if value != nil {
-              self.startNotificationsStreamHandler.eventSink?([key : ["value": dataToString(value!)]])
+        Task {
+            let success = await device.setNotifications(characteristic.0, characteristic.1, true, { value in
+                let key =
+                    "notification|\(device.getAddress())|" +
+                    "\(characteristic.0.uuidString.lowercased())|" +
+                    "\(characteristic.1.uuidString.lowercased())"
+                DispatchQueue.main.async {
+                    if value != nil {
+                        self.startNotificationsStreamHandler.eventSink?([key: ["value": dataToString(value!)]])
+                    } else {
+                        self.startNotificationsStreamHandler.eventSink?(["status": "error", "description": "error in setNotifications()"])
+                    }
+                }
+            }, timeout)
+            if success {
+                result(["value": success])
             } else {
-              self.startNotificationsStreamHandler.eventSink?(["status": "error", "description": "error in setNotifications()"])
+                result(FlutterError(code: "stopNotifications(): failed to stop notifications", message: nil, details: nil))
             }
-          }
-        }, timeout)
-        if success {
-          result(["value": success])
-        } else {
-          result(FlutterError(code: "stopNotifications(): failed to stop notifications", message: nil, details: nil))
         }
-      }
     }
 
     @objc
@@ -336,18 +335,18 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         guard self.getBleManager(result) != nil else { return }
         guard let device = self.getDevice(call, result: result) else { return }
         guard let characteristic = self.getCharacteristic(call, result: result) else { return }
-        
+
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return
         }
-        
+
         let timeout = optionsSwift["timeout"] as? Int ?? nil
 
         Task {
             let success = await device.setNotifications(characteristic.0, characteristic.1, false, nil, timeout)
             if success {
-              result(["value": success])
+                result(["value": success])
             } else {
                 result(FlutterError(code: "stopNotifications(): failed to stop notifications", message: nil, details: nil))
             }
@@ -358,11 +357,11 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     func signalize(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
-            return 
+            return
         }
         guard let deviceID = optionsSwift["deviceId"] as? String else {
             result(FlutterError(code: "getDevice(): deviceId required", message: nil, details: nil))
-            return 
+            return
         }
         guard let device = self.bleDeviceMap[deviceID] else {
             result(FlutterError(code: "getDevice(): device not found", message: nil, details: nil))
@@ -385,13 +384,13 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         }
         return bleManager
     }
-    
+
     private func getServiceUUIDs(_ call: FlutterMethodCall, result: @escaping FlutterResult) -> [CBUUID]? {
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return nil
         }
-        let services = optionsSwift["services"] as? [String] ?? [] 
+        let services = optionsSwift["services"] as? [String] ?? []
         let serviceUUIDs = services.map { service -> CBUUID in
             return CBUUID(string: service)
         }
@@ -403,7 +402,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return nil
         }
-        
+
         guard let deviceID = optionsSwift["deviceId"] as? String else {
             result(FlutterError(code: "getDevice(): deviceId required", message: nil, details: nil))
             return nil
@@ -420,20 +419,20 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         }
         return device
     }
-    
-    private func getDevice(_ args: Dictionary< String, Any>, checkConnection: Bool = true) -> BleDevice? {
-        
+
+    private func getDevice(_ args: [String: Any], checkConnection: Bool = true) -> BleDevice? {
+
         guard let deviceID = args["deviceId"] as? String else {
-          self.streamHandler.eventSink?(["status": "error", "description": "getDevice(): deviceId required"])
+            self.streamHandler.eventSink?(["status": "error", "description": "getDevice(): deviceId required"])
             return nil
         }
         guard let device = self.bleDeviceMap[deviceID] else {
-          self.streamHandler.eventSink?(["status": "error", "description": "getDevice(): device not found"])
+            self.streamHandler.eventSink?(["status": "error", "description": "getDevice(): device not found"])
             return nil
         }
         if checkConnection {
             guard device.isConnected() else {
-              self.streamHandler.eventSink?(["status": "error", "description": "getDevice(): not connected to device"])
+                self.streamHandler.eventSink?(["status": "error", "description": "getDevice(): not connected to device"])
                 return nil
             }
         }
@@ -441,49 +440,49 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     }
 
     private func getCharacteristic(_ call: FlutterMethodCall, result: @escaping FlutterResult) -> (CBUUID, CBUUID)? {
-        
+
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return nil
         }
-                
+
         guard let service = optionsSwift["service"] as? String else {
             result(FlutterError(code: "getCharacteristic(): service UUID required", message: nil, details: nil))
             return nil
         }
-        
+
         let serviceUUID = CBUUID(string: service)
 
         guard let characteristic = optionsSwift["characteristic"] as? String else {
             result(FlutterError(code: "getCharacteristic(): characteristic UUID required", message: nil, details: nil))
             return nil
         }
-        
+
         let characteristicUUID = CBUUID(string: characteristic)
         return (serviceUUID, characteristicUUID)
     }
-    
-    private func getCharacteristic(_ args: Dictionary< String, Any>) -> (CBUUID, CBUUID)? {
-        
+
+    private func getCharacteristic(_ args: [String: Any]) -> (CBUUID, CBUUID)? {
+
         guard let service = args["service"] as? String else {
-          self.streamHandler.eventSink?(["status": "error", "description" : "getCharacteristic(): service UUID required"])
+            self.streamHandler.eventSink?(["status": "error", "description": "getCharacteristic(): service UUID required"])
             return nil
         }
-        
+
         let serviceUUID = CBUUID(string: service)
 
         guard let characteristic = args["characteristic"] as? String else {
-          self.streamHandler.eventSink?(["status": "error", "description" : "getCharacteristic(): characteristic UUID required"])
+            self.streamHandler.eventSink?(["status": "error", "description": "getCharacteristic(): characteristic UUID required"])
             return nil
         }
-        
+
         let characteristicUUID = CBUUID(string: characteristic)
         return (serviceUUID, characteristicUUID)
     }
 
     private func getBleDeviceDict(_ device: BleDevice) -> [String: String] {
         var bleDevice = [
-            "deviceId": device.getAddress(),
+            "deviceId": device.getAddress()
         ]
         if device.getName() != nil {
             bleDevice["name"] = device.getName()
@@ -491,70 +490,70 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         return bleDevice
     }
 
-  private func getAdvertismentData(
-      _ device: BleDevice
-  ) -> [String: Any?] {
-      var bleDeviceData: [String: Any?] = [
-          "deviceId": device.getAddress(),
-          "name": device.getName(),
-          "raw": device.advertisementData?.rawData
-      ]
+    private func getAdvertismentData(
+        _ device: BleDevice
+    ) -> [String: Any?] {
+        var bleDeviceData: [String: Any?] = [
+            "deviceId": device.getAddress(),
+            "name": device.getName(),
+            "raw": device.advertisementData?.rawData
+        ]
 
-      var advertismentData: [String: Any?] = [
-          "rssi": device.advertisementData?.rssi
-      ]
-      if let isConnectable = device.advertisementData?.isConnectable {
-          advertismentData["isConnectable"] = isConnectable
-      }
+        var advertismentData: [String: Any?] = [
+            "rssi": device.advertisementData?.rssi
+        ]
+        if let isConnectable = device.advertisementData?.isConnectable {
+            advertismentData["isConnectable"] = isConnectable
+        }
 
-      guard let mfData = device.advertisementData?.manufacturerData else {
-          bleDeviceData["advertisementData"] = advertismentData
-          return bleDeviceData
-      }
+        guard let mfData = device.advertisementData?.manufacturerData else {
+            bleDeviceData["advertisementData"] = advertismentData
+            return bleDeviceData
+        }
 
-      let manufacturerData: [String: Any?] = [
-          "companyIdentifier": mfData.companyIdentifier,
-          "version": mfData.version,
-          "mainFirmwareVersionMajor": mfData.mainFirmwareVersionMajor,
-          "mainFirmwareVersionMinor": mfData.mainFirmwareVersionMinor,
-          "mainFirmwareVersionPatch": mfData.mainFirmwareVersionPatch,
-          "componentHAL": mfData.componentHAL,
-          "batteryStatus": mfData.batteryStatus ? "battery-full" : "battery-empty",
-          "mainConstructionMode": mfData.mainConstructionMode,
-          "subConstructionMode": mfData.subConstructionMode,
-          "isOnline": mfData.isOnline,
-          "officeModeEnabled": mfData.officeModeEnabled,
-          "twoFactorRequired": mfData.twoFactorRequired,
-          "officeModeActive": mfData.officeModeActive,
-          "identifier": mfData.identifier,
-          "subFirmwareVersionMajor": mfData.subFirmwareVersionMajor,
-          "subFirmwareVersionMinor": mfData.subFirmwareVersionMinor,
-          "subFirmwareVersionPatch": mfData.subFirmwareVersionPatch,
-          "subComponentIdentifier": mfData.subComponentIdentifier,
-          "componentType": getComponentType(mfData.componentType)
-      ]
+        let manufacturerData: [String: Any?] = [
+            "companyIdentifier": mfData.companyIdentifier,
+            "version": mfData.version,
+            "mainFirmwareVersionMajor": mfData.mainFirmwareVersionMajor,
+            "mainFirmwareVersionMinor": mfData.mainFirmwareVersionMinor,
+            "mainFirmwareVersionPatch": mfData.mainFirmwareVersionPatch,
+            "componentHAL": mfData.componentHAL,
+            "batteryStatus": mfData.batteryStatus ? "battery-full" : "battery-empty",
+            "mainConstructionMode": mfData.mainConstructionMode,
+            "subConstructionMode": mfData.subConstructionMode,
+            "isOnline": mfData.isOnline,
+            "officeModeEnabled": mfData.officeModeEnabled,
+            "twoFactorRequired": mfData.twoFactorRequired,
+            "officeModeActive": mfData.officeModeActive,
+            "identifier": mfData.identifier,
+            "subFirmwareVersionMajor": mfData.subFirmwareVersionMajor,
+            "subFirmwareVersionMinor": mfData.subFirmwareVersionMinor,
+            "subFirmwareVersionPatch": mfData.subFirmwareVersionPatch,
+            "subComponentIdentifier": mfData.subComponentIdentifier,
+            "componentType": getComponentType(mfData.componentType)
+        ]
 
-      advertismentData["manufacturerData"] = manufacturerData
-      bleDeviceData["advertisementData"] = advertismentData
-      return bleDeviceData
-  }
+        advertismentData["manufacturerData"] = manufacturerData
+        bleDeviceData["advertisementData"] = advertismentData
+        return bleDeviceData
+    }
 
-  private func getComponentType(_ componentType: UInt8) -> String {
-      switch componentType {
-      case 98:
-          "escutcheon"
-      case 100:
-          "handle"
-      case 105:
-          "iobox"
-      case 109:
-          "emzy"
-      case 119:
-          "wallreader"
-      case 122:
-          "cylinder"
-      default:
-          "unkown"
-      }
-  }
+    private func getComponentType(_ componentType: UInt8) -> String {
+        switch componentType {
+        case 98:
+            "escutcheon"
+        case 100:
+            "handle"
+        case 105:
+            "iobox"
+        case 109:
+            "emzy"
+        case 119:
+            "wallreader"
+        case 122:
+            "cylinder"
+        default:
+            "unkown"
+        }
+    }
 }

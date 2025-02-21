@@ -9,7 +9,7 @@ import XCTest
 final class AbrevvaCryptoTests: QuickSpec {
     override class func spec() {
         var cryptoModule: AbrevvaCrypto?
-        var resolved: Bool? = nil
+        var resolved: Bool?
         beforeEach {
             cryptoModule = AbrevvaCrypto()
             resolved = nil
@@ -209,7 +209,8 @@ final class AbrevvaCryptoTests: QuickSpec {
                     "ptPath": "\(directoryPath)/pt",
                     "ctPath": "\(directoryPath)/ct",
                 ]
-                let ct = "017d4aacf0a0f987d697d09c885aa9513aed2a25a1e87252038f0f7a3955b11dec43d9d7669e9910c527ee4eec719edb387ee63f8e0c2d7dcf7678fe58"
+                let ct =
+                    "017d4aacf0a0f987d697d09c885aa9513aed2a25a1e87252038f0f7a3955b11dec43d9d7669e9910c527ee4eec719edb387ee63f8e0c2d7dcf7678fe58"
                 let call = FlutterMethodCall(methodName: "encryptFile", arguments: options)
                 FileManager.default.createFile(atPath: "\(directoryPath)/ct", contents: Data(hex: ct))
 
@@ -228,7 +229,8 @@ final class AbrevvaCryptoTests: QuickSpec {
                     "ptPath": "\(directoryPath)/pt",
                     "ctPath": "\(directoryPath)/ct",
                 ]
-                let ct = "017d4aacf0a0f987d697d09c885aa9513aed2a25a1e87252038f0f7a3955b11dec43d9d7669e9910c527ee4eec719edb387ee63f8e0c2d7dcf7678fe58"
+                let ct =
+                    "017d4aacf0a0f987d697d09c885aa9513aed2a25a1e87252038f0f7a3955b11dec43d9d7669e9910c527ee4eec719edb387ee63f8e0c2d7dcf7678fe58"
                 let call = FlutterMethodCall(methodName: "encryptFile", arguments: options)
                 FileManager.default.createFile(atPath: "\(directoryPath)/ct", contents: Data(hex: ct))
 
@@ -275,7 +277,8 @@ final class AbrevvaCryptoTests: QuickSpec {
                         return
                     }
                     let dataMap = data as! [String: String?]
-                    let derivedKey = "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
+                    let derivedKey =
+                        "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
                     expect((dataMap["value"]!!)).to(equal(derivedKey))
                     resolved = true
                 }
@@ -296,7 +299,8 @@ final class AbrevvaCryptoTests: QuickSpec {
                         return
                     }
                     let dataMap = data as! [String: String?]
-                    let derivedKey = "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
+                    let derivedKey =
+                        "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
                     expect((dataMap["value"]!!)).to(equal(derivedKey))
                 }
                 expect(resolved!).to(beFalse())
