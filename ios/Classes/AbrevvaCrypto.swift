@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import AbrevvaSDK
+import CryptoSwift
 
 public class AbrevvaCrypto: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {

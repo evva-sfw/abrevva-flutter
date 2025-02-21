@@ -2,11 +2,16 @@ package com.evva.xesar.abrevva
 
 import android.os.ParcelUuid
 import android.view.View
+import com.evva.xesar.abrevva.ble.BleDevice
+import com.evva.xesar.abrevva.ble.BleDeviceAdvertisementData
+import com.evva.xesar.abrevva.ble.BleDeviceManufacturerData
+import com.evva.xesar.abrevva.crypto.X25519Wrapper
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.verify
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
@@ -14,6 +19,8 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.expect
 
 class AbrevvaBleTest {
     private lateinit var abrevvaBleModule: AbrevvaBle
@@ -27,82 +34,52 @@ class AbrevvaBleTest {
             abrevvaBleModule = AbrevvaBle()
     }
 
-    @Test
-    fun `getBleDeviceFromNordic should save data from BleScanResult in new map`() {
-        val name = "name"
-        val address = "deviceAddress"
-        val bleScanResult = mockk<BleScanResult>(relaxed = true)
-        val device = mockk<ServerDevice>()
-        every { bleScanResult.device } returns device
-        every { device.hasName } returns true
-        every { device.name } returns name
-        every { device.address } returns address
+  @Test
+  fun `getBleDeviceData() should map AdvertisementData correctly`() {
 
-        val result = abrevvaBleModule.getBleDeviceFromNordic(bleScanResult)
+    val device = mockk<BleDevice>(relaxed = true)
+    val advertData = mockk<BleDeviceAdvertisementData>(relaxed = true)
+    val mfData = BleDeviceManufacturerData(
+      2153u,
+      version = 1.toUByte(),
+      componentType = 98.toUByte(),
+      mainFirmwareVersionMajor = 1.toUByte(),
+      mainFirmwareVersionMinor = 2.toUByte(),
+      mainFirmwareVersionPatch = 3.toUShort(),
+      componentHAL = 4,
+      batteryStatus = true,
+      mainConstructionMode = false,
+      subConstructionMode = true,
+      isOnline = true,
+      officeModeEnabled = false,
+      twoFactorRequired = false,
+      officeModeActive =false,
+      reservedBits = 0,
+      identifier = "identifier",
+      subFirmwareVersionMajor = 4.toUByte(),
+      subFirmwareVersionMinor = 5.toUByte(),
+      subFirmwareVersionPatch = 6.toUShort(),
+      subComponentIdentifier = "String",
+    )
+    every { device.address } returns "address"
+    every { device.localName } returns "localname"
+    every { device.advertisementData } returns advertData
+    every { advertData.rssi } returns 1
+    every { advertData.isConnectable } returns true
+    every { advertData.rawData } returns hashMapOf()
+    every { advertData.manufacturerData } returns mfData
 
-        val ref =
-            mutableMapOf(
-                "deviceId" to address,
-                "name" to name,
-            )
-        assert(ref == result)
-    }
+    val output = abrevvaBleModule.getBleDeviceData(device)
 
-    @Test
-    fun `getScanResultFromNordic should construct ReadableMap from ScanResult`() {
-        val name = "name"
-        val deviceId = "deviceId"
-        val txPower = 10
-        val bleSpy = spyk(AbrevvaBle())
-        val result = mockk<BleScanResult>()
-        val data = mockk<BleScanResultData>()
-        val device = mockk<ServerDevice>()
-        val scanRecord = mockk<BleScanRecord>()
-        val bytes = DataByteArray(byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x07, 0x08, 0x09, 0x10))
-        val parcelUuid = mockk<ParcelUuid>(relaxed = true)
-        val serviceData = mapOf(
-            parcelUuid to DataByteArray(
-                byteArrayOf(
-                    0x01,
-                    0x02,
-                    0x03,
-                    0x04,
-                    0x05,
-                    0x07,
-                    0x08,
-                    0x09,
-                    0x10
-                )
-            )
-        )
-        val bleDevice = mutableMapOf(
-            "deviceId" to deviceId,
-            "name" to name
-        )
-
-        every { result.data } returns null andThen data
-        every { result.device } returns device
-        every { result.device.hasName } returns true
-        every { result.device.name } returns "name"
-        every { data.txPower } returns txPower
-        every { data.scanRecord } returns scanRecord
-        every { scanRecord.bytes } returns bytes
-        every { scanRecord.serviceData } returns serviceData
-        every { scanRecord.serviceUuids } returns null
-        every { bleSpy.getBleDeviceFromNordic(any()) } returns bleDevice
-
-        val ret = bleSpy.getScanResultFromNordic(result)
-
-        val ref = mutableMapOf(
-            "device" to bleDevice,
-            "localName" to name,
-            "txPower" to txPower,
-            "manufacturerData" to mutableMapOf("2055" to "09 10"),
-            "rawAdvertisement" to "(0x) 01:02:03:04:05:07:08:09:10",
-            "serviceData" to mutableMapOf(parcelUuid.toString() to "01 02 03 04 05 07 08 09 10")
-        )
-
-        assert(ref == ret)
-    }
+    assertEquals("address", output["deviceId"])
+    assertEquals("localname", output["name"])
+    val advertDataOutput = output["advertisementData"] as Map<*,*>
+    assertEquals(1, advertDataOutput["rssi"])
+    assertEquals(true, advertDataOutput["isConnectable"])
+    val mfOutput = advertDataOutput["manufacturerData"] as Map<*, *>
+    assertEquals(2153, mfOutput["companyIdentifier"])
+    assertEquals(false, mfOutput["mainConstructionMode"])
+    assertEquals(true, mfOutput["isOnline"])
+  }
 }
 

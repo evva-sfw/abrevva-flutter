@@ -1,4 +1,5 @@
-name: semantic
+
+name: 'Semantic PR Title'
 on:
   pull_request_target:
     types:
@@ -9,6 +10,6 @@ on:
 permissions:
   pull-requests: read
 jobs:
-  semantic_pr-name:
-    name: semantic_pr-name
-    uses: evva-sfw/workflows/.github/workflows/semantic.yml@main
+  main:
+    name: Validate PR title
+    uses: evva-sfw/workflows/.github/workflows/call_semantic.yml@main
