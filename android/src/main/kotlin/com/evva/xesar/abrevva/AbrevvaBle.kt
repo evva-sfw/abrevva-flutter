@@ -28,11 +28,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
+import com.evva.xesar.abrevva.ble.BleDevice
 import java.util.UUID
 import com.evva.xesar.abrevva.ble.BleManager
+import com.evva.xesar.abrevva.ble.BleWriteType
+import com.evva.xesar.abrevva.disengage.DisengageStatusType
 import com.evva.xesar.abrevva.util.bytesToString
 import com.evva.xesar.abrevva.util.stringToBytes
-import com.evva.xesar.abrevva.nfc.toHexString
 import com.hivemq.client.internal.netty.ContextFuture
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -45,6 +47,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.catch
@@ -57,7 +60,21 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import org.json.JSONArray
 
-public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
+
+class AbrevvaStreamHandler: EventChannel.StreamHandler {
+  var eventSink: EventChannel.EventSink? = null
+
+  override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+    eventSink = events
+  }
+
+  override fun onCancel(arguments: Any?) {
+    eventSink = null
+  }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+public class AbrevvaBle: MethodChannel.MethodCallHandler {
 
     private lateinit var manager: BleManager
     private lateinit var aliases: Array<String>
@@ -65,6 +82,12 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
     private lateinit var activityMain: Activity
     private lateinit var methodChannel: MethodChannel
     private var events: EventChannel.EventSink? = null
+
+  var connectStreamHandler = AbrevvaStreamHandler()
+  var startScanStreamHandler = AbrevvaStreamHandler()
+  var startNotificationsStreamHandler = AbrevvaStreamHandler()
+  var startEnabledNotificationsStreamHandler = AbrevvaStreamHandler()
+
     public fun eventObserver(
         source:  LifecycleOwner,
         event:  Lifecycle.Event,
@@ -84,15 +107,16 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
     }
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "initialize" -> initialize(call, result)
-            "runInitialization" -> runInitialization(call, result)
+          "initialize" -> initialize(call, result)
+          "evaluateSdkVersion" -> evaluateSdkVersion(call, result)
             "isEnabled" -> isEnabled(result)
             "isLocationEnabled" -> isLocationEnabled(result)
             "stopEnabledNotifications" -> stopEnabledNotifications(result)
             "openLocationSettings" -> openLocationSettings(result)
             "openBluetoothSettings" -> openBluetoothSettings(result)
             "openAppSettings" -> openAppSettings(result)
-            "stopLEScan" -> stopLEScan(result)
+            "startScan" -> startScan(call, result)
+            "stopScan" -> stopScan(result)
             "connect" -> connect(call, result)
             "disconnect" -> disconnect(call, result)
             "read" -> read(call, result)
@@ -100,101 +124,67 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
             "disengage" -> disengage(call, result)
             "stopNotifications" -> stopNotifications(call, result)
             "signalize" -> signalize(call, result)
+          "startEnabledNotifications" -> startEnabledNotifications(call, result)
+          "startNotifications" -> startNotifications(call, result)
             else -> {
                 result.notImplemented()
             }
         }
     }
-    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        this.events = events
-        val mapArgs = arguments as  Map<*, *>
-        when(mapArgs["callbackName"]){
-            "requestLEScan" -> requestLEScan((mapArgs["timeout"] as Int).toLong())
-            "onEnabledChanged" -> enabledNotifications()
-            "startNotifications" -> startNotifications(mapArgs, events)
-            else -> {
-                events?.error("Method not implemented", null, null)
-            }
-        }
-    }
-    override fun onCancel(arguments: Any?) {
-        this.events = null
-    }
+
     fun observerOnStart() {
         manager = BleManager(contextMain)
         aliases = arrayOf()
     }
 
-
-    fun  initialize(call: MethodCall, result: MethodChannel.Result) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val neverForLocation = call.argument<Boolean>("androidNeverForLocation") ?: false
-            println("neverForLocation: $neverForLocation")
-            this.aliases = if (neverForLocation) {
-                arrayOf(
-                    android.Manifest.permission.BLUETOOTH_SCAN,
-                    android.Manifest.permission.BLUETOOTH_CONNECT,
-                )
-            } else {
-                arrayOf(
-                    android.Manifest.permission.BLUETOOTH_SCAN,
-                    android.Manifest.permission.BLUETOOTH_CONNECT,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                )
-            }
-        } else {
-            this.aliases = arrayOf(
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-            )
-        }
-
-        this.aliases.forEach {
-            if (ContextCompat.checkSelfPermission(contextMain, it) == PackageManager.PERMISSION_DENIED){
-                ActivityCompat.requestPermissions(
-                    activityMain,
-                    this.aliases,
-                    1
-                )
-                return@initialize
-            }
-        }
-        result.success(mapOf("status" to "success"))
+    fun evaluateSdkVersion(call: MethodCall, result: MethodChannel.Result){
+      result.success((Build.VERSION.SDK_INT >= Build.VERSION_CODES.S))
     }
 
-    private fun runInitialization(call: MethodCall, result: MethodChannel.Result) {
-        if (!activityMain.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            return result.error("runInitialization(): BLE is not supported", null, null)
-        }
-
-        if (!manager.isBleEnabled()) {
-            return result.error("runInitialization(): BLE is not available", null, null)
-        }
-        result.success(null)
+    // Runtime Permissions are handled in dart
+    fun  initialize(call: MethodCall, result: MethodChannel.Result) {
+      result.success(null)
     }
 
     fun isEnabled(result: MethodChannel.Result) {
-        result.success(mapOf("value" to manager.isBleEnabled()))
+        result.success(manager.isBleEnabled())
     }
 
     fun isLocationEnabled(result: MethodChannel.Result) {
-        result.success(mapOf("value" to manager.isLocationEnabled()))
+        result.success(manager.isLocationEnabled())
+    }
+
+    fun startEnabledNotifications(call: MethodCall, result: MethodChannel.Result) {
+      val success = manager.startBleEnabledNotifications { enabled: Boolean ->
+        val result = mapOf("value" to enabled)
+        activityMain.runOnUiThread {
+          startEnabledNotificationsStreamHandler.eventSink?.success(result)
+        }
+      }
+
+      if (success) {
+        result.success(null)
+      }
+      else {
+        result.error("startEnabledNotifications(): failed", null, null)
+      }
     }
 
     fun stopEnabledNotifications(result: MethodChannel.Result) {
         manager.stopBleEnabledNotifications()
+        result.success(null)
     }
 
     fun openLocationSettings(result: MethodChannel.Result) {
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         activityMain.startActivity(intent)
+        result.success(null)
     }
 
     fun openBluetoothSettings(result: MethodChannel.Result) {
         val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
         activityMain.startActivity(intent)
+        result.success(null)
     }
 
     fun openAppSettings(result: MethodChannel.Result) {
@@ -202,43 +192,63 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
         intent.data = Uri.parse("package:" + activityMain.packageName)
 
         activityMain.startActivity(intent)
+        result.success(null)
     }
 
-    fun requestLEScan(timeout: Long) {
-            manager.startScan({ success: Boolean ->
-                activityMain.runOnUiThread {
-                    if (!success) {
-                        events?.success(mapOf("status" to "error", "description"  to "requestLEScan(): failed to start"))
-                    }
-                }
-            }, { result: BleScanResult ->
-                activityMain.runOnUiThread {
-                    val scanResult = getScanResultFromNordic(result)
-                    activityMain.runOnUiThread {
-                        events?.success(scanResult)
-                    }
-                }
-            }, { address: String ->
-                activityMain.runOnUiThread {
-                        events?.success(mapOf("status" to "error", "description"  to "connected|${address}"))
-                }
-            },{ address: String ->
-                activityMain.runOnUiThread {
-                    events?.success(mapOf("status" to "error", "description"  to "disconnected|${address}"))
-                }
-            },
-                timeout
+    fun startScan(call: MethodCall, result: MethodChannel.Result) {
+      val macFilter = call.argument<String>("macFilter")
+      val allowDuplicates = call.argument<Boolean>("allowDuplicates") ?: false
+      val timeout = call.argument<Long>("timeout") ?: 10_000
+      manager.startScan(
+        { device ->
+          activityMain.runOnUiThread {
+            startScanStreamHandler.eventSink?.success(
+              mapOf(
+                "event" to "onScanResult",
+                "value" to getBleDeviceData(device)
+              )
             )
-        }
-
-    fun stopLEScan(result: MethodChannel.Result) {
-        manager.stopScan()
+          }
+        },
+        { error ->
+          activityMain.runOnUiThread {
+            startScanStreamHandler.eventSink?.success(
+              mapOf(
+                "event" to "onScanStart",
+                "value" to error
+              )
+            )
+          }
+        },
+        { error ->
+          activityMain.runOnUiThread {
+            startScanStreamHandler.eventSink?.success(
+              mapOf(
+                "event" to "onScanStop",
+                "value" to error
+              )
+            )
+          }
+        },
+        macFilter,
+        allowDuplicates,
+        timeout
+      )
+      result.success(null)
     }
 
+    fun stopScan(result: MethodChannel.Result) {
+        manager.stopScan()
+      result.success(null)
+    }
+
+  @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun signalize(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
-
-        manager.signalize(deviceId) { success: Boolean ->
+        val device = manager.getBleDevice(deviceId) ?: run {
+          return result.error("connect(): device not found", null, null)
+        }
+        manager.signalize(device) { success: Boolean ->
             if (success) {
                 result.success(null)
             } else {
@@ -249,72 +259,96 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun connect(call: MethodCall, result: MethodChannel.Result) {
-        val deviceId = call.argument<String>("deviceId") ?: ""
-        val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
-
-        manager.connect(deviceId, { success: Boolean ->
-            if (success) {
-                result.success(null)
-            } else {
-                result.error("connect(): failed to connect", null, null)
-            }
-        }, timeout)
+      val deviceId = call.argument<String>("deviceId") ?: ""
+      val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
+      val device = manager.getBleDevice(deviceId) ?: run {
+        return result.error("connect(): device not found", null, null)
+      }
+      manager.connect(device, { success: Boolean ->
+        if (success) {
+          result.success(true)
+        } else {
+          result.error("connect(): failed to connect", null, null)
+        }
+      }, { success ->
+        activityMain.runOnUiThread {
+          connectStreamHandler.eventSink?.success(
+            mapOf(
+              "value" to deviceId
+            )
+          )
+        }
+      },
+        timeout
+      )
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun disconnect(call: MethodCall, result: MethodChannel.Result) {
-        val deviceId = call.argument<String>("deviceId") ?: ""
-
-        manager.disconnect(deviceId) { success: Boolean ->
-            if (success) {
-                result.success(null)
-            } else {
-                result.error("disconnect(): failed to disconnect", null, null)
-            }
+      val deviceId = call.argument<String>("deviceId") ?: ""
+      val device = manager.getBleDevice(deviceId) ?: run {
+        return result.error("connect(): device not found", null, null)
+      }
+      manager.disconnect(device) { success: Boolean ->
+        if (success) {
+          result.success(success)
+        } else {
+          result.error("disconnect(): failed to disconnect", null, null)
         }
+      }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun read(call: MethodCall, result: MethodChannel.Result) {
-        val deviceId = call.argument<String>("deviceId") ?: ""
-        val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
+      val deviceId = call.argument<String>("deviceId") ?: ""
+      val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
+      val characteristic = getCharacteristic(call, result)
+        ?: return result.error("read(): bad characteristic", null, null)
+      val device = manager.getBleDevice(deviceId) ?: run {
+        return result.error("connect(): device not found", null, null)
+      }
 
-        val characteristic = getCharacteristic(call, result)
-            ?: return result.error("read(): bad characteristic", null,null)
-
-        manager.read(deviceId, characteristic.first, characteristic.second, { success: Boolean, data: ByteArray? ->
-            if (success) {
-                result.success(mapOf("value" to bytesToString(data!!)))
-            } else {
-                result.error("read(): failed to read from device", null, null)
-            }
-        }, timeout)
+      GlobalScope.launch {
+        val data = device.read(characteristic.first, characteristic.second, timeout)
+        if (data != null){
+          result.success(mapOf(
+            "value" to bytesToString(data)
+          ))
+        }
+        else {
+          result.error("read(): failed to read from device", null, null)
+        }
+      }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun write(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
         val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
-
         val characteristic =
             getCharacteristic(call, result) ?: return result.error("read(): bad characteristic", null, null)
         val value =
             call.argument<String>("value") ?: return result.error("write(): missing value for write", null, null)
+        val device = manager.getBleDevice(deviceId) ?: run {
+          return result.error("connect(): device not found", null, null)
+        }
 
-        manager.write(
-            deviceId,
-            characteristic.first,
-            characteristic.second,
-            stringToBytes(value),
-            { success: Boolean ->
-                if (success) {
-                    result.success(null)
-                } else {
-                    result.error("write(): failed to write to device", null, null)
-                }
-            },
-            timeout
+      GlobalScope.launch {
+        val success = device.write(
+          characteristic.first,
+          characteristic.second,
+          stringToBytes(value),
+          BleWriteType.NO_RESPONSE,
+          timeout
         )
+        if (success) {
+          result.success(null)
+        } else {
+          result.error("write(): failed to write to device", null, null)
+        }
+      }
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
@@ -328,31 +362,37 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
         try {
             isPermanentRelease = call.argument<Boolean>("isPermanentRelease") ?: false
         } catch (_:Exception){}
-
+        val device = manager.getBleDevice(deviceId) ?: run {
+          return result.error("connect(): device not found", null, null)
+        }
         manager.disengage(
-            deviceId,
+            device,
             mobileId,
             mobileDeviceKey,
             mobileGroupId,
             mobileAccessData,
             isPermanentRelease
-        ) { status: Any ->
-            result.success(mapOf("value" to status as String))
+        ) { status: DisengageStatusType ->
+            result.success(status.toString())
         }
     }
+    @OptIn(DelicateCoroutinesApi::class)
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun stopNotifications(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
         val characteristic =
             getCharacteristic(call, result)
                 ?: return result.error("stopNotifications(): bad characteristic", null, null)
-
-        manager.stopNotifications(deviceId, characteristic.first, characteristic.second) { success: Boolean ->
-            if (success) {
-                result.success(null)
-            } else {
-                result.error("stopNotifications(): failed to unset notifications", null, null)
-            }
+        val device = manager.getBleDevice(deviceId) ?: run {
+          return result.error("connect(): device not found", null, null)
+        }
+        GlobalScope.launch {
+          val success = device.stopNotifications(characteristic.first, characteristic.second)
+          if (success) {
+            result.success(success)
+          } else {
+            result.error("stopNotifications(): failed to unset notifications", null, null)
+          }
         }
     }
 
@@ -390,148 +430,94 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler, EventChannel.StreamHan
         return Pair(serviceUUID, characteristicUUID)
     }
 
-
-    fun getBleDeviceFromNordic(result: BleScanResult): Map<String, Any> {
-        val bleDevice: MutableMap<String, Any> = mutableMapOf("deviceId" to result.device.address)
-
-        if (result.device.hasName) {
-            bleDevice["name"] = result.device.name as String
-        }
-
-        var uuids:String = ""
-        result.data?.scanRecord?.serviceUuids?.forEach { uuid -> uuids += "$uuid:" }
-
-        if (uuids.isNotEmpty()) {
-            bleDevice["uuids"] = uuids
-        }
-        return bleDevice
-    }
-
-    fun getScanResultFromNordic(result: BleScanResult): MutableMap<String, Any> {
-        val scanResult: MutableMap<String, Any> = mutableMapOf()
-        val bleDevice = getBleDeviceFromNordic(result)
-
-        scanResult["device"] = bleDevice
-        if (result.device.hasName) {
-            scanResult["localName"] = result.device.name as String
-        }
-        if (result.data?.rssi != null) {
-            scanResult["rssi"] = result.data!!.rssi
-        }
-        if (result.data?.txPower != null) {
-            scanResult["txPower"] = result.data!!.txPower ?: 0
-        } else {
-            scanResult["txPower"] = 127
-        }
-
-        val manufacturerData: MutableMap<String, Any> = mutableMapOf()
-
-        val scanRecordBytes = result.data?.scanRecord?.bytes
-        if (scanRecordBytes != null) {
-            try {
-                // Extract EVVA manufacturer-id
-                var arr = byteArrayOf(0x01)
-                arr.toHexString()
-                val keyHex = byteArrayOf(scanRecordBytes.getByte(6)!!).toHexString() + byteArrayOf(
-                    scanRecordBytes.getByte(5)!!
-                ).toHexString()
-                val keyDec = keyHex.toInt(16)
-
-                // Slice out manufacturer data
-                val bytes = scanRecordBytes.copyOfRange(7, scanRecordBytes.size)
-
-                manufacturerData[keyDec.toString()] = bytesToString(bytes.value)
-            } catch (e: Exception) {
-                System.err.println("getScanResultFromNordic(): invalid manufacturer data")
-            }
-        }
-
-        scanResult["manufacturerData"] = manufacturerData
-
-        val serviceDataObject: MutableMap<String, Any> = mutableMapOf()
-        val serviceData = result.data?.scanRecord?.serviceData
-        serviceData?.forEach {
-            serviceDataObject[it.key.toString()] = bytesToString(it.value.value)
-        }
-        scanResult["serviceData"] = serviceDataObject
-
-        /*
-        *   uuids are concatenated into a string (delimiter ':') because the flutter
-        *   bridge has issues with arrays in this context
-        */
-        var uuids: String = ""
-        result.data?.scanRecord?.serviceUuids?.forEach { uuid -> uuids += "$uuid:" }
-        scanResult["rawAdvertisement"] = result.data?.scanRecord?.bytes?.toString() as String
-        return scanResult
-    }
-
-    private fun enabledNotifications() {
-        val success = manager.startBleEnabledNotifications { enabled: Boolean ->
-            val result = mapOf("value" to enabled)
-            activityMain.runOnUiThread {
-                events?.success(result)
-            }
-        }
-        if (!success) {
-            events?.success(mapOf("status" to "error", "description"  to "startEnabledNotifications(): Failed to set handler"))
-        }
-    }
-    private fun getCharacteristic(mapArgs: Map<*, *>, events: EventChannel.EventSink?): Pair<UUID, UUID>? {
-        val serviceString = mapArgs.getOrDefault("service", "") as String
-        val serviceUUID: UUID?
-
-        try {
-            serviceUUID = UUID.fromString(serviceString)
-        } catch (e: IllegalArgumentException) {
-            events?.success(mapOf("status" to "error", "description"  to "getCharacteristic(): invalid service uuid"))
-            return null
-        }
-
-        if (serviceUUID == null) {
-            events?.success(mapOf("status" to "error", "description"  to "getCharacteristic(): service uuid required"))
-            return null
-        }
-
-        val characteristicString = mapArgs.getOrDefault("characteristic", "") as String
-        val characteristicUUID: UUID?
-
-        try {
-            characteristicUUID = UUID.fromString(characteristicString)
-        } catch (e: IllegalArgumentException) {
-            events?.success(mapOf("status" to "error", "description"  to "getCharacteristic(): invalid characteristic uuid"))
-            return null
-        }
-
-        if (characteristicUUID == null) {
-            events?.success(mapOf("status" to "error", "description"  to "getCharacteristic(): characteristic uuid required"))
-            return null
-        }
-
-        return Pair(serviceUUID, characteristicUUID)
-    }
+    @OptIn(DelicateCoroutinesApi::class)
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
-    fun startNotifications(mapArgs: Map<*, *>, events: EventChannel.EventSink?) {
-        val deviceId = mapArgs.getOrDefault("deviceId", "") as String
-        val timeout =  mapArgs.getOrDefault("timeout", 5000) as Number
-        val characteristic = getCharacteristic(mapArgs, events)
-        if (characteristic == null) {
-            events?.success(mapOf("status" to "error", "description"  to "startNotifications(): bad characteristic"))
-            return
-        }
-        manager.startNotifications(
-            deviceId,
-            characteristic.first,
-            characteristic.second,
-            { success: Boolean ->
-                if (success) {
-                    events?.success(null)
-                } else {
-                    events?.success(mapOf("status" to "error", "description"  to "startNotifications(): failed to set notifications"))
-                }
-            }, { data: ByteArray ->
-                events?.success(mapOf("value" to bytesToString(data)))
-            },
-            timeout.toLong()
+    fun startNotifications(call: MethodCall, result: MethodChannel.Result) {
+      val deviceId = call.argument<String>("deviceId") ?: ""
+      val timeout = call.argument<Number>("timeout") ?: 5000
+      val characteristic = getCharacteristic(call, result)
+      val device = manager.getBleDevice(deviceId) ?: run {
+        return result.error("connect(): device not found", null, null)
+      }
+      if (characteristic == null) {
+        events?.success(
+          mapOf(
+            "status" to "error",
+            "description" to "startNotifications(): bad characteristic"
+          )
         )
+        return
+      }
+
+      GlobalScope.launch {
+        val success = device.setNotifications(characteristic.first,
+          characteristic.second, { data ->
+            val key =
+              "notification|${deviceId}|${(characteristic.first)}|${(characteristic.second)}"
+            startNotificationsStreamHandler.eventSink?.success(
+              mapOf(
+                key to mapOf(
+                  "value" to bytesToString(
+                    data
+                  )
+                )
+              )
+            )
+          })
+        if (success) {
+          result.success(success)
+        } else {
+          result.error("startNotifications(): failed to set notifications", null, null)
+        }
+      }
     }
+
+  public fun getBleDeviceData(device: BleDevice): Map<*, *> {
+    val bleDeviceData = mutableMapOf<String, Any?>(
+      "deviceId" to device.address,
+      "name" to device.localName
+    )
+
+    val advertisementData = mutableMapOf<String, Any?>(
+      "rssi" to device.advertisementData?.rssi,
+      "isConnectable" to device.advertisementData?.isConnectable
+    )
+
+      val mfData = device.advertisementData?.manufacturerData
+      val manufacturerData = mutableMapOf<String, Any?>(
+        "companyIdentifier" to (mfData?.companyIdentifier?.toInt() ?: 0),
+        "version" to (mfData?.version?.toInt() ?: 0),
+        "componentType" to
+        when (mfData?.componentType?.toInt() ?: 0) {
+          98 -> "escutcheon"
+          100 -> "handle"
+          105 -> "iobox"
+          109 -> "emzy"
+          119 -> "wallreader"
+          122 -> "cylinder"
+          else -> "unknown"
+        },
+        "mainFirmwareVersionMajor" to mfData?.mainFirmwareVersionMajor?.toInt(),
+        "mainFirmwareVersionMinor" to mfData?.mainFirmwareVersionMinor?.toInt(),
+        "mainFirmwareVersionPatch" to mfData?.mainFirmwareVersionPatch?.toInt(),
+        "componentHAL" to mfData?.componentHAL,
+        "batteryStatus" to if (mfData?.batteryStatus == true)  "battery-full" else "battery-empty",
+        "isOnline" to mfData?.isOnline,
+        "subConstructionMode" to mfData?.subConstructionMode,
+        "mainConstructionMode" to mfData?.mainConstructionMode,
+        "officeModeEnabled" to mfData?.officeModeEnabled,
+        "twoFactorRequired" to mfData?.twoFactorRequired,
+        "officeModeActive" to mfData?.officeModeActive,
+        "reservedBits" to mfData?.reservedBits,
+        "identifier" to mfData?.identifier,
+        "subFirmwareVersionMajor" to mfData?.subFirmwareVersionMajor?.toInt(),
+        "subFirmwareVersionMinor" to mfData?.subFirmwareVersionMinor?.toInt(),
+        "subFirmwareVersionPatch" to mfData?.subFirmwareVersionPatch?.toInt(),
+        "subComponentIdentifier" to mfData?.subComponentIdentifier
+      )
+    advertisementData["manufacturerData"] = manufacturerData
+    bleDeviceData["advertisementData"] = advertisementData
+
+    return bleDeviceData
+  }
 }

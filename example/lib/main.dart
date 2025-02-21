@@ -85,32 +85,20 @@ class _BleState extends State<BleWidget> {
     }
   }
 
-  void connectToDevice(ScanResult result) async {
-    await _ble.stopLEScan();
-
-    await _ble.connect(result.device.deviceId, 10000);
-
-    _ble.disengage('mobileId', 'derivedKey', 'groupId', 'accessData', true);
-  }
-
-  List<ScanResult> scanResultList = [];
+  List<BleDevice> scanResultList = [];
 
   Future<void> _scanForDevices() async {
     scanResultList.clear();
-    return await _ble.requestLEScan(RequestBleDeviceParams(timeout: 5000),
-        (result) {
-      if (result.manufacturerData != null &&
-          result.manufacturerData!.containsKey("2153")) {
-        setState(() {
-          scanResultList.add(result);
-        });
-      }
+    return await _ble.startScan( onScanResult: (device) {
+      setState(() {
+              scanResultList.add(device);
+      });
     });
   }
 
   @override
   dispose() async {
-    _ble.stopLEScan();
+    _ble.stopScan();
     super.dispose();
   }
 
@@ -128,11 +116,11 @@ class _BleState extends State<BleWidget> {
               final result = scanResultList[index];
               return ListTile(
                 onTap: () {
-                  _ble.stopLEScan();
-                  connectToDevice(result);
+                  _ble.stopScan();
+                  _ble.disengage('deviceId', 'mobileId', 'mobileDeviceKey', 'mobileGroupId', 'mobileAccessData', true);
                 },
-                title: Text(result.device.deviceId),
-                subtitle: Text(result.device.name ?? ""),
+                title: Text("${result.advertisementData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
+                subtitle: Text('${result.advertisementData?.companyIdentifier}'),
               );
             }),
       ),
@@ -170,7 +158,7 @@ class _CryptoState extends State<CryptoWidget> {
                     onPressed: () {
                       _abrevvaCrypto.random(6).then((result) {
                         setState(() {
-                          value = 'random(6) => ${result?['value']}';
+                          value = 'random(6) => ${result.value}';
                         });
                       });
                     },
@@ -181,7 +169,7 @@ class _CryptoState extends State<CryptoWidget> {
                           .generateKeyPair()
                           .then((result) => setState(() {
                                 value =
-                                    'generateKeyPair(6) =>\nPrivateKey: ${result?['privateKey']}\nPublicKey: ${result?['publicKey']}';
+                                    'generateKeyPair(6) =>\nPrivateKey: ${result.privateKey}\nPublicKey: ${result.publicKey}';
                               }));
                     },
                     child: const Text('createKeyPair()'))

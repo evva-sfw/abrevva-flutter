@@ -1,128 +1,97 @@
-import 'dart:typed_data';
-import 'package:collection/collection.dart';
-
-enum ScanMode {
-  scanModeLowPower,
-  scanModeBalanced,
-  scanModeLowLatency,
+enum ComponentType {
+  handle, escutcheon, cylinder, wallreader, emzy, iobox, unknown
 }
 
-class RequestBleDeviceParams {
-  List<String>? services;
-  String? name;
-  String? namePrefix;
-  List<String>? optionalServices;
-  bool? allowDuplicates;
-  ScanMode? scanMode;
-  int? timeout;
-  Function eq = const ListEquality().equals;
+enum BatteryStatus {
+  batteryFull, batteryEmpty, unknown
 
-  RequestBleDeviceParams(
-      {this.services,
-      this.name,
-      this.namePrefix,
-      this.optionalServices,
-      this.allowDuplicates,
-      this.scanMode,
-      this.timeout});
-
-  getMap() {
-    var map = {
-      'services': services,
-      'name': name,
-      'namePrefix': namePrefix,
-      'optionalServices': optionalServices,
-      'allowDuplicates': allowDuplicates,
-      'scanMode': scanMode,
-      'timeout': timeout,
-    };
-    map.removeWhere((key, value) => value == null);
-    return (map);
-  }
 }
 
-class StartNotificationsParams {
-  String deviceId;
-  String service;
-  String characteristic;
-  int timeout;
+enum DisengageStatusType {
+  /// Component
+  authorized, 
+  authorizedPermanentDisengage, 
+  authorizedPermanentEngage, 
+  authorizedBatteryLow, 
+  authorizedOffline, 
+  unauthorized, 
+  unauthorizedOffline, 
+  signalLocalization, 
+  mediumDefectOnline,
+  mediumBlacklisted, 
+  error,
 
-  StartNotificationsParams(
-      {required this.deviceId,
-      required this.service,
-      required this.characteristic,
-      required this.timeout});
+  /// Interface
+  unableToConnect,
+  unableToSetNotifications,
+  unableToReadChallenge,
+  unableToWriteMDF,
+  accessCipherError,
+  bleAdapterDisabled,
+  unknownDevice,
+  unknownStatusCode,
+  timeout,
+}
 
-  getMap() {
-    return {
-      'deviceId': deviceId,
-      'service': service,
-      'characteristic': characteristic,
-      'timeout': timeout,
-    };
-  }
+class BleDeviceAdvertisementData {
+  int? companyIdentifier;
+  int? version;
+  ComponentType? componentType;
+  int? mainFirmwareVersionMajor;
+  int? mainFirmwareVersionMinor;
+  int? mainFirmwareVersionPatch;
+  int? componentHAL;
+  BatteryStatus? batteryStatus;
+  bool? mainConstructionMode;
+  bool? subConstructionMode;
+  bool? isOnline;
+  bool? officeModeEnabled;
+  bool? twoFactorRequired;
+  bool? officeModeActive;
+  String? identifier;
+  int? subFirmwareVersionMajor;
+  int? subFirmwareVersionMinor;
+  int? subFirmwareVersionPatch;
+  String? subComponentIdentifier;
+  
+  BleDeviceAdvertisementData({this.companyIdentifier, 
+  this.version, this.componentType, this.mainFirmwareVersionMajor, this.mainFirmwareVersionMinor, 
+  this.mainFirmwareVersionPatch, this.componentHAL, this.batteryStatus, this.mainConstructionMode, 
+  this.subComponentIdentifier, this.isOnline, this.officeModeEnabled, this.twoFactorRequired, 
+  this.officeModeActive, this.identifier, this.subFirmwareVersionMajor, this.subFirmwareVersionMinor, 
+  this.subFirmwareVersionPatch, this.subConstructionMode});
 }
 
 class BleDevice {
   String deviceId;
   String? name;
-  List<String>? uuids;
-  BleDevice({required this.deviceId, this.name, this.uuids});
-  Function eq = const ListEquality().equals;
-
-  @override
-  // ignore: hash_and_equals
-  bool operator ==(Object other) {
-    if (other is! BleDevice) return false;
-    if (deviceId != other.deviceId) return false;
-    if (name != other.name) return false;
-    if (!eq(uuids, other.uuids)) return false;
-
-    return true;
-  }
+  BleDeviceAdvertisementData? advertisementData;
+  BleDevice({required this.deviceId, this.name, this.advertisementData});
 }
 
-class ScanResult {
-  BleDevice device;
-  String? localName;
-  int? rssi;
-  int? txPower;
-  Map<String, String>? manufacturerData;
-  Map<String, ByteData>? serviceData;
-  List<String>? uuids;
-  String? rawAdvertisement;
-  Function eqMap = const MapEquality().equals;
-  Function eqList = const ListEquality().equals;
-
-  ScanResult({
-    required this.device,
-    this.localName,
-    this.rssi,
-    this.txPower,
-    this.manufacturerData,
-    this.serviceData,
-    this.uuids,
-    this.rawAdvertisement,
-  });
-
-  @override
-  // ignore: hash_and_equals
-  bool operator ==(Object other) {
-    if (other is! ScanResult) return false;
-    if (device != other.device) return false;
-    if (localName != other.localName) return false;
-    if (rssi != other.rssi) return false;
-    if (!eqMap(manufacturerData, other.manufacturerData)) return false;
-    if (!eqMap(serviceData, other.serviceData)) return false;
-    if (!eqList(uuids, other.uuids)) return false;
-    if (rawAdvertisement != other.rawAdvertisement) return false;
-
-    return true;
-  }
+class StringResult {
+  String value;
+  
+  StringResult(this.value);
 }
 
-class ReadResult {
-  String? value;
+class KeyPairResult {
+  String privateKey;
+  String publicKey;
 
-  ReadResult({this.value});
+  KeyPairResult(this.privateKey, this.publicKey);
+}
+
+class EncryptResult {
+  String cipherText;
+  String authTag;
+
+  EncryptResult(this.cipherText, this.authTag);
+}
+
+class DecryptResult {
+  String plainText;
+  String authOk;
+
+  DecryptResult(this.plainText, this.authOk);
 }

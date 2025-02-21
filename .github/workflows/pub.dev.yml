@@ -12,13 +12,13 @@ jobs:
     permissions:
       id-token: write # Required for authentication using OIDC
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
           ssh-key: ${{ secrets.BOT_SSH_PRIVATE_KEY }}
 
       - name: Setup Flutter SDK
-        uses: flutter-actions/setup-flutter@v3
+        uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 # v4.0
         with:
           channel: stable
           version: latest
@@ -28,6 +28,6 @@ jobs:
 
       - run: flutter pub get
 
-      - uses: flutter-actions/setup-pubdev-credentials@v1
+      - uses: flutter-actions/setup-pubdev-credentials@2bee905b7704ff12e0d8366e69253e8429438170 # v1.1
 
       - run: flutter pub publish --force
