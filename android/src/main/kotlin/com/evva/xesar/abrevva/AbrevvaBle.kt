@@ -473,7 +473,7 @@ public class AbrevvaBle: MethodChannel.MethodCallHandler {
       }
     }
 
-  private fun getBleDeviceData(device: BleDevice): Map<*, *> {
+  public fun getBleDeviceData(device: BleDevice): Map<*, *> {
     val bleDeviceData = mutableMapOf<String, Any?>(
       "deviceId" to device.address,
       "name" to device.localName
