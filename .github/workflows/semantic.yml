@@ -10,6 +10,6 @@ on:
 permissions:
   pull-requests: read
 jobs:
-  main:
-    name: Validate PR title
+  semantic_pr-name:
+    name: semantic_pr-name
     uses: evva-sfw/workflows/.github/workflows/call_semantic.yml@main
