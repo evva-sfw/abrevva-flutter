@@ -1,38 +1,28 @@
 package com.evva.xesar.abrevva
 
-import android.os.ParcelUuid
 import android.view.View
 import com.evva.xesar.abrevva.ble.BleDevice
 import com.evva.xesar.abrevva.ble.BleDeviceAdvertisementData
 import com.evva.xesar.abrevva.ble.BleDeviceManufacturerData
-import com.evva.xesar.abrevva.crypto.X25519Wrapper
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import io.mockk.spyk
-import io.mockk.verify
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.kotlin.ble.core.ServerDevice
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.expect
 
 class AbrevvaBleTest {
-    private lateinit var abrevvaBleModule: AbrevvaBle
+  private lateinit var abrevvaBleModule: AbrevvaBle
 
-    @BeforeEach
-    fun beforeEach() {
-        MockKAnnotations.init(this)
+  @BeforeEach
+  fun beforeEach() {
+    MockKAnnotations.init(this)
 
-        mockkStatic(View::class)
-        every { View.generateViewId() } returns 0
-            abrevvaBleModule = AbrevvaBle()
-    }
+    mockkStatic(View::class)
+    every { View.generateViewId() } returns 0
+    abrevvaBleModule = AbrevvaBle()
+  }
 
   @Test
   fun `getBleDeviceData() should map AdvertisementData correctly`() {
@@ -53,7 +43,7 @@ class AbrevvaBleTest {
       isOnline = true,
       officeModeEnabled = false,
       twoFactorRequired = false,
-      officeModeActive =false,
+      officeModeActive = false,
       reservedBits = 0,
       identifier = "identifier",
       subFirmwareVersionMajor = 4.toUByte(),
@@ -73,7 +63,7 @@ class AbrevvaBleTest {
 
     assertEquals("address", output["deviceId"])
     assertEquals("localname", output["name"])
-    val advertDataOutput = output["advertisementData"] as Map<*,*>
+    val advertDataOutput = output["advertisementData"] as Map<*, *>
     assertEquals(1, advertDataOutput["rssi"])
     assertEquals(true, advertDataOutput["isConnectable"])
     val mfOutput = advertDataOutput["manufacturerData"] as Map<*, *>
