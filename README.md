@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">EVVA Flutter Plugin</h1>
+  <h1 align="center">Abrevva Flutter Plugin</h1>
 </p>
 
 <p align="center">
@@ -37,7 +37,7 @@ The EVVA Flutter Plugin is a collection of tools to work with electronical EVVA 
 
 ## Installation
 
-```
+```sh
 flutter pub add @evva-sfw/abrevva-flutter
 ```
 
@@ -61,13 +61,70 @@ import 'package:abrevva/abrevva.dart';
 async function scanForBleDevices(androidNeverForLocation: Boolean = true, timeout: Number) {
   await AbrevvaBle.initialize(androidNeverForLocation);
 
-  AbrevvaBle.startScan( 
-    RequestBleDeviceParams(),
+  AbrevvaBle.startScan(
     (scanResult: ScanResult) => {
-        console.log(`Discovered Device: ${scanResult.bleDevice.deviceId}`);
+      print("Discovered Device: ${scanResult.bleDevice.deviceId}");
     },
-    10_000
+    (success: bool) => {
+      print("onScanStart status=${success}");
+    },
+    (success: bool) => {
+      print("onScanStop status=${success}");
+    },
+    null,  // macFilter
+    false, // allowDuplicates
+    10_000 // timeout
   );
+}
+```
+
+### Read EVVA component advertisement
+
+Get the EVVA advertisement data from a scanned EVVA component.
+
+```Dart
+final ad = device.advertisementData;
+print(ad?.rssi);
+print(ad?.isConnectable);
+
+final md = ad?.manufacturerData;
+print(md.batteryStatus);
+print(md.isOnline);
+print(md.officeModeEnabled);
+print(md.officeModeActive);
+// ...
+```
+
+There are several properties that can be accessed from the advertisement.
+
+```Dart
+class BleDeviceAdvertisementData {
+  int? rssi;
+  bool? isConnectable;
+  BleDeviceManufacturerData? manufacturerData;
+  Map<String, dynamic>? rawData;
+}
+
+class BleDeviceManufacturerData {
+  int? companyIdentifier;
+  int? version;
+  ComponentType? componentType;
+  int? mainFirmwareVersionMajor;
+  int? mainFirmwareVersionMinor;
+  int? mainFirmwareVersionPatch;
+  int? componentHAL;
+  BatteryStatus? batteryStatus;
+  bool? mainConstructionMode;
+  bool? subConstructionMode;
+  bool? isOnline;
+  bool? officeModeEnabled;
+  bool? twoFactorRequired;
+  bool? officeModeActive;
+  String? identifier;
+  int? subFirmwareVersionMajor;
+  int? subFirmwareVersionMinor;
+  int? subFirmwareVersionPatch;
+  String? subComponentIdentifier;
 }
 ```
 
@@ -76,7 +133,7 @@ async function scanForBleDevices(androidNeverForLocation: Boolean = true, timeou
 With the signalize method you can localize EVVA components. On a successful signalization the component will emit a melody indicating its location.
 
 ```Dart
-const success = await AbrevvaBle.signalize('deviceId');
+final success = await AbrevvaBle.signalize('deviceId');
 ```
 
 ### Perform disengage on EVVA components
@@ -84,11 +141,42 @@ const success = await AbrevvaBle.signalize('deviceId');
 For the component disengage you have to provide access credentials to the EVVA component. Those are generally acquired in the form of access media metadata from the Xesar software.
 
 ```Dart
-const status = await AbrevvaBle.disengage(
+final status = await AbrevvaBle.disengage(
+  'deviceId',
   'mobileId',
   'mobileDeviceKey',
   'mobileGroupId',
   'mobileAccessData',
   false,
 );
+```
+
+There are several access status types upon attempting the component disengage.
+
+```Dart
+enum DisengageStatusType {
+  /// Component
+  authorized, 
+  authorizedPermanentDisengage, 
+  authorizedPermanentEngage, 
+  authorizedBatteryLow, 
+  authorizedOffline, 
+  unauthorized, 
+  unauthorizedOffline, 
+  signalLocalization, 
+  mediumDefectOnline,
+  mediumBlacklisted, 
+  error,
+
+  /// Interface
+  unableToConnect,
+  unableToSetNotifications,
+  unableToReadChallenge,
+  unableToWriteMDF,
+  accessCipherError,
+  bleAdapterDisabled,
+  unknownDevice,
+  unknownStatusCode,
+  timeout,
+}
 ```
