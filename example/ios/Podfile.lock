@@ -22,7 +22,6 @@ PODS:
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
-  - MockingbirdFramework (0.20.0)
   - MqttCocoaAsyncSocket (1.0.8)
   - Nimble (13.7.1):
     - CwlPreconditionTesting (~> 2.2.0)
@@ -32,16 +31,19 @@ PODS:
   - permission_handler_apple (9.3.0):
     - Flutter
   - Quick (7.6.2)
+  - SwiftFormat/CLI (0.55.5)
+  - SwiftLint (0.54.0)
 
 DEPENDENCIES:
   - abrevva (from `.symlinks/plugins/abrevva/ios`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
-  - MockingbirdFramework (~> 0.20)
   - Nimble
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - Quick
+  - SwiftFormat/CLI (~> 0.49)
+  - SwiftLint (~> 0.54.0)
 
 SPEC REPOS:
   trunk:
@@ -53,10 +55,11 @@ SPEC REPOS:
     - CwlMachBadInstructionHandler
     - CwlPosixPreconditionTesting
     - CwlPreconditionTesting
-    - MockingbirdFramework
     - MqttCocoaAsyncSocket
     - Nimble
     - Quick
+    - SwiftFormat
+    - SwiftLint
 
 EXTERNAL SOURCES:
   abrevva:
@@ -82,13 +85,14 @@ SPEC CHECKSUMS:
   CwlPreconditionTesting: 67a0047dd4de4382b93442c0e3f25207f984f35a
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
-  MockingbirdFramework: 54e35fbbb47b806c1a1fae2cf3ef99f6eceb55e5
   MqttCocoaAsyncSocket: 77d3b74f76228dd5a05d1f9526eab101d415b30c
   Nimble: 317d713c30c3336dd8571da1889f7ec3afc626e8
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   Quick: b8bec97cd4b9f21da0472d45580f763b801fc353
+  SwiftFormat: 548c7b221429101546d3caeeeb672f11578df0ad
+  SwiftLint: c1de071d9d08c8aba837545f6254315bc900e211
 
-PODFILE CHECKSUM: 559782b2e82784886f5b494f6aca98193defe307
+PODFILE CHECKSUM: 20db13aa6c0d58781d0268342ec0c7a81933af03
 
 COCOAPODS: 1.16.2

@@ -30,13 +30,14 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
-
+  pod 'SwiftLint', '~> 0.54.0'
+  pod 'SwiftFormat/CLI', '~> 0.49'
+  
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths
     pod 'Quick'
     pod 'Nimble'
-    pod 'MockingbirdFramework', '~> 0.20'
   end
 end
 
