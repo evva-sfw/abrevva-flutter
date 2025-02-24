@@ -88,6 +88,14 @@
                     {
                         "type": "ci",
                         "section": "🚀 Continuous Integration"
+                    },
+                    {
+                        "type": "sec",
+                        "section": "🛡️ Security Fix"
+                    },
+                    {
+                        "type": "chore",
+                        "section": "🧹 Chore"
                     }
                 ]
             }
