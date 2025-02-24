@@ -277,7 +277,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   BleDevice _mapScanResult(Map<Object?, Object?> data) {
       Map<Object?, Object?> advertismentData = data["advertisementData"] as Map<Object?, Object?> ;
       Map<Object?, Object?> mfData = advertismentData["manufacturerData"] as Map<Object?, Object?> ;
-      final advertData = BleDeviceAdvertisementData(
+      final mf = BleDeviceManufacturerData(
         companyIdentifier: mfData["companyIdentifier"] as int?,
         version: mfData["version"] as int?,
         componentType: _getComponentType(mfData["componentType"] as String?),
@@ -301,7 +301,12 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
      return BleDevice(
           deviceId:  data["deviceId"] as String,
           name: data["name"] as String?,
-          advertisementData: advertData
+          advertisementData: BleDeviceAdvertisementData(
+            rssi: advertismentData["rssi"] as int?,
+            rawData: data["raw"] as Map<Object?, Object?>?,
+            isConnectable: advertismentData["isConnectable"] as bool?,
+            manufacturerData: mf
+          )
           );
   }
 

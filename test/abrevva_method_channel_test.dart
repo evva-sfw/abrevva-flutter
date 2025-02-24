@@ -323,9 +323,9 @@ void main() {
 
         expect(callbackResults.deviceId, 'deviceId');
         expect(callbackResults.name, 'name');
-        expect(callbackResults.advertisementData?.isOnline, true);
-        expect(callbackResults.advertisementData?.companyIdentifier, 123);
-        expect(callbackResults.advertisementData?.identifier, 'identifierString');
+        expect(callbackResults.advertisementData?.manufacturerData?.isOnline, true);
+        expect(callbackResults.advertisementData?.manufacturerData?.companyIdentifier, 123);
+        expect(callbackResults.advertisementData?.manufacturerData?.identifier, 'identifierString');
       });
     });
     test('isEnabled', () async {

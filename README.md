@@ -38,7 +38,7 @@ The EVVA Flutter Plugin is a collection of tools to work with electronical EVVA 
 ## Installation
 
 ```sh
-flutter pub add @evva-sfw/abrevva-flutter
+flutter pub add abrevva
 ```
 
 ### iOS

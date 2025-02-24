@@ -119,8 +119,8 @@ class _BleState extends State<BleWidget> {
                   _ble.stopScan();
                   _ble.disengage('deviceId', 'mobileId', 'mobileDeviceKey', 'mobileGroupId', 'mobileAccessData', true);
                 },
-                title: Text("${result.advertisementData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
-                subtitle: Text('${result.advertisementData?.companyIdentifier}'),
+                title: Text("${result.advertisementData?.manufacturerData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
+                subtitle: Text('${result.advertisementData?.manufacturerData?.companyIdentifier}'),
               );
             }),
       ),
