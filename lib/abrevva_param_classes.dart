@@ -33,7 +33,7 @@ enum DisengageStatusType {
   timeout,
 }
 
-class BleDeviceAdvertisementData {
+class BleDeviceManufacturerData {
   int? companyIdentifier;
   int? version;
   ComponentType? componentType;
@@ -54,12 +54,21 @@ class BleDeviceAdvertisementData {
   int? subFirmwareVersionPatch;
   String? subComponentIdentifier;
   
-  BleDeviceAdvertisementData({this.companyIdentifier, 
+  BleDeviceManufacturerData({this.companyIdentifier, 
   this.version, this.componentType, this.mainFirmwareVersionMajor, this.mainFirmwareVersionMinor, 
   this.mainFirmwareVersionPatch, this.componentHAL, this.batteryStatus, this.mainConstructionMode, 
   this.subComponentIdentifier, this.isOnline, this.officeModeEnabled, this.twoFactorRequired, 
   this.officeModeActive, this.identifier, this.subFirmwareVersionMajor, this.subFirmwareVersionMinor, 
   this.subFirmwareVersionPatch, this.subConstructionMode});
+}
+
+class BleDeviceAdvertisementData {
+  int? rssi;
+  bool? isConnectable;
+  BleDeviceManufacturerData? manufacturerData;
+  Map<Object?, Object?>? rawData;
+
+  BleDeviceAdvertisementData({this.isConnectable, this.manufacturerData, this.rawData, this.rssi});
 }
 
 class BleDevice {
