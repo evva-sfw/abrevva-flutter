@@ -83,7 +83,7 @@ async function scanForBleDevices(androidNeverForLocation: Boolean = true, timeou
 Get the EVVA advertisement data from a scanned EVVA component.
 
 ```Dart
-final = ad = device.advertisementData;
+final ad = device.advertisementData;
 print(ad?.rssi);
 print(ad?.isConnectable);
 
