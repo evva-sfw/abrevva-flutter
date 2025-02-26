@@ -160,7 +160,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
     fun startScan(call: MethodCall, result: MethodChannel.Result) {
         val macFilter = call.argument<String>("macFilter")
         val allowDuplicates = call.argument<Boolean>("allowDuplicates") ?: false
-        val timeout = call.argument<Long>("timeout") ?: 10_000
+        val timeout = call.argument<Int>("timeout")?.toLong() ?: 10_000
         manager.startScan(
             { device ->
                 activityMain.runOnUiThread {
@@ -222,7 +222,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun connect(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
-        val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
+        val timeout = call.argument<Int>("timeout")?.toLong() ?: 10_000
         val device = manager.getBleDevice(deviceId) ?: run {
             return result.error("connect(): device not found", null, null)
         }
@@ -264,7 +264,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun read(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
-        val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
+        val timeout = call.argument<Int>("timeout")?.toLong() ?: 10_000
         val characteristic = getCharacteristic(call, result)
             ?: return result.error("read(): bad characteristic", null, null)
         val device = manager.getBleDevice(deviceId) ?: run {
@@ -289,7 +289,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun write(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
-        val timeout = call.argument<Double>("timeout")?.toLong() ?: 10000
+        val timeout = call.argument<Int>("timeout")?.toLong() ?: 10_000
         val characteristic =
             getCharacteristic(call, result) ?: return result.error(
                 "read(): bad characteristic",
@@ -410,7 +410,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun startNotifications(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
-        val timeout = call.argument<Number>("timeout") ?: 5000
+        val timeout = call.argument<Int>("timeout")?.toLong() ?: 10_000
         val characteristic = getCharacteristic(call, result)
         val device = manager.getBleDevice(deviceId) ?: run {
             return result.error("connect(): device not found", null, null)
