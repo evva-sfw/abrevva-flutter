@@ -212,7 +212,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         }
         manager.signalize(device) { success: Boolean ->
             if (success) {
-                result.success(null)
+                result.success(true)
             } else {
                 result.error("signalize(): failed", null, null)
             }
