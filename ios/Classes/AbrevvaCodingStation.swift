@@ -28,16 +28,26 @@ public class AbrevvaCodingStation: NSObject, FlutterPlugin {
     @objc
     private func registerMqttConfigForXS(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else {
-            return result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
+            return result(FlutterError(
+                            code: "registerMqttConfigForXS(): Failed to convert NSDictionary to Swift dictionary",
+                            message: nil, details: nil)
+            )
         }
-        let url = URL(string: args["url"] as? String ?? "")!
+        guard let url = URL(string: args["url"] as? String ?? "") else {
+            return result(FlutterError(
+                            code: "registerMqttConfigForXS(): failed to create URL",
+                            message: nil, details: nil)
+            )
+        }
         let clientId = args["clientId"] as? String ?? ""
         let username = args["username"] as? String ?? ""
         let password = args["password"] as? String ?? ""
 
         Task {
             do {
-                mqttConnectionOptions = try await AuthManager.getMqttConfigForXS(url: url, clientId: clientId, username: username, password: password)
+                mqttConnectionOptions = try await AuthManager.getMqttConfigForXS(
+                    url: url, clientId: clientId, username: username, password: password
+                )
                 result(true)
             } catch {
                 result(FlutterError(code: "getMqttConfigForXS(): \(error)", message: nil, details: nil))

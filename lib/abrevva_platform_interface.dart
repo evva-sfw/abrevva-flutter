@@ -5,6 +5,44 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'abrevva_method_channel.dart';
 import 'abrevva_param_classes.dart';
 
+abstract class AbrevvaCodingStationPlatform extends PlatformInterface {
+    /// Constructs a FlutterPluginPlatform.
+  AbrevvaCodingStationPlatform(): super(token: _token);
+
+  static final Object _token = Object();
+
+  static AbrevvaCodingStationPlatform _instance = MethodChannelCodingStation();
+
+  /// The default instance of [AbrevvaCodingStationPlatform] to use.
+  ///
+  /// Defaults to [AbrevvaCodingStationPlatform].
+  static AbrevvaCodingStationPlatform get instance => _instance;
+
+  /// Platform-specific implementations should set this with their own
+  /// platform-specific class that extends [AbrevvaCodingStationPlatform] when
+  /// they register themselves.
+  static set instance(AbrevvaCodingStationPlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+    _instance = instance;
+  }
+
+  Future<void> registerMqttConfigForXS(String url, String clientId, String username, String password) {
+    throw UnimplementedError('registerMqttConfigForXS() has not been implemented.');
+  }
+  
+  Future<void> connect() {
+    throw UnimplementedError('connect() has not been implemented.');
+  }
+  
+  Future<void> write() {
+    throw UnimplementedError('write() has not been implemented.');
+  }
+
+  Future<void> disconnect() {
+    throw UnimplementedError('disconnect() has not been implemented.');
+  }
+}
+
 abstract class AbrevvaCryptoPlatform extends PlatformInterface {
   /// Constructs a FlutterPluginPlatform.
   AbrevvaCryptoPlatform() : super(token: _token);

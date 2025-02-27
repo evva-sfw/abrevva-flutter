@@ -57,12 +57,23 @@ class HomeWidget extends StatelessWidget {
                     );
                   },
                 ),
+              ),
+              Center(
+                heightFactor: 1.5,
+                child: ElevatedButton(
+                  child: const Text('CodingStation'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CodingStationWidget()),
+                    );
+                  },
+                ),
               )
             ]));
   }
 }
-
-var methodEvent = const EventChannel('AbrevvaBleEvent');
 
 class BleWidget extends StatefulWidget {
   const BleWidget({super.key});
@@ -173,6 +184,103 @@ class _CryptoState extends State<CryptoWidget> {
                               }));
                     },
                     child: const Text('createKeyPair()'))
+              ],
+            )));
+  }
+}
+
+class CodingStationWidget extends StatefulWidget {
+  const CodingStationWidget({super.key});
+
+  @override
+  State<CodingStationWidget> createState() => _CodingStationState();
+}
+
+class _CodingStationState extends State<CodingStationWidget> {
+  String url = "";
+  String clientId = "";
+  String username = "";
+  String password = "";
+
+  String value = 'Output';
+  final _abrevvaCodingStation = AbrevvaCodingStation();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('CodingStation test'),
+        ),
+        body: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              children: [
+                Padding(
+                    padding: const EdgeInsets.all(50.0),
+                    child: Text(
+                      value,
+                    )),
+                ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await _abrevvaCodingStation.registerMqttConfigForXS(url,clientId,username,password);
+                        setState(() {
+                          value = 'registerMqttConfigForXS(): success';
+                          }
+                        );
+                      } catch (e) {
+                        setState(() {
+                          value = 'registerMqttConfigForXS(): $e';
+                          }
+                        );
+                      }
+                    },
+                    child: const Text('registerMqttConfigForXS()')
+                    ),
+                ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await _abrevvaCodingStation.connect();
+                        setState(() {
+                          value = 'connect(): success';
+                          }
+                        );
+                      } catch (e) {
+                        setState(() {
+                          value = 'connect(): $e';
+                          }
+                        );
+                      }
+                    },
+                    child: const Text('connect()')
+                    ),
+                ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await _abrevvaCodingStation.write();
+                        setState(() {
+                          value = 'write(): success';
+                          }
+                        );
+                      } catch (e) {
+                        setState(() {
+                          value = 'write(): $e';
+                          }
+                        );
+                      }
+                    },
+                    child: const Text('write()')
+                    ),
+                ElevatedButton(
+                    onPressed: () async {
+                        await _abrevvaCodingStation.disconnect();
+                        setState(() {
+                          value = 'disconnect(): success';
+                          }
+                        );
+                    },
+                    child: const Text('disconnect()')
+                    ),
               ],
             )));
   }
