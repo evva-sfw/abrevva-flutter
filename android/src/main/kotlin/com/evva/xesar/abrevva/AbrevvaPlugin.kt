@@ -14,6 +14,7 @@ import io.flutter.plugin.common.MethodChannel
 
 
 class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
+    private lateinit var channelCodingStation: MethodChannel
     private lateinit var channelCrypto: MethodChannel
     private lateinit var channelBle: MethodChannel
 
@@ -22,6 +23,7 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     private lateinit var startNotificationsEventChannel: EventChannel
     private lateinit var startEnabledNotificationsEventChannel: EventChannel
 
+    private var abrevvaCodingStation = AbrevvaCodingStation()
     private var abrevvaCrypto = AbrevvaCrypto()
     private var abrevvaBle = AbrevvaBle()
 
@@ -37,6 +39,10 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.context = flutterPluginBinding.applicationContext
         this.flutterPluginBinding = flutterPluginBinding
+
+        channelCodingStation =
+            MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaCodingStation")
+        channelCodingStation.setMethodCallHandler(abrevvaCodingStation)
 
         channelCrypto = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaCrypto")
         channelCrypto.setMethodCallHandler(abrevvaCrypto)
@@ -55,7 +61,6 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
                 flutterPluginBinding.binaryMessenger,
                 "startEnabledNotificationsEventChannel"
             )
-
         connectEventChannel.setStreamHandler(abrevvaBle.connectStreamHandler)
         startScanEventChannel.setStreamHandler(abrevvaBle.startScanStreamHandler)
         startNotificationsEventChannel.setStreamHandler(abrevvaBle.startNotificationsStreamHandler)
@@ -63,6 +68,7 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channelCodingStation.setMethodCallHandler(null)
         channelCrypto.setMethodCallHandler(null)
         channelBle.setMethodCallHandler(null)
 
