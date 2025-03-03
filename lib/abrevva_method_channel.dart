@@ -17,7 +17,7 @@ class MethodChannelCodingStation extends AbrevvaCodingStationPlatform {
   set methodChannel(MethodChannel channel) => _methodChannel = channel;
 
   @override
-  Future<void> registerMqttConfigForXS(String url, String clientId, String username, String password) async {
+  Future<void> register(String url, String clientId, String username, String password) async {
     Map<String, String> map = {
           'url': url,
           'clientId': clientId,
@@ -25,7 +25,7 @@ class MethodChannelCodingStation extends AbrevvaCodingStationPlatform {
           'password': password,
           };
     await _methodChannel
-        .invokeMethod<void>('registerMqttConfigForXS',map );
+        .invokeMethod<void>('register',map );
   }
 
   @override

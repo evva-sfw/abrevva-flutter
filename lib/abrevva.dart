@@ -4,8 +4,8 @@ import 'package:abrevva/abrevva_param_classes.dart';
 import 'abrevva_platform_interface.dart';
 
 class AbrevvaCodingStation {
-  Future<void> registerMqttConfigForXS(String url, String clientId, String username, String password){
-    return AbrevvaCodingStationPlatform.instance.registerMqttConfigForXS(url, clientId, username, password);
+  Future<void> register(String url, String clientId, String username, String password){
+    return AbrevvaCodingStationPlatform.instance.register(url, clientId, username, password);
   }
   Future<void> connect(){
     return AbrevvaCodingStationPlatform.instance.connect();

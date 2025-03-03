@@ -5,15 +5,15 @@ import Flutter
 
 public class AbrevvaCodingStation: NSObject, FlutterPlugin {
 
-    let codingStation = CodingStation()
-    var mqttConnectionOptions: MqttConnectionOptions?
+    private let codingStation = CodingStation()
+    private var mqttConnectionOptions: MqttConnectionOptions?
 
     public static func register(with registrar: FlutterPluginRegistrar) {}
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
-        case "registerMqttConfigForXS":
-            registerMqttConfigForXS(call, result: result)
+        case "register":
+            register(call, result: result)
         case "connect":
             connect(call, result: result)
         case "write":
@@ -26,16 +26,16 @@ public class AbrevvaCodingStation: NSObject, FlutterPlugin {
     }
 
     @objc
-    private func registerMqttConfigForXS(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    private func register(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else {
             return result(FlutterError(
-                            code: "registerMqttConfigForXS(): Failed to convert NSDictionary to Swift dictionary",
+                            code: "register(): Failed to convert NSDictionary to Swift dictionary",
                             message: nil, details: nil)
             )
         }
         guard let url = URL(string: args["url"] as? String ?? "") else {
             return result(FlutterError(
-                            code: "registerMqttConfigForXS(): failed to create URL",
+                            code: "register(): failed to create URL",
                             message: nil, details: nil)
             )
         }
@@ -58,7 +58,7 @@ public class AbrevvaCodingStation: NSObject, FlutterPlugin {
     @objc
     private func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         if self.mqttConnectionOptions == nil {
-            return result(FlutterError(code: "No MqttConfig set. Call registerMqttConfigForXS() first.", message: nil, details: nil))
+            return result(FlutterError(code: "connect(): No MqttConfig set. Call register() first.", message: nil, details: nil))
         }
         Task {
             do {

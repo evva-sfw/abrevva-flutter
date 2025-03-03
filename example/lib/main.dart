@@ -223,19 +223,19 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await _abrevvaCodingStation.registerMqttConfigForXS(url,clientId,username,password);
+                        await _abrevvaCodingStation.register(url,clientId,username,password);
                         setState(() {
-                          value = 'registerMqttConfigForXS(): success';
+                          value = 'register(): success';
                           }
                         );
                       } catch (e) {
                         setState(() {
-                          value = 'registerMqttConfigForXS(): $e';
+                          value = 'register(): $e';
                           }
                         );
                       }
                     },
-                    child: const Text('registerMqttConfigForXS()')
+                    child: const Text('register()')
                     ),
                 ElevatedButton(
                     onPressed: () async {

@@ -26,8 +26,8 @@ abstract class AbrevvaCodingStationPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<void> registerMqttConfigForXS(String url, String clientId, String username, String password) {
-    throw UnimplementedError('registerMqttConfigForXS() has not been implemented.');
+  Future<void> register(String url, String clientId, String username, String password) {
+    throw UnimplementedError('register() has not been implemented.');
   }
   
   Future<void> connect() {
