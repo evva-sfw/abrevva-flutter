@@ -24,16 +24,15 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.evva.xesar.abrevva_example"
-    compileSdkVersion flutter.compileSdkVersion
-    ndkVersion "26.3.11579264"
-
+    compileSdkVersion 35
+    ndkVersion = "27.0.12077973"
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_21
     }
 
     sourceSets {
@@ -60,7 +59,7 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += ['META-INF/INDEX.LIST', 'META-INF/io.netty.versions.properties', 'META-INF/*.properties','META-INF/INDEX.LIST']
+            excludes += ['META-INF/INDEX.LIST', 'META-INF/io.netty.versions.properties', 'META-INF/*.properties', 'META-INF/INDEX.LIST']
         }
     }
 }
@@ -69,8 +68,8 @@ flutter {
     source '../..'
 }
 repositories {
+    mavenLocal()
     google()
     mavenCentral()
-    mavenLocal()
 }
 dependencies {}
