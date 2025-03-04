@@ -1,7 +1,7 @@
 package com.evva.xesar.abrevva
 
-import com.evva.xesar.abrevva.crypto.AesCCM
-import com.evva.xesar.abrevva.crypto.AesGCM
+import com.evva.xesar.abrevva.crypto.AesCcm
+import com.evva.xesar.abrevva.crypto.AesGcm
 import com.evva.xesar.abrevva.crypto.HKDF
 import com.evva.xesar.abrevva.crypto.SimpleSecureRandom
 import com.evva.xesar.abrevva.crypto.X25519Wrapper
@@ -47,7 +47,7 @@ class AbrevvaCrypto : MethodCallHandler {
         val pt = Hex.decode(call.argument<String>("pt"))
         val tagLength = call.argument<Int>("tagLength")!!
 
-        val ct: ByteArray = AesCCM.encrypt(key, iv, adata, pt, tagLength)
+        val ct: ByteArray = AesCcm.encrypt(key, iv, adata, pt, tagLength)
         val cipherText = ByteArray(pt.size)
         val authTag = ByteArray(tagLength)
 
@@ -72,7 +72,7 @@ class AbrevvaCrypto : MethodCallHandler {
         val ct = Hex.decode(call.argument<String>("ct"))
         val tagLength = call.argument<Int>("tagLength")!!
 
-        val pt: ByteArray = AesCCM.decrypt(key, iv, adata, ct, tagLength)
+        val pt: ByteArray = AesCcm.decrypt(key, iv, adata, ct, tagLength)
 
         if (pt.isEmpty()) {
             result.error("decrypt(): decryption failed", null, null)
@@ -144,7 +144,7 @@ class AbrevvaCrypto : MethodCallHandler {
             }
 
             val sharedKey = Hex.decode(sharedSecret)
-            val operationOk: Boolean = AesGCM.encryptFile(sharedKey, ptPath, ctPath)
+            val operationOk: Boolean = AesGcm.encryptFile(sharedKey, ptPath, ctPath)
 
             val ret = mapOf("opOk" to operationOk)
             result.success(ret)
@@ -172,7 +172,7 @@ class AbrevvaCrypto : MethodCallHandler {
             }
 
             val sharedKey = Hex.decode(sharedSecret)
-            val operationOk: Boolean = AesGCM.decryptFile(sharedKey, ctPath, ptPath)
+            val operationOk: Boolean = AesGcm.decryptFile(sharedKey, ctPath, ptPath)
 
             val ret = mapOf("opOk" to operationOk)
             result.success(ret)
@@ -221,7 +221,7 @@ class AbrevvaCrypto : MethodCallHandler {
 
         try {
             val sharedKey = Hex.decode(sharedSecret)
-            val operationOk: Boolean = AesGCM.decryptFile(sharedKey, ctPath, ptPath)
+            val operationOk: Boolean = AesGcm.decryptFile(sharedKey, ctPath, ptPath)
 
             val ret = mapOf("opOk" to operationOk)
             result.success(ret)
