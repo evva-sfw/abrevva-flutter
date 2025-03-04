@@ -1,4 +1,10 @@
--dontwarn io.netty.channel.epoll.Epoll
+-dontwarn io.netty.internal.tcnative.AsyncTask
+-dontwarn io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod
+-dontwarn io.netty.internal.tcnative.CertificateCompressionAlgo
+-dontwarn io.netty.internal.tcnative.SSLPrivateKeyMethod
+-dontwarn io.netty.internal.tcnative.SSLSessionCache
+-dontwarn io.netty.internal.tcnative.SessionTicketKey
+-dontwarn org.apache.logging.log4j.Level
 -dontwarn io.netty.channel.epoll.EpollEventLoopGroup
 -dontwarn io.netty.channel.epoll.EpollSocketChannel
 -dontwarn io.netty.handler.codec.http.FullHttpResponse
