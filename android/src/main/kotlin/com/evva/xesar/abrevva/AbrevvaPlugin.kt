@@ -3,8 +3,8 @@ package com.evva.xesar.abrevva
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.LifecycleEventObserver
-import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -13,7 +13,8 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 
-class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
+class AbrevvaPlugin : FlutterPlugin, ActivityAware {
+    private lateinit var channelCodingStation: MethodChannel
     private lateinit var channelCrypto: MethodChannel
     private lateinit var channelBle: MethodChannel
 
@@ -22,6 +23,7 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     private lateinit var startNotificationsEventChannel: EventChannel
     private lateinit var startEnabledNotificationsEventChannel: EventChannel
 
+    private lateinit var abrevvaCodingStation: AbrevvaCodingStation
     private var abrevvaCrypto = AbrevvaCrypto()
     private var abrevvaBle = AbrevvaBle()
 
@@ -29,15 +31,19 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     private lateinit var activity: Activity
     private lateinit var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding
 
-    val lifecycleObserver = LifecycleEventObserver { source, event ->
+    private val lifecycleObserver = LifecycleEventObserver { source, event ->
         abrevvaBle.eventObserver(source, event, context, activity, channelBle)
+        abrevvaCodingStation.eventObserver(activity)
     }
 
     @SuppressLint("MissingPermission")
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.context = flutterPluginBinding.applicationContext
+        abrevvaCodingStation = AbrevvaCodingStation(context)
         this.flutterPluginBinding = flutterPluginBinding
-
+        channelCodingStation =
+            MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaCodingStation")
+        channelCodingStation.setMethodCallHandler(abrevvaCodingStation)
         channelCrypto = MethodChannel(flutterPluginBinding.binaryMessenger, "AbrevvaCrypto")
         channelCrypto.setMethodCallHandler(abrevvaCrypto)
 
@@ -55,7 +61,6 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
                 flutterPluginBinding.binaryMessenger,
                 "startEnabledNotificationsEventChannel"
             )
-
         connectEventChannel.setStreamHandler(abrevvaBle.connectStreamHandler)
         startScanEventChannel.setStreamHandler(abrevvaBle.startScanStreamHandler)
         startNotificationsEventChannel.setStreamHandler(abrevvaBle.startNotificationsStreamHandler)
@@ -63,6 +68,7 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channelCodingStation.setMethodCallHandler(null)
         channelCrypto.setMethodCallHandler(null)
         channelBle.setMethodCallHandler(null)
 
@@ -74,6 +80,10 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
+        binding.addOnNewIntentListener { intent: Intent ->
+            abrevvaCodingStation.onNewIntentHandler(intent)
+            true
+        }
 
         (binding.lifecycle as HiddenLifecycleReference)
             .lifecycle
@@ -81,11 +91,9 @@ class AbrevvaPlugin : FlutterPlugin, FlutterActivity(), ActivityAware {
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-        TODO("Not yet implemented")
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        TODO("Not yet implemented")
     }
 
     override fun onDetachedFromActivity() {

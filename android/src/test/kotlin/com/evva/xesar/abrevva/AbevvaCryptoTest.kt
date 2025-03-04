@@ -1,7 +1,7 @@
 package com.evva.xesar.abrevva
 
-import com.evva.xesar.abrevva.crypto.AesCCM
-import com.evva.xesar.abrevva.crypto.AesGCM
+import com.evva.xesar.abrevva.crypto.AesCcm
+import com.evva.xesar.abrevva.crypto.AesGcm
 import com.evva.xesar.abrevva.crypto.HKDF
 import com.evva.xesar.abrevva.crypto.SimpleSecureRandom
 import com.evva.xesar.abrevva.crypto.X25519Wrapper
@@ -44,8 +44,8 @@ class AbevvaCryptoTest {
     @BeforeEach
     fun beforeEach() {
         MockKAnnotations.init(this)
-        mockkObject(AesCCM)
-        mockkObject(AesGCM)
+        mockkObject(AesCcm)
+        mockkObject(AesGcm)
         mockkObject(X25519Wrapper)
         mockkObject(SimpleSecureRandom)
         mockkObject(HKDF)
@@ -69,7 +69,7 @@ class AbevvaCryptoTest {
 
 
             every { Hex.decode(any<String>()) } returns byteArrayOf()
-            every { AesCCM.encrypt(any(), any(), any(), any(), any()) } returns ByteArray(0)
+            every { AesCcm.encrypt(any(), any(), any(), any(), any()) } returns ByteArray(0)
 
             abrevvaCrypto.encrypt(callMock, resultMock)
 
@@ -78,7 +78,7 @@ class AbevvaCryptoTest {
 
         @Test
         fun `should resolve if ct is not empty`() {
-            every { AesCCM.encrypt(any(), any(), any(), any(), any()) } returns ByteArray(10)
+            every { AesCcm.encrypt(any(), any(), any(), any(), any()) } returns ByteArray(10)
 
             abrevvaCrypto.encrypt(callMock, resultMock)
 
@@ -91,7 +91,7 @@ class AbevvaCryptoTest {
     inner class DecryptTests {
         @Test
         fun `should reject if pt is empty`() {
-            every { AesCCM.decrypt(any(), any(), any(), any(), any()) } returns ByteArray(0)
+            every { AesCcm.decrypt(any(), any(), any(), any(), any()) } returns ByteArray(0)
 
             abrevvaCrypto.decrypt(callMock, resultMock)
 
@@ -100,7 +100,7 @@ class AbevvaCryptoTest {
 
         @Test
         fun `should resolve if pt is not empty`() {
-            every { AesCCM.decrypt(any(), any(), any(), any(), any()) } returns ByteArray(10)
+            every { AesCcm.decrypt(any(), any(), any(), any(), any()) } returns ByteArray(10)
 
             abrevvaCrypto.decrypt(callMock, resultMock)
 
@@ -162,7 +162,7 @@ class AbevvaCryptoTest {
 
         @Test
         fun `should resolve if args are valid and file could be encrypted`() {
-            every { AesGCM.encryptFile(any(), any(), any()) } returns true
+            every { AesGcm.encryptFile(any(), any(), any()) } returns true
 
             abrevvaCrypto.encryptFile(callMock, resultMock)
 
@@ -172,7 +172,7 @@ class AbevvaCryptoTest {
         @Test
         fun `should reject if args are valid but encryption fails`() {
             every {
-                AesGCM.encryptFile(
+                AesGcm.encryptFile(
                     any(),
                     any(),
                     any()
@@ -218,7 +218,7 @@ class AbevvaCryptoTest {
 
         @Test
         fun `should resolve if args are valid and file could be encrypted`() {
-            every { AesGCM.decryptFile(any(), any(), any()) } returns true
+            every { AesGcm.decryptFile(any(), any(), any()) } returns true
 
             abrevvaCrypto.decryptFile(callMock, resultMock)
 
@@ -228,7 +228,7 @@ class AbevvaCryptoTest {
         @Test
         fun `should reject if encryption fails`() {
             every {
-                AesGCM.decryptFile(
+                AesGcm.decryptFile(
                     any(),
                     any(),
                     any()
@@ -310,7 +310,7 @@ class AbevvaCryptoTest {
             val moduleSpy =
                 spyk(AbrevvaCrypto())
             every { moduleSpy.writeToFile(any(), any()) } returns Unit
-            every { AesGCM.decryptFile(any(), any(), any()) } returns true
+            every { AesGcm.decryptFile(any(), any(), any()) } returns true
 
             moduleSpy.decryptFileFromURL(callMock, resultMock)
 

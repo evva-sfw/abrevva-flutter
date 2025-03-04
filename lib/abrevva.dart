@@ -3,6 +3,21 @@ import 'dart:ffi';
 import 'package:abrevva/abrevva_param_classes.dart';
 import 'abrevva_platform_interface.dart';
 
+class AbrevvaCodingStation {
+  Future<void> register(String url, String clientId, String username, String password){
+    return AbrevvaCodingStationPlatform.instance.register(url, clientId, username, password);
+  }
+  Future<void> connect(){
+    return AbrevvaCodingStationPlatform.instance.connect();
+  }
+  Future<void> write(){
+    return AbrevvaCodingStationPlatform.instance.write();
+  }
+  Future<void> disconnect(){
+    return AbrevvaCodingStationPlatform.instance.disconnect();
+  }
+}
+
 class AbrevvaCrypto {
   Future<StringResult> random(int numBytes) {
     return AbrevvaCryptoPlatform.instance.random(numBytes);

@@ -10,6 +10,43 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'abrevva_platform_interface.dart';
 
+/// An implementation of [MethodChannelCodingStation] that uses method channels.
+class MethodChannelCodingStation extends AbrevvaCodingStationPlatform {
+  /// The method channel used to interact with the native platform.
+  var _methodChannel = const MethodChannel('AbrevvaCodingStation');
+  set methodChannel(MethodChannel channel) => _methodChannel = channel;
+
+  @override
+  Future<void> register(String url, String clientId, String username, String password) async {
+    Map<String, String> map = {
+          'url': url,
+          'clientId': clientId,
+          'username': username,
+          'password': password,
+          };
+    await _methodChannel
+        .invokeMethod<void>('register',map );
+  }
+
+  @override
+  Future<void> connect() async {
+    await _methodChannel
+            .invokeMethod<void>('connect');
+  }
+
+  @override
+  Future<void> write() async {
+    await _methodChannel
+            .invokeMethod<void>('write');
+  }
+
+  @override
+  Future<void> disconnect() async {
+    await _methodChannel
+            .invokeMethod<void>('disconnect');
+  }
+}
+
 /// An implementation of [AbrevvaCryptoPlatform] that uses method channels.
 class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
   /// The method channel used to interact with the native platform.

@@ -180,3 +180,29 @@ enum DisengageStatusType {
   timeout,
 }
 ```
+
+### Coding Identification Media
+
+Use the CodingStation to write or update access data onto an EVVA identification medium.
+
+```Dart
+class ExampleClass {
+  final _abrevvaCodingStation = AbrevvaCodingStation();
+
+  String url = "";
+  String clientId = "";
+  String username = "";
+  String password = "";
+  
+  void writeMedium() async {
+    try {
+      await _abrevvaCodingStation.register(url, clientId, username, password);
+      await _abrevvaCodingStation.connect();
+      await _abrevvaCodingStation.write();
+      await _abrevvaCodingStation.disconnect();
+    } catch (e) {
+      debugPrint("Error $e");
+    }
+  }
+}
+```
