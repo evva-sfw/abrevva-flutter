@@ -42,8 +42,21 @@ flutter pub add abrevva
 ```
 
 ### iOS
+Add a `post_install` hook in your Podfile to resolve a nasty [CocoaPods limitation with XCFrameworks](https://github.com/CocoaPods/CocoaPods/issues/11079).
 
-Execute `pod install` inside of your projects ios/ folder.
+```ruby
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+    end
+  end
+end
+```
+
+Execute `pod install` inside of your projects `ios/` folder.
+
 
 ### Android
 
