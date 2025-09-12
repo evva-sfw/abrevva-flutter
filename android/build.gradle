@@ -30,15 +30,14 @@ android {
         namespace 'com.evva.xesar.abrevva'
     }
 
-    compileSdkVersion 35
+    compileSdkVersion 36
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21
+        jvmTarget = "17"
     }
 
     sourceSets {
@@ -59,7 +58,7 @@ android {
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'io.mockk:mockk:1.13.12'
         testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
-        implementation group: "com.evva.xesar", name: "abrevva-sdk-android", version: "3.2.1"
+        implementation group: "com.evva.xesar", name: "abrevva-sdk-android", version: "3.2.3"
     }
 
     testOptions {
