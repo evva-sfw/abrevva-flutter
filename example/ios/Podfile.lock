@@ -74,7 +74,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
-  abrevva: a973fad306f02848a8ecae214977f4516c5f448b
+  abrevva: f4ac5e8320e706730ef96eea398e025663e9cbd4
   AbrevvaSDK: 0a0c7c0219bde5d36c84842ff1714d5793eddefb
   CocoaMQTT: 1f206228b29318eabdacad0c2e4e88575922c27a
   CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90

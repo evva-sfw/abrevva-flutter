@@ -44,32 +44,36 @@ jobs:
         run: make test-android
 
   test_ios:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup Flutter
         uses: ./.github/actions/flutter-setup
+      - name: Set Xcode Version
+        run: sudo xcode-select -s /Applications/Xcode_16.app
       - uses: SwiftyLab/setup-swift@5825efd16e0e9f41c4e9b94658b7973e16410d5b # v1.9.1
         with:
-          swift-version: "5.10.0"
-      - name: Get Swift Version
-        run: swift --version
-      - name: Get Xcode version
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_15.4.app
-        run: xcodebuild -version
+          swift-version: "5.10"
+      - name: Verify Environment
+        run: |
+          swift --version
+          xcodebuild -version
       - name: Cache Pods
         id: pods
         uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
         with:
           path: example/ios/Pods
-          key: pods-cache--${{ hashFiles('example/ios/podfile.lock') }}
+          key: pods-${{ runner.os }}-${{ hashFiles('example/ios/Podfile.lock') }}
+          restore-keys: |
+            pods-${{ runner.os }}-
       - name: Cache Xcode DerivedData
         uses: irgaly/xcode-cache@fd644652c5d3fd1f794edcdf839eb1dc03a9021f # v1.8.1
         with:
-          key: xcode-deriveddata
-      - run: cd example/ios; pod install
+          key: xcode-deriveddata-${{ runner.os }}
+      - name: Install Pods
+        if: steps.pods.outputs.cache-hit != 'true'
+        run: |
+          cd example/ios
+          pod install
       - name: Run Tests
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_15.4.app
         run: make test-ios
