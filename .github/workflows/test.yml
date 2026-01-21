@@ -62,18 +62,16 @@ jobs:
           swift --version
           xcodebuild -version
           xcodebuild -showsdks
+      - name: Boot iPhone Simulator
+        run: |
+          UDID=$(xcrun simctl list devices | grep "iPhone 17 (" | grep -v Pro | head -1 | grep -E -o -i "([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12})")
+          echo "Booting simulator with UDID: $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl list devices | grep "iPhone 17"
       - name: Clean and Install Pods
         run: |
           cd example/ios
           rm -rf Pods
           pod install
-      - name: Check available SDKs and Simulators
-        run: |
-          echo "=== Available SDKs ==="
-          xcodebuild -showsdks
-          echo "=== Available Simulators ==="
-          xcrun simctl list devices available
-          echo "=== Runtimes ==="
-          xcrun simctl list runtimes
       - name: Run Tests
         run: make test-ios
