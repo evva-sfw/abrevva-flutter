@@ -3,7 +3,7 @@ test:
 	$(MAKE) test-android
 
 test-ios:
-	xcodebuild -quiet \
+	xcodebuild \
 		-workspace example/ios/Runner.xcworkspace \
 		-scheme Runner \
 		-sdk iphonesimulator \
