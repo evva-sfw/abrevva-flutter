@@ -58,6 +58,10 @@ jobs:
         run: |
           swift --version
           xcodebuild -version
+          xcodebuild -showsdks
+      - name: Install iOS Runtime
+        run: |
+          xcodebuild -downloadPlatform iOS
       - name: Clean and Install Pods
         run: |
           cd example/ios
