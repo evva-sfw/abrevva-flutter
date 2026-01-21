@@ -58,22 +58,10 @@ jobs:
         run: |
           swift --version
           xcodebuild -version
-      - name: Cache Pods
-        id: pods
-        uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
-        with:
-          path: example/ios/Pods
-          key: pods-${{ runner.os }}-${{ hashFiles('example/ios/Podfile.lock') }}
-          restore-keys: |
-            pods-${{ runner.os }}-
-      - name: Cache Xcode DerivedData
-        uses: irgaly/xcode-cache@fd644652c5d3fd1f794edcdf839eb1dc03a9021f # v1.8.1
-        with:
-          key: xcode-deriveddata-${{ runner.os }}
-      - name: Install Pods
-        if: steps.pods.outputs.cache-hit != 'true'
+      - name: Clean and Install Pods
         run: |
           cd example/ios
+          rm -rf Pods
           pod install
       - name: List available simulators
         run: xcrun simctl list devices available
