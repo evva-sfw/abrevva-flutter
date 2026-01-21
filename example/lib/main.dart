@@ -123,9 +123,9 @@ class _BleState extends State<BleWidget> {
             itemBuilder: (context, index) {
               final result = scanResultList[index];
               return ListTile(
-                onTap: () {
+                onTap: () async {
                   AbrevvaBle.stopScan();
-                  AbrevvaBle.disengageWithXvnResponse(
+                  final result = await AbrevvaBle.disengageWithXvnResponse(
                       'deviceId',
                       'mobileId',
                       'mobileDeviceKey',
@@ -133,6 +133,7 @@ class _BleState extends State<BleWidget> {
                       'mobileAccessData',
                       true
                   );
+                  print("status=${result.status} xvnData=${result.xvnData}");
                 },
                 title: Text("${result.advertisementData?.manufacturerData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
                 subtitle: Text('${result.advertisementData?.manufacturerData?.companyIdentifier}'),

@@ -12,7 +12,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-EVVA_License-yellow.svg?color=fce500&logo=data:image/svg+xml;base64,PCEtLSBHZW5lcmF0ZWQgYnkgSWNvTW9vbi5pbyAtLT4KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjY0MCIgaGVpZ2h0PSIxMDI0IiB2aWV3Qm94PSIwIDAgNjQwIDEwMjQiPgo8ZyBpZD0iaWNvbW9vbi1pZ25vcmUiPgo8L2c+CjxwYXRoIGZpbGw9IiNmY2U1MDAiIGQ9Ik02MjIuNDIzIDUxMS40NDhsLTMzMS43NDYtNDY0LjU1MmgtMjg4LjE1N2wzMjkuODI1IDQ2NC41NTItMzI5LjgyNSA0NjYuNjY0aDI3NS42MTJ6Ij48L3BhdGg+Cjwvc3ZnPgo=" alt="EVVA License"></a>
 </p>
 
-The EVVA Flutter Plugin is a collection of tools to work with electronical EVVA access components. It allows for scanning and connecting via BLE.
+The EVVA Abrevva Flutter Plugin is a collection of tools to work with electronical EVVA access components. It allows for scanning and connecting via BLE.
 
 - [Features](#features)
 - [Requirements](#requirements)
@@ -21,19 +21,23 @@ The EVVA Flutter Plugin is a collection of tools to work with electronical EVVA 
 
 ## Features
 
-- BLE Scanner for EVVA components in range
-- Localize EVVA components encountered by a scan
-- Disengage EVVA components encountered by a scan
+- BLE Scanner for EVVA components
+- Localize scanned EVVA components
+- Disengage scanned EVVA components
 - Read / Write data via BLE
 
 ## Requirements
 
-- Flutter >=3.3.0
-- Java 17+ (Android)
-- Android SDK (Android)
-- Android 10+ (API level 29) (Android)
-- Xcode 15.4 (iOS)
-- iOS 15.0+ (iOS)
+| Platform    | Version |
+|-------------|---------|
+| Flutter     | 3.3.0+  | 
+| Java        | 17+     |
+| Android     | 11+     |
+| Android API | 30+     |
+| Kotlin      | 2.x     |
+| iOS         | 16.0+   |
+| Xcode       | 15.3+   |
+| Swift       | 5.10+   |
 
 ## Installation
 
@@ -42,7 +46,7 @@ flutter pub add abrevva
 ```
 
 ### iOS
-Add a `post_install` hook in your Podfile to resolve a nasty [CocoaPods limitation with XCFrameworks](https://github.com/CocoaPods/CocoaPods/issues/11079).
+In your app add a `post_install` hook in your Podfile to resolve a nasty [CocoaPods limitation with XCFrameworks](https://github.com/CocoaPods/CocoaPods/issues/11079).
 
 ```ruby
 post_install do |installer|
@@ -149,19 +153,23 @@ With the signalize method you can localize EVVA components. On a successful sign
 final success = await AbrevvaBle.signalize('deviceId');
 ```
 
-### Perform disengage on EVVA components
+### Disengage EVVA components
 
-For the component disengage you have to provide access credentials to the EVVA component. Those are generally acquired in the form of access media metadata from the Xesar software.
+For the component disengage you have to provide access credentials to the EVVA component. Those are generally acquired from the Xesar software.
+
+> Note: Since 2.0.0 the `mobileId` string can be passed as is, without sha256 hashing the input first.
 
 ```Dart
-final status = await AbrevvaBle.disengage(
+final result = await AbrevvaBle.disengageWithXvnResponse(
   'deviceId',
   'mobileId',
   'mobileDeviceKey',
   'mobileGroupId',
   'mobileAccessData',
-  false,
+  true
 );
+
+print("status=${result.status} xvnData=${result.xvnData}");
 ```
 
 There are several access status types upon attempting the component disengage.
@@ -200,8 +208,6 @@ Use the CodingStation to write or update access data onto an EVVA identification
 
 ```Dart
 class ExampleClass {
-  final _abrevvaCodingStation = AbrevvaCodingStation();
-
   String url = "";
   String clientId = "";
   String username = "";
@@ -209,10 +215,10 @@ class ExampleClass {
   
   void writeMedium() async {
     try {
-      await _abrevvaCodingStation.register(url, clientId, username, password);
-      await _abrevvaCodingStation.connect();
-      await _abrevvaCodingStation.write();
-      await _abrevvaCodingStation.disconnect();
+      await AbrevvaCodingStation.register(url, clientId, username, password);
+      await AbrevvaCodingStation.connect();
+      await AbrevvaCodingStation.write();
+      await AbrevvaCodingStation.disconnect();
     } catch (e) {
       debugPrint("Error $e");
     }

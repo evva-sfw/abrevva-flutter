@@ -1,5 +1,5 @@
 PODS:
-  - abrevva (1.2.0):
+  - abrevva (2.0.0):
     - AbrevvaSDK (= 3.4.0)
     - Flutter
   - AbrevvaSDK (3.4.0):
