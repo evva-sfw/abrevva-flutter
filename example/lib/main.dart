@@ -1,4 +1,5 @@
 import 'package:abrevva/abrevva_param_classes.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:abrevva/abrevva.dart';
@@ -133,7 +134,9 @@ class _BleState extends State<BleWidget> {
                       'mobileAccessData',
                       true
                   );
-                  print("status=${result.status} xvnData=${result.xvnData}");
+                  if (kDebugMode) {
+                    print("status=${result.status} xvnData=${result.xvnData}");
+                  }
                 },
                 title: Text("${result.advertisementData?.manufacturerData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
                 subtitle: Text('${result.advertisementData?.manufacturerData?.companyIdentifier}'),
