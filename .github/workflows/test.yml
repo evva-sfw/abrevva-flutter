@@ -56,7 +56,7 @@ jobs:
           swift-version: "5.10"
       - name: Install iOS Runtime
         run: |
-          sudo xcrun simctl runtime add "iOS 26.2" || true
+          sudo xcrun simctl runtime add "iOS 18.2" || true
       - name: Boot iPhone Simulator
         run: |
           UDID=$(xcrun simctl list devices | grep "iPhone 17 (" | grep -v Pro | head -1 | grep -E -o -i "([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12})")
