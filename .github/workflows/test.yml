@@ -51,24 +51,24 @@ jobs:
         uses: ./.github/actions/flutter-setup
       - name: Set Xcode Version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app
-      - name: Install iOS Runtime
-        run: |
-          sudo xcrun simctl runtime add "iOS 18.2" || true
-      - name: Boot iPhone Simulator
-        run: |
-          UDID=$(xcrun simctl list devices | grep "iPhone 17 (" | grep -v Pro | head -1 | grep -E -o -i "([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12})")
-          echo "Booting simulator with UDID: $UDID"
-          xcrun simctl boot "$UDID" || true
-      - name: Cache Pods
-        id: pods
-        uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
-        with:
-          path: example/ios/Pods
-          key: pods-cache--${{ hashFiles('example/ios/podfile.lock') }}
-      - name: Cache Xcode DerivedData
-        uses: irgaly/xcode-cache@fd644652c5d3fd1f794edcdf839eb1dc03a9021f # v1.8.1
-        with:
-          key: xcode-deriveddata
+#      - name: Install iOS Runtime
+#        run: |
+#          sudo xcrun simctl runtime add "iOS 18.2" || true
+#      - name: Boot iPhone Simulator
+#        run: |
+#          UDID=$(xcrun simctl list devices | grep "iPhone 17 (" | grep -v Pro | head -1 | grep -E -o -i "([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12})")
+#          echo "Booting simulator with UDID: $UDID"
+#          xcrun simctl boot "$UDID" || true
+#      - name: Cache Pods
+#        id: pods
+#        uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
+#        with:
+#          path: example/ios/Pods
+#          key: pods-cache--${{ hashFiles('example/ios/podfile.lock') }}
+#      - name: Cache Xcode DerivedData
+#        uses: irgaly/xcode-cache@fd644652c5d3fd1f794edcdf839eb1dc03a9021f # v1.8.1
+#        with:
+#          key: xcode-deriveddata
       - name: Install Pods
         run: |
           cd example/ios

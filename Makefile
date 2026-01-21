@@ -3,11 +3,11 @@ test:
 	$(MAKE) test-android
 
 test-ios:
-	xcodebuild \
+	xcodebuild -quiet \
 		-workspace example/ios/Runner.xcworkspace \
 		-scheme Runner \
 		-sdk iphonesimulator \
-		-destination 'platform=iOS Simulator,name=iPhone 17' \
+		-destination 'platform=iOS Simulator' \
 		test || exit 1
 
 test-android:
