@@ -50,6 +50,8 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
             write(call, result: result)
         case "disengage":
             disengage(call, result: result)
+        case "disengageWithXvnResponse":
+            disengageWithXvnResponse(call, result: result)
         case "stopNotifications":
             stopNotifications(call, result: result)
         case "signalize":
@@ -267,6 +269,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     }
 
     @objc
+    @available(*, deprecated, message: "Use disengageWithXvnResponse() instead.")
     func disengage(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard self.getBleManager(result) != nil else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
@@ -281,7 +284,6 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         let mobileGroupID = optionsSwift["mobileGroupId"] as? String ?? ""
         let mobileAccessData = optionsSwift["mobileAccessData"] as? String ?? ""
         let isPermanentRelease = optionsSwift["isPermanentRelease"] as? Bool ?? false
-        let timeout = optionsSwift["timeout"] as? Int ?? nil
 
         Task {
             let status = await self.bleManager!.disengage(
@@ -293,6 +295,40 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
                 isPermanentRelease
             )
             result(status.rawValue)
+        }
+    }
+    
+    @objc
+    func disengageWithXvnResponse(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard self.getBleManager(result) != nil else { return }
+        guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
+        
+        guard let optionsSwift = call.arguments as? [String: Any] else {
+            result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
+            return
+        }
+        
+        let mobileID = optionsSwift["mobileId"] as? String ?? ""
+        let mobileDeviceKey = optionsSwift["mobileDeviceKey"] as? String ?? ""
+        let mobileGroupID = optionsSwift["mobileGroupId"] as? String ?? ""
+        let mobileAccessData = optionsSwift["mobileAccessData"] as? String ?? ""
+        let isPermanentRelease = optionsSwift["isPermanentRelease"] as? Bool ?? false
+        
+        Task {
+            let response = await self.bleManager!.disengageWithXvnResponse(
+                device,
+                mobileID,
+                mobileDeviceKey,
+                mobileGroupID,
+                mobileAccessData,
+                isPermanentRelease
+            )
+            let xvnData = response.1?.toHexString() ?? nil
+            
+            result([
+                "status": response.0.rawValue,
+                "xvnData": xvnData as Any,
+            ])
         }
     }
 

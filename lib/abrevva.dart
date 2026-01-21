@@ -63,6 +63,18 @@ class AbrevvaCrypto {
         .decryptFileFromURL(sharedSecret, url, ptPath);
   }
 
+  Future<ED25519PublicKeyResult> computeED25519PublicKey(String privateKey) {
+    return AbrevvaCryptoPlatform.instance.computeED25519PublicKey(privateKey);
+  }
+
+  Future<SignResult> sign(String privateKey, String data) {
+    return AbrevvaCryptoPlatform.instance.sign(privateKey, data);
+  }
+
+  Future<void> verify(String publicKey, String data, String signature) {
+    return AbrevvaCryptoPlatform.instance.verify(publicKey, data, signature);
+  }
+
   Future<StringResult> derive(
       String key, String salt, String info, int length) {
     return AbrevvaCryptoPlatform.instance.derive(key, salt, info, length);
@@ -113,9 +125,9 @@ class AbrevvaBle {
     return AbrevvaBlePlatform.instance.startScan(
       onScanResult: onScanResult,
       onScanStart: onScanStart,
-      onScanStop: onScanStop, 
+      onScanStop: onScanStop,
       macFilter: macFilter,
-      allowDuplicates: allowDuplicates, 
+      allowDuplicates: allowDuplicates,
       timeout: timeout
     );
   }
@@ -133,7 +145,7 @@ class AbrevvaBle {
   }
 
   Future<List<Uint8>> read(
-      String deviceId, 
+      String deviceId,
       String service,
       String characteristic,
       int timeout
@@ -148,6 +160,7 @@ class AbrevvaBle {
         .write(deviceId, service, characteristic, value, timeout);
   }
 
+  @Deprecated("Use disengageWithXvnResponse() instead.")
   Future<DisengageStatusType> disengage(
       String deviceId,
       String mobileId,
@@ -156,6 +169,17 @@ class AbrevvaBle {
       String mobileAccessData,
       bool isPermanentRelease) {
     return AbrevvaBlePlatform.instance.disengage(deviceId, mobileId, mobileDeviceKey,
+        mobileGroupId, mobileAccessData, isPermanentRelease);
+  }
+
+  Future<DisengageResult> disengageWithXvnResponse(
+      String deviceId,
+      String mobileId,
+      String mobileDeviceKey,
+      String mobileGroupId,
+      String mobileAccessData,
+      bool isPermanentRelease) {
+    return AbrevvaBlePlatform.instance.disengageWithXvnResponse(deviceId, mobileId, mobileDeviceKey,
         mobileGroupId, mobileAccessData, isPermanentRelease);
   }
 

@@ -10,13 +10,16 @@ import io.flutter.plugin.common.MethodChannel
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.bouncycastle.util.encoders.Hex
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -31,8 +34,7 @@ import java.io.IOException
 import java.util.stream.Stream
 import org.junit.jupiter.params.provider.Arguments as JunitArguments
 
-class AbevvaCryptoTest {
-
+class AbrevvaCryptoTest {
     private lateinit var abrevvaCrypto: AbrevvaCrypto
 
     @MockK(relaxed = true)
@@ -66,8 +68,6 @@ class AbevvaCryptoTest {
     inner class EncryptTests {
         @Test
         fun `should reject if ct is empty`() {
-
-
             every { Hex.decode(any<String>()) } returns byteArrayOf()
             every { AesCcm.encrypt(any(), any(), any(), any(), any()) } returns ByteArray(0)
 
@@ -244,7 +244,6 @@ class AbevvaCryptoTest {
     @Nested
     @DisplayName("decryptFileFromURL()")
     inner class DecryptFileFromURLTests {
-
         @Nested
         @DisplayName("should reject if any Param is empty")
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -333,7 +332,6 @@ class AbevvaCryptoTest {
 
             abrevvaCrypto.random(callMock, resultMock)
 
-
             assert(resultSlot.captured["value"]!!.length == expectedStrLen)
         }
 
@@ -351,7 +349,6 @@ class AbevvaCryptoTest {
     @Nested
     @DisplayName("derive()")
     inner class DeriveTests {
-
         @Test
         fun `should resolve if successful`() {
             every { callMock.argument<Int>("length") } returns 0
@@ -367,6 +364,112 @@ class AbevvaCryptoTest {
             every { callMock.argument<Int>("length") } returns 10
             every { HKDF.derive(any(), any(), any(), any()) } returns ByteArray(10)
             abrevvaCrypto.derive(callMock, resultMock)
+
+            verify { resultMock.success(any()) }
+        }
+    }
+
+    @Nested
+    @DisplayName("sign()")
+    inner class SignTests {
+        @Test
+        fun `should resolve if successful`() {
+            every { callMock.argument<String>("privateKey") } returns "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc="
+            every { callMock.argument<String>("data") } returns "data"
+            every {
+                X25519Wrapper.sign(
+                    any(),
+                    any()
+                )
+            } returns SimpleSecureRandom.getSecureRandomBytes(32)
+
+            abrevvaCrypto.sign(callMock, resultMock)
+
+            verify { resultMock.success(any()) }
+        }
+
+        @Test
+        fun `should reject if unsuccessful`() {
+            every { callMock.argument<String>("privateKey") } returns "00000"
+            every { callMock.argument<String>("data") } returns "data"
+            every {
+                X25519Wrapper.sign(
+                    any(),
+                    any()
+                )
+            } returns SimpleSecureRandom.getSecureRandomBytes(32)
+
+            abrevvaCrypto.sign(callMock, resultMock)
+
+            verify { resultMock.error(any(), any(), any()) }
+        }
+    }
+
+    @Nested
+    @DisplayName("verify()")
+    inner class VerifyTests {
+        @Test
+        fun `should resolve if signature is valid`() = runBlocking {
+            val privateKey = "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc="
+            val publicKey = "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo="
+            val signatureSlot = slot<Map<String, Any>>()
+
+            every { callMock.argument<String>("privateKey") } returns privateKey
+            every { callMock.argument<String>("data") } returns "data"
+            every { resultMock.success(capture(signatureSlot)) } just runs
+            abrevvaCrypto.sign(callMock, resultMock)
+
+            val signature = signatureSlot.captured["signature"] as String
+
+            val callMock2 = mockk<MethodCall>()
+            val resultMock2 = mockk<MethodChannel.Result>()
+
+            every { callMock2.argument<String>("publicKey") } returns publicKey
+            every { callMock2.argument<String>("data") } returns "data"
+            every { callMock2.argument<String>("signature") } returns signature
+            every { resultMock2.success(any()) } just runs
+            abrevvaCrypto.verify(callMock2, resultMock2)
+
+            verify { resultMock2.success(any()) }
+        }
+
+        @Test
+        fun `should reject if signature is invalid`() {
+            val privateKey = "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc="
+            val publicKey = "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo="
+            val signatureSlot = slot<Map<String, Any>>()
+
+            every { callMock.argument<String>("privateKey") } returns privateKey
+            every { callMock.argument<String>("data") } returns "data"
+            every { resultMock.success(capture(signatureSlot)) } just runs
+            abrevvaCrypto.sign(callMock, resultMock)
+
+            val signature = signatureSlot.captured["signature"] as String
+
+            val callMock2 = mockk<MethodCall>()
+            val resultMock2 = mockk<MethodChannel.Result>()
+
+            every { callMock2.argument<String>("publicKey") } returns publicKey
+            every { callMock2.argument<String>("data") } returns "data123"
+            every { callMock2.argument<String>("signature") } returns signature
+            every { resultMock2.success(any()) } just runs
+            every { resultMock2.error(any(), any(), any()) } just runs
+            abrevvaCrypto.verify(callMock2, resultMock2)
+
+            verify { resultMock2.error(any(), any(), any()) }
+        }
+    }
+
+    @Nested
+    @DisplayName("computeED25519PublicKey()")
+    inner class ComputeED25519PublicKeyTests {
+        @Test
+        fun `should compute a valid public key`() {
+            val privateKey = "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc="
+
+            every { callMock.argument<String>("privateKey") } returns privateKey
+
+            abrevvaCrypto.computeED25519PublicKey(callMock, resultMock)
 
             verify { resultMock.success(any()) }
         }

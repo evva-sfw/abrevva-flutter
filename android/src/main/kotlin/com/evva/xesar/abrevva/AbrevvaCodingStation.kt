@@ -14,14 +14,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.net.URL
 
-
 class AbrevvaCodingStation(applicationContext: Context) : MethodChannel.MethodCallHandler {
-
     private var activity: Activity? = null
     private var codingStation: CodingStation = CodingStation(applicationContext)
     private var mqttConnectionOptionsTLS: MqttConnectionOptionsTLS? = null
-
-
+    
     fun eventObserver(activity: Activity) {
         this.activity = activity
     }
