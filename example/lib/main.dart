@@ -82,13 +82,11 @@ class BleWidget extends StatefulWidget {
 }
 
 class _BleState extends State<BleWidget> {
-  final _ble = AbrevvaBle();
-
   @override
   void initState() {
     super.initState();
     try {
-      _ble.initialize(false);
+      AbrevvaBle.initialize(false);
     } catch (e) {
       // ignore: avoid_print
       print(e);
@@ -99,7 +97,7 @@ class _BleState extends State<BleWidget> {
 
   Future<void> _scanForDevices() async {
     scanResultList.clear();
-    return await _ble.startScan( onScanResult: (device) {
+    return await AbrevvaBle.startScan( onScanResult: (device) {
       setState(() {
               scanResultList.add(device);
       });
@@ -108,7 +106,7 @@ class _BleState extends State<BleWidget> {
 
   @override
   dispose() async {
-    _ble.stopScan();
+    AbrevvaBle.stopScan();
     super.dispose();
   }
 
@@ -126,8 +124,15 @@ class _BleState extends State<BleWidget> {
               final result = scanResultList[index];
               return ListTile(
                 onTap: () {
-                  _ble.stopScan();
-                  _ble.disengage('deviceId', 'mobileId', 'mobileDeviceKey', 'mobileGroupId', 'mobileAccessData', true);
+                  AbrevvaBle.stopScan();
+                  AbrevvaBle.disengageWithXvnResponse(
+                      'deviceId',
+                      'mobileId',
+                      'mobileDeviceKey',
+                      'mobileGroupId',
+                      'mobileAccessData',
+                      true
+                  );
                 },
                 title: Text("${result.advertisementData?.manufacturerData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
                 subtitle: Text('${result.advertisementData?.manufacturerData?.companyIdentifier}'),
@@ -147,7 +152,6 @@ class CryptoWidget extends StatefulWidget {
 
 class _CryptoState extends State<CryptoWidget> {
   String value = 'Output';
-  final _abrevvaCrypto = AbrevvaCrypto();
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +170,7 @@ class _CryptoState extends State<CryptoWidget> {
                     )),
                 ElevatedButton(
                     onPressed: () {
-                      _abrevvaCrypto.random(6).then((result) {
+                      AbrevvaCrypto.random(6).then((result) {
                         setState(() {
                           value = 'random(6) => ${result.value}';
                         });
@@ -175,7 +179,7 @@ class _CryptoState extends State<CryptoWidget> {
                     child: const Text('random()')),
                 ElevatedButton(
                     onPressed: () {
-                      _abrevvaCrypto
+                      AbrevvaCrypto
                           .generateKeyPair()
                           .then((result) => setState(() {
                                 value =
@@ -202,7 +206,6 @@ class _CodingStationState extends State<CodingStationWidget> {
   String password = "";
 
   String value = 'Output';
-  final _abrevvaCodingStation = AbrevvaCodingStation();
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +225,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await _abrevvaCodingStation.register(url,clientId,username,password);
+                        await AbrevvaCodingStation.register(url,clientId,username,password);
                         setState(() {
                           value = 'register(): success';
                           }
@@ -239,7 +242,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await _abrevvaCodingStation.connect();
+                        await AbrevvaCodingStation.connect();
                         setState(() {
                           value = 'connect(): success';
                           }
@@ -256,7 +259,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await _abrevvaCodingStation.write();
+                        await AbrevvaCodingStation.write();
                         setState(() {
                           value = 'write(): success';
                           }
@@ -272,7 +275,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                     ),
                 ElevatedButton(
                     onPressed: () async {
-                        await _abrevvaCodingStation.disconnect();
+                        await AbrevvaCodingStation.disconnect();
                         setState(() {
                           value = 'disconnect(): success';
                           }

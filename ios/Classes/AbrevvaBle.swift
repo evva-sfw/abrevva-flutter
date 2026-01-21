@@ -297,23 +297,23 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
             result(status.rawValue)
         }
     }
-    
+
     @objc
     func disengageWithXvnResponse(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard self.getBleManager(result) != nil else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
-        
+
         guard let optionsSwift = call.arguments as? [String: Any] else {
             result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
             return
         }
-        
+
         let mobileID = optionsSwift["mobileId"] as? String ?? ""
         let mobileDeviceKey = optionsSwift["mobileDeviceKey"] as? String ?? ""
         let mobileGroupID = optionsSwift["mobileGroupId"] as? String ?? ""
         let mobileAccessData = optionsSwift["mobileAccessData"] as? String ?? ""
         let isPermanentRelease = optionsSwift["isPermanentRelease"] as? Bool ?? false
-        
+
         Task {
             let response = await self.bleManager!.disengageWithXvnResponse(
                 device,
@@ -324,10 +324,10 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
                 isPermanentRelease
             )
             let xvnData = response.1?.toHexString() ?? nil
-            
+
             result([
                 "status": response.0.rawValue,
-                "xvnData": xvnData as Any,
+                "xvnData": xvnData as Any
             ])
         }
     }
