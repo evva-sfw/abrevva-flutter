@@ -7,7 +7,7 @@ test-ios:
 		-workspace example/ios/Runner.xcworkspace \
 		-scheme Runner \
 		-sdk iphonesimulator \
-		-destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2' \
+		-destination 'platform=iOS Simulator,name=iPhone 17' \
 		test || exit 1
 
 test-android:
