@@ -54,20 +54,26 @@ jobs:
       - uses: SwiftyLab/setup-swift@5825efd16e0e9f41c4e9b94658b7973e16410d5b # v1.9.1
         with:
           swift-version: "5.10"
+      - name: Install iOS Runtime
+        run: |
+          sudo xcrun simctl runtime add "iOS 18.2" || true
       - name: Verify Environment
         run: |
           swift --version
           xcodebuild -version
           xcodebuild -showsdks
-      - name: Install iOS Runtime
-        run: |
-          xcodebuild -downloadPlatform iOS
       - name: Clean and Install Pods
         run: |
           cd example/ios
           rm -rf Pods
           pod install
-      - name: List available simulators
-        run: xcrun simctl list devices available
+      - name: Check available SDKs and Simulators
+        run: |
+          echo "=== Available SDKs ==="
+          xcodebuild -showsdks
+          echo "=== Available Simulators ==="
+          xcrun simctl list devices available
+          echo "=== Runtimes ==="
+          xcrun simctl list runtimes
       - name: Run Tests
         run: make test-ios
