@@ -195,6 +195,56 @@ void main() {
 
       expect(handlerCalled, true);
     });
+    test('computeED25519PublicKey', () async {
+      bool handlerCalled = false;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        if (methodCall.method == 'computeED25519PublicKey') {
+          handlerCalled = true;
+        }
+        return {
+          'publicKey': 'publicKey'
+        };
+      });
+
+      await platform.computeED25519PublicKey('privateKey');
+
+      expect(handlerCalled, true);
+    });
+    test('sign', () async {
+      bool handlerCalled = false;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        if (methodCall.method == 'sign') {
+          handlerCalled = true;
+        }
+        return {
+          'signature': 'signature'
+        };
+      });
+
+      await platform.sign('privateKey', 'data');
+
+      expect(handlerCalled, true);
+    });
+    test('verify', () async {
+      bool handlerCalled = false;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        if (methodCall.method == 'verify') {
+          handlerCalled = true;
+        }
+        return {
+          'publicKey': 'publicKey',
+          'data': 'data',
+          'signature': 'signature'
+        };
+      });
+
+      await platform.verify('publicKey', 'data', 'signature');
+
+      expect(handlerCalled, true);
+    });
   });
   group('AbrevvaBle Tests', () {
     MethodChannelAbrevvaBlePlatform platform =
@@ -236,7 +286,7 @@ void main() {
           .setMockMethodCallHandler(channel, null);
       capturedFunction = null;
     });
-        
+
     group("startEnabledNotifications", () {
       test('should not call callback on error', () async {
         simulateNativeMethodCall('startEnabledNotifications', null);
@@ -247,7 +297,7 @@ void main() {
         // ignore: empty_catches
         } catch (e) {}
         verifyNever(() => testCallback.invoke(any()));
-   
+
       });
 
       test('should call callback if no error occurred', () async {
@@ -271,7 +321,7 @@ void main() {
         simulateNativeMethodCall('startNotifications', {
           'value': true
         });
-        
+
         platform.startNotifications('deviceId', 'service', 'char', 1000, testCallback.invoke);
         final capturedFunction =
             verify(() => mockStream.listen(captureAny())).captured.single;

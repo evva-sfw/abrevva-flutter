@@ -56,9 +56,9 @@ android {
     }
     dependencies {
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
-        testImplementation 'io.mockk:mockk:1.13.12'
+        testImplementation 'io.mockk:mockk:1.14.7'
         testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
-        implementation group: "com.evva.xesar", name: "abrevva-sdk-android", version: "3.2.3"
+        implementation group: "com.evva.xesar", name: "abrevva-sdk-android", version: "4.1.0"
     }
 
     testOptions {

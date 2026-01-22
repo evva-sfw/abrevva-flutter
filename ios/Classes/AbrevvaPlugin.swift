@@ -9,7 +9,7 @@ public class AbrevvaPlugin: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(AbrevvaCrypto(), channel: channelCrypto)
 
         /// Register `AbrevvaBle` Method Channel
-        /// and create individual EventChannels for all Memberfunctions that require an EventChannel
+        /// and create individual EventChannels for all member functions that require an EventChannel
         let channelBle = FlutterMethodChannel(name: "AbrevvaBle", binaryMessenger: registrar.messenger())
         let instanceBle = AbrevvaBle()
         registrar.addMethodCallDelegate(instanceBle, channel: channelBle)

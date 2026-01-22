@@ -1,12 +1,13 @@
 package com.evva.xesar.abrevva
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.annotation.RequiresPermission
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.evva.xesar.abrevva.ble.BleDevice
@@ -23,7 +24,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-
 class AbrevvaStreamHandler : EventChannel.StreamHandler {
     var eventSink: EventChannel.EventSink? = null
 
@@ -38,7 +38,6 @@ class AbrevvaStreamHandler : EventChannel.StreamHandler {
 
 @OptIn(ExperimentalStdlibApi::class)
 class AbrevvaBle : MethodChannel.MethodCallHandler {
-
     private lateinit var manager: BleManager
     private lateinit var aliases: Array<String>
     private lateinit var contextMain: Context
@@ -68,6 +67,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "initialize" -> initialize(call, result)
@@ -85,6 +85,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
             "read" -> read(call, result)
             "write" -> write(call, result)
             "disengage" -> disengage(call, result)
+            "disengageWithXvnResponse" -> disengageWithXvnResponse(call, result)
             "stopNotifications" -> stopNotifications(call, result)
             "signalize" -> signalize(call, result)
             "startEnabledNotifications" -> startEnabledNotifications(call, result)
@@ -151,7 +152,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
 
     fun openAppSettings(result: MethodChannel.Result) {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.data = Uri.parse("package:" + activityMain.packageName)
+        intent.data = ("package:" + activityMain.packageName).toUri()
 
         activityMain.startActivity(intent)
         result.success(null)
@@ -226,21 +227,22 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         val device = manager.getBleDevice(deviceId) ?: run {
             return result.error("connect(): device not found", null, null)
         }
-        manager.connect(device, { success: Boolean ->
-            if (success) {
-                result.success(true)
-            } else {
-                result.error("connect(): failed to connect", null, null)
-            }
-        }, { success ->
-            activityMain.runOnUiThread {
-                connectStreamHandler.eventSink?.success(
-                    mapOf(
-                        "value" to deviceId
+        manager.connect(
+            device, { success: Boolean ->
+                if (success) {
+                    result.success(true)
+                } else {
+                    result.error("connect(): failed to connect", null, null)
+                }
+            }, { success ->
+                activityMain.runOnUiThread {
+                    connectStreamHandler.eventSink?.success(
+                        mapOf(
+                            "value" to deviceId
+                        )
                     )
-                )
-            }
-        },
+                }
+            },
             timeout
         )
     }
@@ -322,6 +324,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         }
     }
 
+    @Deprecated("Use disengageWithXvnResponse() instead.")
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun disengage(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
@@ -349,6 +352,38 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         }
     }
 
+    @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
+    fun disengageWithXvnResponse(call: MethodCall, result: MethodChannel.Result) {
+        val deviceId = call.argument<String>("deviceId") ?: ""
+        val mobileId = call.argument<String>("mobileId") ?: ""
+        val mobileDeviceKey = call.argument<String>("mobileDeviceKey") ?: ""
+        val mobileGroupId = call.argument<String>("mobileGroupId") ?: ""
+        val mobileAccessData = call.argument<String>("mobileAccessData") ?: ""
+        var isPermanentRelease = false
+        try {
+            isPermanentRelease = call.argument<Boolean>("isPermanentRelease") ?: false
+        } catch (_: Exception) {
+        }
+        val device = manager.getBleDevice(deviceId) ?: run {
+            return result.error("connect(): device not found", null, null)
+        }
+        manager.disengageWithXvnResponse(
+            device,
+            mobileId,
+            mobileDeviceKey,
+            mobileGroupId,
+            mobileAccessData,
+            isPermanentRelease
+        ) { status: DisengageStatusType, xvnData: ByteArray? ->
+            result.success(
+                mapOf(
+                    "status" to status.toString(),
+                    "xvnData" to xvnData?.toHexString()
+                )
+            )
+        }
+    }
+
     @OptIn(DelicateCoroutinesApi::class)
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun stopNotifications(call: MethodCall, result: MethodChannel.Result) {
@@ -362,7 +397,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         GlobalScope.launch {
             val success = device.stopNotifications(characteristic.first, characteristic.second)
             if (success) {
-                result.success(success)
+                result.success(true)
             } else {
                 result.error("stopNotifications(): failed to unset notifications", null, null)
             }
@@ -426,7 +461,8 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         }
 
         GlobalScope.launch {
-            val success = device.setNotifications(characteristic.first,
+            val success = device.setNotifications(
+                characteristic.first,
                 characteristic.second, { data ->
                     val key =
                         "notification|${deviceId}|${(characteristic.first)}|${(characteristic.second)}"

@@ -10,6 +10,7 @@ final class AbrevvaCryptoTests: QuickSpec {
     override class func spec() {
         var cryptoModule: AbrevvaCrypto?
         var resolved: Bool?
+
         beforeEach {
             cryptoModule = AbrevvaCrypto()
             resolved = nil
@@ -49,6 +50,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                 expect(resolved!).to(beFalse())
             }
         }
+
         describe("decrypt()") {
             it("should resolve if decryption succeds") {
                 let options: [String: Any] = [
@@ -85,9 +87,12 @@ final class AbrevvaCryptoTests: QuickSpec {
                 expect(resolved!).to(beFalse())
             }
         }
+
         describe("generateKeyPair()") {
             it("should resolve with two keys") {
-                cryptoModule!.generateKeyPair { data in
+                let call = FlutterMethodCall(methodName: "generateKeyPair", arguments: [:])
+
+                cryptoModule!.generateKeyPair(call) { data in
                     if (data as? FlutterError) != nil {
                         resolved = false
                         return
@@ -101,13 +106,14 @@ final class AbrevvaCryptoTests: QuickSpec {
                 expect(resolved!).to(beTrue())
             }
         }
+
         describe("computeSharedSecret") {
             it("should resolve with a valid shared secret") {
                 let options: [String: Any] = [
-                    "privateKey": "0468f4f0ec2f08c558246a866ce477d903fa577373f8622e1aa2e64e2e2c456d",
-                    "peerPublicKey": "f764ef9667497e7bcb4cdbeb0bf86462638cf65637569a65a8b5ed23b9a79621",
+                    "privateKey": "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc=",
+                    "peerPublicKey": "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo=",
                 ]
-                let secret = "34b78ecc79b605c85e0d995f8143990ffcee19b276fa55418c5232915c43af2c"
+                let secret = "75a2ec9ed1dec71217026a24f553c91178d648957a805e88552c481b74aad56b"
                 let call = FlutterMethodCall(methodName: "computeSharedSecret", arguments: options)
 
                 cryptoModule!.computeSharedSecret(call) { data in
@@ -125,7 +131,7 @@ final class AbrevvaCryptoTests: QuickSpec {
             it("should return nil if secret cannot be computed") {
                 let options: [String: Any] = [
                     "key": "InvalidKey",
-                    "peerPublicKey": "f764ef9667497e7bcb4cdbeb0bf86462638cf65637569a65a8b5ed23b9a79621",
+                    "peerPublicKey": "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo=",
                 ]
                 let call = FlutterMethodCall(methodName: "computeSharedSecret", arguments: options)
 
@@ -139,9 +145,10 @@ final class AbrevvaCryptoTests: QuickSpec {
                     resolved = true
                 }
 
-                expect(resolved!).to(beTrue())
+                expect(resolved!).to(beFalse())
             }
         }
+
         describe("encryptFile") {
             let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
             let directoryPath = docDir.first!.path + "/aes_gcm_test"
@@ -193,6 +200,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                 expect(resolved!).to(beFalse())
             }
         }
+
         describe("decryptFile") {
             let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
             let directoryPath = docDir.first!.path + "/aes_gcm_test"
@@ -244,6 +252,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                 expect(resolved!).to(beFalse())
             }
         }
+
         describe("random()") {
             it("should return n random byte") {
                 let options: NSDictionary = ["numBytes": 4]
@@ -261,6 +270,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                 expect(resolved!).to(beTrue())
             }
         }
+
         describe("derive()") {
             it("should return a correctly derived key") {
                 let options: NSDictionary = [
@@ -304,6 +314,125 @@ final class AbrevvaCryptoTests: QuickSpec {
                     expect((dataMap["value"]!!)).to(equal(derivedKey))
                 }
                 expect(resolved!).to(beFalse())
+            }
+        }
+
+        describe("sign()") {
+            it("should create a signature") {
+                let options: NSDictionary = [
+                    "privateKey": "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc=",
+                    "data": "data",
+                ]
+                let call = FlutterMethodCall(methodName: "sign", arguments: options)
+
+                cryptoModule!.sign(call) { data in
+                    if (data as? FlutterError) != nil {
+                        resolved = false
+                        return
+                    }
+                    let dataMap = data as! [String: String?]
+
+                    expect(dataMap["signature"]).toNot(beNil())
+                    resolved = true
+                }
+                expect(resolved!).to(beTrue())
+            }
+            it("should reject on failed signature") {
+                let options: NSDictionary = [
+                    "privateKey": "00000",
+                    "data": "data",
+                ]
+                let call = FlutterMethodCall(methodName: "sign", arguments: options)
+
+                cryptoModule!.sign(call) { data in
+                    if (data as? FlutterError) != nil {
+                        resolved = false
+                        return
+                    }
+                    let dataMap = data as! [String: String?]
+
+                    expect(dataMap["signature"]).toNot(beNil())
+                    resolved = true
+                }
+                expect(resolved!).to(beFalse())
+            }
+        }
+
+        describe("verify()") {
+            it("should succeed if the signature is valid") {
+                var options: NSDictionary = [
+                    "privateKey": "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc=",
+                    "data": "data",
+                ]
+                var signature = ""
+                var call = FlutterMethodCall(methodName: "sign", arguments: options)
+                cryptoModule!.sign(call) { data in
+                    let dataMap = data as! [String: String?]
+                    signature = dataMap["signature"]!!
+                }
+
+                options = [
+                    "publicKey": "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo=",
+                    "data": "data",
+                    "signature": signature,
+                ]
+                call = FlutterMethodCall(methodName: "verify", arguments: options)
+
+                cryptoModule!.verify(call) { data in
+                    if (data as? FlutterError) != nil {
+                        resolved = false
+                        return
+                    }
+                    let dataMap = data as! [String: Bool]
+
+                    expect(dataMap["opOk"]).to(beTrue())
+                    resolved = true
+                }
+                expect(resolved!).to(beTrue())
+            }
+
+            it("should fail if the signature is invalid") {
+                var options: NSDictionary = [
+                    "privateKey": "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc=",
+                    "data": "data",
+                ]
+                var signature = ""
+                var call = FlutterMethodCall(methodName: "sign", arguments: options)
+                cryptoModule!.sign(call) { data in
+                    let dataMap = data as! [String: String?]
+                    signature = dataMap["signature"]!!
+                }
+
+                options = [
+                    "publicKey": "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo=",
+                    "data": "data123",
+                    "signature": signature,
+                ]
+                call = FlutterMethodCall(methodName: "verify", arguments: options)
+
+                cryptoModule!.verify(call) { data in
+                    if (data as? FlutterError) != nil {
+                        resolved = false
+                        return
+                    }
+                }
+                expect(resolved!).to(beFalse())
+            }
+        }
+
+        describe("computeED25519PublicKey()") {
+            it("should compute a valid public key") {
+                let options: NSDictionary = [
+                    "privateKey": "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc=",
+                ]
+                let call = FlutterMethodCall(methodName: "computeED25519PublicKey", arguments: options)
+                var publicKey: String?
+
+                cryptoModule!.computeED25519PublicKey(call) { data in
+                    let dataMap = data as! [String: String?]
+                    publicKey = dataMap["publicKey"] as? String
+                }
+                expect(publicKey).toNot(beNil())
             }
         }
     }

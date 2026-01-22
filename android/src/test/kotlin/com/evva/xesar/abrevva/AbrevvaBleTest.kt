@@ -26,7 +26,6 @@ class AbrevvaBleTest {
 
     @Test
     fun `getBleDeviceData() should map AdvertisementData correctly`() {
-
         val device = mockk<BleDevice>(relaxed = true)
         val advertData = mockk<BleDeviceAdvertisementData>(relaxed = true)
         val mfData = BleDeviceManufacturerData(

@@ -12,7 +12,6 @@ import io.flutter.embedding.engine.plugins.lifecycle.HiddenLifecycleReference
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
-
 class AbrevvaPlugin : FlutterPlugin, ActivityAware {
     private lateinit var channelCodingStation: MethodChannel
     private lateinit var channelCrypto: MethodChannel
