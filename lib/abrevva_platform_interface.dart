@@ -29,11 +29,11 @@ abstract class AbrevvaCodingStationPlatform extends PlatformInterface {
   Future<void> register(String url, String clientId, String username, String password) {
     throw UnimplementedError('register() has not been implemented.');
   }
-  
+
   Future<void> connect() {
     throw UnimplementedError('connect() has not been implemented.');
   }
-  
+
   Future<void> write() {
     throw UnimplementedError('write() has not been implemented.');
   }
@@ -105,6 +105,18 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
   Future<StringResult> derive(
       String key, String salt, String info, int length) {
     throw UnimplementedError('derive() has not been implemented.');
+  }
+
+  Future<ED25519PublicKeyResult> computeED25519PublicKey(String privateKey) {
+    throw UnimplementedError('computeED25519PublicKey() has not been implemented.');
+  }
+
+  Future<SignResult> sign(String privateKey, String data) {
+    throw UnimplementedError('sign() has not been implemented.');
+  }
+
+  Future<void> verify(String publicKey, String data, String signature) {
+    throw UnimplementedError('sign() has not been implemented.');
   }
 }
 
@@ -202,6 +214,7 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
     throw UnimplementedError('write() has not been implemented.');
   }
 
+  @Deprecated("Use disengageWithXvnResponse() instead.")
   Future<DisengageStatusType> disengage(
       String deviceId,
       String mobileId,
@@ -210,6 +223,16 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
       String mobileAccessData,
       bool isPermanentRelease) {
     throw UnimplementedError('disengage() has not been implemented.');
+  }
+
+  Future<DisengageResult> disengageWithXvnResponse(
+      String deviceId,
+      String mobileId,
+      String mobileDeviceKey,
+      String mobileGroupId,
+      String mobileAccessData,
+      bool isPermanentRelease) {
+    throw UnimplementedError('disengageWithXvnResponse() has not been implemented.');
   }
 
   Future<void> startNotifications(

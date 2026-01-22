@@ -1,4 +1,5 @@
 import 'package:abrevva/abrevva_param_classes.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:abrevva/abrevva.dart';
@@ -82,13 +83,11 @@ class BleWidget extends StatefulWidget {
 }
 
 class _BleState extends State<BleWidget> {
-  final _ble = AbrevvaBle();
-
   @override
   void initState() {
     super.initState();
     try {
-      _ble.initialize(false);
+      AbrevvaBle.initialize(false);
     } catch (e) {
       // ignore: avoid_print
       print(e);
@@ -99,7 +98,7 @@ class _BleState extends State<BleWidget> {
 
   Future<void> _scanForDevices() async {
     scanResultList.clear();
-    return await _ble.startScan( onScanResult: (device) {
+    return await AbrevvaBle.startScan( onScanResult: (device) {
       setState(() {
               scanResultList.add(device);
       });
@@ -108,7 +107,7 @@ class _BleState extends State<BleWidget> {
 
   @override
   dispose() async {
-    _ble.stopScan();
+    AbrevvaBle.stopScan();
     super.dispose();
   }
 
@@ -125,9 +124,19 @@ class _BleState extends State<BleWidget> {
             itemBuilder: (context, index) {
               final result = scanResultList[index];
               return ListTile(
-                onTap: () {
-                  _ble.stopScan();
-                  _ble.disengage('deviceId', 'mobileId', 'mobileDeviceKey', 'mobileGroupId', 'mobileAccessData', true);
+                onTap: () async {
+                  AbrevvaBle.stopScan();
+                  final result = await AbrevvaBle.disengageWithXvnResponse(
+                      'deviceId',
+                      'mobileId',
+                      'mobileDeviceKey',
+                      'mobileGroupId',
+                      'mobileAccessData',
+                      true
+                  );
+                  if (kDebugMode) {
+                    print("status=${result.status} xvnData=${result.xvnData}");
+                  }
                 },
                 title: Text("${result.advertisementData?.manufacturerData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
                 subtitle: Text('${result.advertisementData?.manufacturerData?.companyIdentifier}'),
@@ -147,7 +156,9 @@ class CryptoWidget extends StatefulWidget {
 
 class _CryptoState extends State<CryptoWidget> {
   String value = 'Output';
-  final _abrevvaCrypto = AbrevvaCrypto();
+  String privateKey = '';
+  String publicKey = '';
+  String signature = '';
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +177,7 @@ class _CryptoState extends State<CryptoWidget> {
                     )),
                 ElevatedButton(
                     onPressed: () {
-                      _abrevvaCrypto.random(6).then((result) {
+                      AbrevvaCrypto.random(6).then((result) {
                         setState(() {
                           value = 'random(6) => ${result.value}';
                         });
@@ -175,14 +186,51 @@ class _CryptoState extends State<CryptoWidget> {
                     child: const Text('random()')),
                 ElevatedButton(
                     onPressed: () {
-                      _abrevvaCrypto
+                      AbrevvaCrypto
                           .generateKeyPair()
                           .then((result) => setState(() {
+                                privateKey = result.privateKey;
+                                publicKey = result.publicKey;
                                 value =
-                                    'generateKeyPair(6) =>\nPrivateKey: ${result.privateKey}\nPublicKey: ${result.publicKey}';
+                                    'generateKeyPair() =>\nprivateKey: ${result.privateKey}\npublicKey: ${result.publicKey}';
                               }));
                     },
-                    child: const Text('createKeyPair()'))
+                    child: const Text('createKeyPair()')),
+                ElevatedButton(
+                    onPressed: () {
+                      AbrevvaCrypto
+                          .computeED25519PublicKey(privateKey)
+                          .then((result) => setState(() {
+                        publicKey = result.publicKey;
+                        value =
+                        'computeED25519PublicKey() =>\npublicKey: ${result.publicKey}';
+                      }));
+                    },
+                    child: const Text('computeED25519PublicKey()')),
+                ElevatedButton(
+                    onPressed: () {
+                      AbrevvaCrypto
+                          .sign(privateKey, '12345')
+                          .then((result) => setState(() {
+                        signature = result.signature;
+                        value =
+                        'sign() =>\nsignature: ${result.signature}';
+                      })).catchError((err) => setState(() {
+                        if (kDebugMode) { print(err); }
+                      }));
+                    },
+                    child: const Text('sign()')),
+                ElevatedButton(
+                    onPressed: () {
+                      AbrevvaCrypto
+                          .verify(publicKey, '12345', signature).then((_) => setState(() {
+                        value = 'verify() =>\nvalid';
+                      })).catchError((err) => setState(() {
+                        if (kDebugMode) { print(err); }
+                        value = 'verify() =>\ninvalid';
+                      }));
+                    },
+                    child: const Text('verify()'))
               ],
             )));
   }
@@ -202,7 +250,6 @@ class _CodingStationState extends State<CodingStationWidget> {
   String password = "";
 
   String value = 'Output';
-  final _abrevvaCodingStation = AbrevvaCodingStation();
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +269,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await _abrevvaCodingStation.register(url,clientId,username,password);
+                        await AbrevvaCodingStation.register(url,clientId,username,password);
                         setState(() {
                           value = 'register(): success';
                           }
@@ -239,7 +286,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await _abrevvaCodingStation.connect();
+                        await AbrevvaCodingStation.connect();
                         setState(() {
                           value = 'connect(): success';
                           }
@@ -256,7 +303,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await _abrevvaCodingStation.write();
+                        await AbrevvaCodingStation.write();
                         setState(() {
                           value = 'write(): success';
                           }
@@ -272,7 +319,7 @@ class _CodingStationState extends State<CodingStationWidget> {
                     ),
                 ElevatedButton(
                     onPressed: () async {
-                        await _abrevvaCodingStation.disconnect();
+                        await AbrevvaCodingStation.disconnect();
                         setState(() {
                           value = 'disconnect(): success';
                           }

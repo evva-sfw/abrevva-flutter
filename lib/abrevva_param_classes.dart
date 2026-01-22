@@ -9,16 +9,16 @@ enum BatteryStatus {
 
 enum DisengageStatusType {
   /// Component
-  authorized, 
-  authorizedPermanentDisengage, 
-  authorizedPermanentEngage, 
-  authorizedBatteryLow, 
-  authorizedOffline, 
-  unauthorized, 
-  unauthorizedOffline, 
-  signalLocalization, 
+  authorized,
+  authorizedPermanentDisengage,
+  authorizedPermanentEngage,
+  authorizedBatteryLow,
+  authorizedOffline,
+  unauthorized,
+  unauthorizedOffline,
+  signalLocalization,
   mediumDefectOnline,
-  mediumBlacklisted, 
+  mediumBlacklisted,
   error,
 
   /// Interface
@@ -31,6 +31,13 @@ enum DisengageStatusType {
   unknownDevice,
   unknownStatusCode,
   timeout,
+}
+
+class DisengageResult {
+  DisengageStatusType status;
+  String? xvnData;
+
+  DisengageResult({required this.status, this.xvnData});
 }
 
 class BleDeviceManufacturerData {
@@ -53,12 +60,12 @@ class BleDeviceManufacturerData {
   int? subFirmwareVersionMinor;
   int? subFirmwareVersionPatch;
   String? subComponentIdentifier;
-  
-  BleDeviceManufacturerData({this.companyIdentifier, 
-  this.version, this.componentType, this.mainFirmwareVersionMajor, this.mainFirmwareVersionMinor, 
-  this.mainFirmwareVersionPatch, this.componentHAL, this.batteryStatus, this.mainConstructionMode, 
-  this.subComponentIdentifier, this.isOnline, this.officeModeEnabled, this.twoFactorRequired, 
-  this.officeModeActive, this.identifier, this.subFirmwareVersionMajor, this.subFirmwareVersionMinor, 
+
+  BleDeviceManufacturerData({this.companyIdentifier,
+  this.version, this.componentType, this.mainFirmwareVersionMajor, this.mainFirmwareVersionMinor,
+  this.mainFirmwareVersionPatch, this.componentHAL, this.batteryStatus, this.mainConstructionMode,
+  this.subComponentIdentifier, this.isOnline, this.officeModeEnabled, this.twoFactorRequired,
+  this.officeModeActive, this.identifier, this.subFirmwareVersionMajor, this.subFirmwareVersionMinor,
   this.subFirmwareVersionPatch, this.subConstructionMode});
 }
 
@@ -80,7 +87,7 @@ class BleDevice {
 
 class StringResult {
   String value;
-  
+
   StringResult(this.value);
 }
 
@@ -103,4 +110,16 @@ class DecryptResult {
   String authOk;
 
   DecryptResult(this.plainText, this.authOk);
+}
+
+class ED25519PublicKeyResult {
+  String publicKey;
+
+  ED25519PublicKeyResult(this.publicKey);
+}
+
+class SignResult {
+  String signature;
+
+  SignResult(this.signature);
 }

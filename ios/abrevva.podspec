@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'abrevva'
-  s.version          = '0.0.1'
+  s.version          = '2.0.0'
   s.summary          = 'A new Flutter plugin project.'
   s.description      = <<-DESC
 A new Flutter plugin project.
@@ -15,8 +15,8 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'AbrevvaSDK', '3.1.3'
-  s.platform = :ios, '15.0'
+  s.dependency 'AbrevvaSDK', '3.4.0'
+  s.platform = :ios, '16.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

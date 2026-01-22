@@ -58,7 +58,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
     final result =  await _methodChannel
         .invokeMethod<Map<dynamic, dynamic>>('random', {'numBytes': numBytes});
     if (result == null || result["value"] == null) {
-      throw PlatformException(code: "random(): Error retrieving StringResult");
+      throw PlatformException(code: "random(): error retrieving StringResult");
     }
     return StringResult(result["value"]);
   }
@@ -67,11 +67,11 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
   Future<KeyPairResult> generateKeyPair() async {
     final result = await _methodChannel
         .invokeMethod<Map<dynamic, dynamic>>('generateKeyPair');
-    if (result == null 
+    if (result == null
       || result["privateKey"] == null
       || result["publicKey"] == null
       ) {
-      throw PlatformException(code: "generateKeyPair(): Error retrieving KeyPairResult");
+      throw PlatformException(code: "generateKeyPair(): error retrieving KeyPairResult");
     }
     return KeyPairResult(result["privateKey"], result["publicKey"]);
   }
@@ -87,11 +87,11 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       'pt': pt,
       'tagLength': tagLength,
     });
-    if (result == null 
+    if (result == null
       || result["cipherText"] == null
       || result["authTag"] == null
       ) {
-      throw PlatformException(code: "encrypt(): Error retrieving EncryptResult");
+      throw PlatformException(code: "encrypt(): error retrieving EncryptResult");
     }
     return EncryptResult(result["cipherText"], result["authTag"]);
   }
@@ -106,11 +106,11 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       'ct': ct,
       'tagLength': tagLength,
     });
-    if (result == null 
+    if (result == null
       || result["plainText"] == null
       || result["authOk"] == null
       ) {
-      throw PlatformException(code: "decrypt(): Error retrieving DecryptResult");
+      throw PlatformException(code: "decrypt(): error retrieving DecryptResult");
     }
     return DecryptResult(result["plainText"], result["authOk"]);
   }
@@ -123,10 +123,10 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       'ptPath': ptPath,
       'ctPath': ctPath,
     });
-    if (result == null 
+    if (result == null
       || result["opOk"] == null
       ) {
-      throw PlatformException(code: "encryptFile(): Error retrieving opOk");
+      throw PlatformException(code: "encryptFile(): error retrieving opOk");
     }
     return result["opOk"];
   }
@@ -139,10 +139,10 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       'privateKey': privateKey,
       'peerPublicKey': peerPublicKey,
     });
-    if ( result == null 
+    if ( result == null
       || result["sharedSecret"] == null
       ) {
-      throw PlatformException(code: "computeSharedSecret(): Error retrieving sharedSecret");
+      throw PlatformException(code: "computeSharedSecret(): error retrieving sharedSecret");
       }
       return StringResult(result["sharedSecret"]);
   }
@@ -155,10 +155,10 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       'ctPath': ctPath,
       'ptPath': ptPath,
     });
-    if (result == null 
+    if (result == null
       || result["opOk"] == null
       ) {
-      throw PlatformException(code: "decryptFile(): Error retrieving opOk");
+      throw PlatformException(code: "decryptFile(): error retrieving opOk");
     }
     return result["opOk"];
   }
@@ -172,10 +172,10 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       'url': url,
       'ptPath': ptPath,
     });
-    if (result == null 
+    if (result == null
       || result["opOk"] == null
       ) {
-      throw PlatformException(code: "decryptFile(): Error retrieving opOk");
+      throw PlatformException(code: "decryptFile(): error retrieving opOk");
     }
     return result["opOk"];
   }
@@ -189,15 +189,50 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       'info': info,
       'length': length,
     });
-    if (result == null 
+    if (result == null
       || result["value"] == null
       ) {
-      throw PlatformException(code: "decryptFile(): Error retrieving value");
+      throw PlatformException(code: "decryptFile(): error retrieving value");
     }
     return StringResult(result["value"]);
   }
+
+  @override
+  Future<ED25519PublicKeyResult> computeED25519PublicKey(String privateKey) async {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('computeED25519PublicKey', {
+      'privateKey': privateKey,
+    });
+    if (result == null || result["publicKey"] == null) {
+      throw PlatformException(code: "computeED25519PublicKey(): error computing key");
+    }
+    return ED25519PublicKeyResult(result["publicKey"]);
+  }
+
+  @override
+  Future<SignResult> sign(String privateKey, String data) async {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('sign', {
+      'privateKey': privateKey,
+      'data': data,
+    });
+    if (result == null
+        || result["signature"] == null
+    ) {
+      throw PlatformException(code: "sign(): error retrieving signature");
+    }
+    return SignResult(result["signature"]);
+  }
+
+  @override
+  Future<void> verify(String publicKey, String data, String signature) async {
+    await _methodChannel.invokeMethod<void>('verify', {
+      'publicKey': publicKey,
+      'data': data,
+      'signature': signature,
+    });
+  }
 }
 
+/// An implementation of [AbrevvaBlePlatform] that uses method channels.
 class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   /// The method channel used to interact with the native platform.
   var _methodChannel = const MethodChannel('AbrevvaBle');
@@ -207,7 +242,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   final _connectStreams = <String, dynamic>{};
   dynamic _enabledNotificationStream;
 
-  /// Setter are neccessary for testing
+  /// Setter are necessary for testing
   var _connectEventChannel = const EventChannel('connectEventChannel');
   set connectEventChannel(EventChannel channel) => _connectEventChannel = channel;
 
@@ -236,9 +271,9 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
           if (androidNeverForLocation){
             permissions.add(Permission.location);
           }
-          
+
           await permissions.request();
-          return; 
+          return;
           } else {
             return await _methodChannel.invokeMethod<void>(
               'initialize', {'androidNeverForLocation': androidNeverForLocation});
@@ -261,9 +296,9 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   Future<void> startEnabledNotifications(
       void Function(bool result) callback) async {
       _enabledNotificationStream =_startEnabledNotificationsEventChannel.receiveBroadcastStream().listen((event) {
-      if ( event == null 
+      if ( event == null
         || event["value"] == null) {
-        throw PlatformException(code: "startEnabledNotifications(): Error retrieving value");
+        throw PlatformException(code: "startEnabledNotifications(): error retrieving value");
       }
       callback(event['value']);
     });
@@ -312,8 +347,8 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   }
 
   BleDevice _mapScanResult(Map<Object?, Object?> data) {
-      Map<Object?, Object?> advertismentData = data["advertisementData"] as Map<Object?, Object?> ;
-      Map<Object?, Object?> mfData = advertismentData["manufacturerData"] as Map<Object?, Object?> ;
+      Map<Object?, Object?> advertisementData = data["advertisementData"] as Map<Object?, Object?> ;
+      Map<Object?, Object?> mfData = advertisementData["manufacturerData"] as Map<Object?, Object?> ;
       final mf = BleDeviceManufacturerData(
         companyIdentifier: mfData["companyIdentifier"] as int?,
         version: mfData["version"] as int?,
@@ -339,9 +374,9 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
           deviceId:  data["deviceId"] as String,
           name: data["name"] as String?,
           advertisementData: BleDeviceAdvertisementData(
-            rssi: advertismentData["rssi"] as int?,
+            rssi: advertisementData["rssi"] as int?,
             rawData: data["raw"] as Map<Object?, Object?>?,
-            isConnectable: advertismentData["isConnectable"] as bool?,
+            isConnectable: advertisementData["isConnectable"] as bool?,
             manufacturerData: mf
           )
           );
@@ -356,9 +391,9 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       bool? allowDuplicates,
       int? timeout,
     }) async {
-    dynamic brodcastStream;
+    dynamic broadcastStream;
 
-    brodcastStream =
+    broadcastStream =
         _startScanEventChannel.receiveBroadcastStream().listen((result) {
           switch (result["event"]) {
             case "onScanResult":
@@ -368,7 +403,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
               onScanStart?.call(result["value"] as bool);
               break;
             case "onScanStop":
-                  brodcastStream.cancel();
+                  broadcastStream.cancel();
                 onScanStop?.call(result["value"] as bool);
               break;
             default:
@@ -399,7 +434,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
         _connectStreams[deviceId] =
           _connectEventChannel.receiveBroadcastStream().listen((result) {
           if (result["value"] == null) {
-            throw PlatformException(code: "connect(): Error retrieving value");
+            throw PlatformException(code: "connect(): error retrieving value");
           }
           final addr = result["value"] as String;
           _connectStreams[addr]?.cancel();
@@ -413,7 +448,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
         'timeout': timeout,
       });
       if (result == null) {
-        throw PlatformException(code: "connect(): Error retrieving value");
+        throw PlatformException(code: "connect(): error retrieving value");
       }
       return result;
   }
@@ -424,7 +459,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       'deviceId': deviceId,
     });
     if (result == null) {
-      throw PlatformException(code: "disconnect(): Error retrieving value");
+      throw PlatformException(code: "disconnect(): error retrieving value");
     }
     return result;
   }
@@ -445,7 +480,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       if (result == null
         || result["value"] == null
       ) {
-        throw PlatformException(code: "read(): Error retrieving value");
+        throw PlatformException(code: "read(): error retrieving value");
       }
       return result["value"] as List<Uint8>;
   }
@@ -475,6 +510,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
     return words.join('');
   }
 
+  @Deprecated("Use disengageWithXvnResponse() instead.")
   @override
   Future<DisengageStatusType> disengage(
       String deviceId,
@@ -493,11 +529,37 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       'isPermanentRelease': isPermanentRelease,
     });
     if (result == null) {
-      throw PlatformException(code: "disengage(): Error retrieving value");
+      throw PlatformException(code: "disengage(): error retrieving value");
     }
     return DisengageStatusType.values.byName(_toCamelCase(result));
   }
-  
+
+  @override
+  Future<DisengageResult> disengageWithXvnResponse(
+      String deviceId,
+      String mobileId,
+      String mobileDeviceKey,
+      String mobileGroupId,
+      String mobileAccessData,
+      bool isPermanentRelease
+      ) async {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('disengageWithXvnResponse', {
+      'deviceId': deviceId,
+      'mobileId': mobileId,
+      'mobileDeviceKey': mobileDeviceKey,
+      'mobileGroupId': mobileGroupId,
+      'mobileAccessData': mobileAccessData,
+      'isPermanentRelease': isPermanentRelease,
+    });
+    if (result == null) {
+      throw PlatformException(code: "disengage(): error retrieving value");
+    }
+    return DisengageResult(
+        status: DisengageStatusType.values.byName(_toCamelCase(result["status"] as String)),
+        xvnData: result["xvnData"] as String?,
+    );
+  }
+
   @override
   Future<bool> startNotifications(
       String deviceId,
@@ -519,17 +581,17 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       }
     });
 
-    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('startNotifications',
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>('startNotifications',
     {
       'deviceId': deviceId,
       'service': service,
       'characteristic': characteristic,
       'timeout': timeout,
     });
-    if (result == null 
+    if (result == null
       || result["value"] == null
       ) {
-      throw PlatformException(code: "startNotifications(): Error retrieving value");
+      throw PlatformException(code: "startNotifications(): error retrieving value");
     }
     return result["value"];
   }
@@ -538,7 +600,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   Future<bool> stopNotifications(
     String deviceId,
       String service,
-      String characteristic, 
+      String characteristic,
       int timeout
       ) async {
         final key = "notification|$deviceId|$service|$characteristic";
@@ -552,12 +614,12 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
           'characteristic': characteristic,
           'timeout': timeout,
         });
-        if (result == null 
+        if (result == null
           || result["value"] == null
           ) {
-          throw PlatformException(code: "stopNotifications(): Error retrieving value");
+          throw PlatformException(code: "stopNotifications(): error retrieving value");
         }
-        return result["value"];  
+        return result["value"];
   }
 
   @override
@@ -566,7 +628,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
         .invokeMethod<bool?>(
             'signalize', {'deviceId': deviceId});
     if (result == null) {
-      throw PlatformException(code: "stopNotifications(): Error retrieving value");
+      throw PlatformException(code: "stopNotifications(): error retrieving value");
     }
     return result;
   }
