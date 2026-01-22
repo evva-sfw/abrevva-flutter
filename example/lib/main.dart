@@ -156,6 +156,9 @@ class CryptoWidget extends StatefulWidget {
 
 class _CryptoState extends State<CryptoWidget> {
   String value = 'Output';
+  String privateKey = '';
+  String publicKey = '';
+  String signature = '';
 
   @override
   Widget build(BuildContext context) {
@@ -186,11 +189,48 @@ class _CryptoState extends State<CryptoWidget> {
                       AbrevvaCrypto
                           .generateKeyPair()
                           .then((result) => setState(() {
+                                privateKey = result.privateKey;
+                                publicKey = result.publicKey;
                                 value =
-                                    'generateKeyPair(6) =>\nPrivateKey: ${result.privateKey}\nPublicKey: ${result.publicKey}';
+                                    'generateKeyPair() =>\nprivateKey: ${result.privateKey}\npublicKey: ${result.publicKey}';
                               }));
                     },
-                    child: const Text('createKeyPair()'))
+                    child: const Text('createKeyPair()')),
+                ElevatedButton(
+                    onPressed: () {
+                      AbrevvaCrypto
+                          .computeED25519PublicKey(privateKey)
+                          .then((result) => setState(() {
+                        publicKey = result.publicKey;
+                        value =
+                        'computeED25519PublicKey() =>\npublicKey: ${result.publicKey}';
+                      }));
+                    },
+                    child: const Text('computeED25519PublicKey()')),
+                ElevatedButton(
+                    onPressed: () {
+                      AbrevvaCrypto
+                          .sign(privateKey, '12345')
+                          .then((result) => setState(() {
+                        signature = result.signature;
+                        value =
+                        'sign() =>\nsignature: ${result.signature}';
+                      })).catchError((err) => setState(() {
+                        if (kDebugMode) { print(err); }
+                      }));
+                    },
+                    child: const Text('sign()')),
+                ElevatedButton(
+                    onPressed: () {
+                      AbrevvaCrypto
+                          .verify(publicKey, '12345', signature).then((_) => setState(() {
+                        value = 'verify() =>\nvalid';
+                      })).catchError((err) => setState(() {
+                        if (kDebugMode) { print(err); }
+                        value = 'verify() =>\ninvalid';
+                      }));
+                    },
+                    child: const Text('verify()'))
               ],
             )));
   }

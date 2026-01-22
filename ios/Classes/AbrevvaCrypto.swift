@@ -13,7 +13,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
         case "decrypt":
             decrypt(call, result: result)
         case "generateKeyPair":
-            generateKeyPair(result)
+            generateKeyPair(call, result: result)
         case "computeSharedSecret":
             computeSharedSecret(call, result: result)
         case "encryptFile":
@@ -26,6 +26,12 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
             random(call, result: result)
         case "derive":
             derive(call, result: result)
+        case "computeED25519PublicKey":
+            computeED25519PublicKey(call, result: result)
+        case "sign":
+            sign(call, result: result)
+        case "verify":
+            verify(call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -98,21 +104,20 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
     }
 
     @objc
-    func generateKeyPair(_ result: @escaping FlutterResult) {
+    func generateKeyPair(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let keyPair = self.X25519Impl.generateKeyPair()
 
         result([
-            "privateKey": keyPair[0].toHexString(),
-            "publicKey": keyPair[1].toHexString()
+            "privateKey": keyPair[0].base64EncodedString(),
+            "publicKey": keyPair[1].base64EncodedString()
         ])
     }
 
     @objc
     func computeSharedSecret(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        if let args = call.arguments as? [String: Any] {
-            let privateKeyData = Data(hex: "0x" + (args["privateKey"] as? String ?? ""))
-            let publicKeyData = Data(hex: "0x" + (args["peerPublicKey"] as? String ?? ""))
-
+        if let args = call.arguments as? [String: Any],
+           let privateKeyData = Data(base64Encoded: args["privateKey"] as? String ?? ""),
+           let publicKeyData = Data(base64Encoded: args["peerPublicKey"] as? String ?? "") {
             if let sharedSecret = self.X25519Impl.computeSharedSecret(
                 privateKeyData: privateKeyData,
                 publicKeyData: publicKeyData
@@ -300,12 +305,12 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
            let signatureData = Data(base64Encoded: args["signature"] as? String ?? "") {
 
             let success = self.X25519Impl.verify(publicKeyData: publicKeyData, data: data, signature: signatureData)
-            if (success) {
-                return result([
-                    "opOk": success
-                ])
+            if (!success) {
+                return result(FlutterError(code: "verify(): verify failed", message: nil, details: nil))
             }
-            result(FlutterError(code: "verify(): verify failed", message: nil, details: nil))
+            result([
+                "opOk": success
+            ])
         } else {
             result(FlutterError(code: "verify(): invalid args", message: nil, details: nil))
         }

@@ -26,7 +26,7 @@ class AbrevvaCrypto : MethodCallHandler {
         when (call.method) {
             "encrypt" -> encrypt(call, result)
             "decrypt" -> decrypt(call, result)
-            "generateKeyPair" -> generateKeyPair(result)
+            "generateKeyPair" -> generateKeyPair(call, result)
             "computeSharedSecret" -> computeSharedSecret(call, result)
             "encryptFile" -> encryptFile(call, result)
             "decryptFile" -> decryptFile(call, result)
@@ -94,7 +94,7 @@ class AbrevvaCrypto : MethodCallHandler {
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    fun generateKeyPair(result: Result) {
+    fun generateKeyPair(call: MethodCall, result: Result) {
         try {
             val keyPair: X25519Wrapper.KeyPair = X25519Wrapper.generateKeyPair()
             val ret = mapOf(

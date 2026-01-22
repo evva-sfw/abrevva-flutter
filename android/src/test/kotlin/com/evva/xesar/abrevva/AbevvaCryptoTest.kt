@@ -370,6 +370,21 @@ class AbrevvaCryptoTest {
     }
 
     @Nested
+    @DisplayName("computeED25519PublicKey()")
+    inner class ComputeED25519PublicKeyTests {
+        @Test
+        fun `should compute a valid public key`() {
+            val privateKey = "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc="
+
+            every { callMock.argument<String>("privateKey") } returns privateKey
+
+            abrevvaCrypto.computeED25519PublicKey(callMock, resultMock)
+
+            verify { resultMock.success(any()) }
+        }
+    }
+
+    @Nested
     @DisplayName("sign()")
     inner class SignTests {
         @Test
@@ -457,21 +472,6 @@ class AbrevvaCryptoTest {
             abrevvaCrypto.verify(callMock2, resultMock2)
 
             verify { resultMock2.error(any(), any(), any()) }
-        }
-    }
-
-    @Nested
-    @DisplayName("computeED25519PublicKey()")
-    inner class ComputeED25519PublicKeyTests {
-        @Test
-        fun `should compute a valid public key`() {
-            val privateKey = "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc="
-
-            every { callMock.argument<String>("privateKey") } returns privateKey
-
-            abrevvaCrypto.computeED25519PublicKey(callMock, resultMock)
-
-            verify { resultMock.success(any()) }
         }
     }
 }

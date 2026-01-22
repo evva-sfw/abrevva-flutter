@@ -58,7 +58,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
     final result =  await _methodChannel
         .invokeMethod<Map<dynamic, dynamic>>('random', {'numBytes': numBytes});
     if (result == null || result["value"] == null) {
-      throw PlatformException(code: "random(): Error retrieving StringResult");
+      throw PlatformException(code: "random(): error retrieving StringResult");
     }
     return StringResult(result["value"]);
   }
@@ -71,7 +71,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       || result["privateKey"] == null
       || result["publicKey"] == null
       ) {
-      throw PlatformException(code: "generateKeyPair(): Error retrieving KeyPairResult");
+      throw PlatformException(code: "generateKeyPair(): error retrieving KeyPairResult");
     }
     return KeyPairResult(result["privateKey"], result["publicKey"]);
   }
@@ -91,7 +91,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       || result["cipherText"] == null
       || result["authTag"] == null
       ) {
-      throw PlatformException(code: "encrypt(): Error retrieving EncryptResult");
+      throw PlatformException(code: "encrypt(): error retrieving EncryptResult");
     }
     return EncryptResult(result["cipherText"], result["authTag"]);
   }
@@ -110,7 +110,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
       || result["plainText"] == null
       || result["authOk"] == null
       ) {
-      throw PlatformException(code: "decrypt(): Error retrieving DecryptResult");
+      throw PlatformException(code: "decrypt(): error retrieving DecryptResult");
     }
     return DecryptResult(result["plainText"], result["authOk"]);
   }
@@ -126,7 +126,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
     if (result == null
       || result["opOk"] == null
       ) {
-      throw PlatformException(code: "encryptFile(): Error retrieving opOk");
+      throw PlatformException(code: "encryptFile(): error retrieving opOk");
     }
     return result["opOk"];
   }
@@ -142,7 +142,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
     if ( result == null
       || result["sharedSecret"] == null
       ) {
-      throw PlatformException(code: "computeSharedSecret(): Error retrieving sharedSecret");
+      throw PlatformException(code: "computeSharedSecret(): error retrieving sharedSecret");
       }
       return StringResult(result["sharedSecret"]);
   }
@@ -158,7 +158,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
     if (result == null
       || result["opOk"] == null
       ) {
-      throw PlatformException(code: "decryptFile(): Error retrieving opOk");
+      throw PlatformException(code: "decryptFile(): error retrieving opOk");
     }
     return result["opOk"];
   }
@@ -175,7 +175,7 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
     if (result == null
       || result["opOk"] == null
       ) {
-      throw PlatformException(code: "decryptFile(): Error retrieving opOk");
+      throw PlatformException(code: "decryptFile(): error retrieving opOk");
     }
     return result["opOk"];
   }
@@ -192,12 +192,47 @@ class MethodChannelAbrevvaCrypto extends AbrevvaCryptoPlatform {
     if (result == null
       || result["value"] == null
       ) {
-      throw PlatformException(code: "decryptFile(): Error retrieving value");
+      throw PlatformException(code: "decryptFile(): error retrieving value");
     }
     return StringResult(result["value"]);
   }
+
+  @override
+  Future<ED25519PublicKeyResult> computeED25519PublicKey(String privateKey) async {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('computeED25519PublicKey', {
+      'privateKey': privateKey,
+    });
+    if (result == null || result["publicKey"] == null) {
+      throw PlatformException(code: "computeED25519PublicKey(): error computing key");
+    }
+    return ED25519PublicKeyResult(result["publicKey"]);
+  }
+
+  @override
+  Future<SignResult> sign(String privateKey, String data) async {
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>('sign', {
+      'privateKey': privateKey,
+      'data': data,
+    });
+    if (result == null
+        || result["signature"] == null
+    ) {
+      throw PlatformException(code: "sign(): error retrieving signature");
+    }
+    return SignResult(result["signature"]);
+  }
+
+  @override
+  Future<void> verify(String publicKey, String data, String signature) async {
+    await _methodChannel.invokeMethod<void>('verify', {
+      'publicKey': publicKey,
+      'data': data,
+      'signature': signature,
+    });
+  }
 }
 
+/// An implementation of [AbrevvaBlePlatform] that uses method channels.
 class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   /// The method channel used to interact with the native platform.
   var _methodChannel = const MethodChannel('AbrevvaBle');
@@ -263,7 +298,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       _enabledNotificationStream =_startEnabledNotificationsEventChannel.receiveBroadcastStream().listen((event) {
       if ( event == null
         || event["value"] == null) {
-        throw PlatformException(code: "startEnabledNotifications(): Error retrieving value");
+        throw PlatformException(code: "startEnabledNotifications(): error retrieving value");
       }
       callback(event['value']);
     });
