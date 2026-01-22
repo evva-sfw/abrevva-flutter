@@ -233,7 +233,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
 
             let rnd = self.SimpleSecureRandomImpl.random(numBytes).toHexString()
             if rnd.isEmpty {
-                return result("random(): random generation failed")
+                return result(FlutterError(code: "random(): random generation failed", message: nil, details: nil))
             }
             result([
                 "value": rnd
