@@ -115,7 +115,7 @@ class AbrevvaCryptoTest {
         fun `should resolve if keys where generated successfully`() {
             every { X25519Wrapper.generateKeyPair() } returns mockk<X25519Wrapper.KeyPair>(relaxed = true)
 
-            abrevvaCrypto.generateKeyPair(resultMock)
+            abrevvaCrypto.generateKeyPair(callMock, resultMock)
 
             verify { resultMock.success(any()) }
         }
@@ -124,7 +124,7 @@ class AbrevvaCryptoTest {
         fun `should reject if keys cannot be generated`() {
             every { X25519Wrapper.generateKeyPair() } throws Exception("generateKeyPair() Fail Exception")
 
-            abrevvaCrypto.generateKeyPair(resultMock)
+            abrevvaCrypto.generateKeyPair(callMock, resultMock)
 
             verify { resultMock.error(any(), any(), any()) }
         }

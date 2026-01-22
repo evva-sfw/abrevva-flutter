@@ -90,7 +90,9 @@ final class AbrevvaCryptoTests: QuickSpec {
 
         describe("generateKeyPair()") {
             it("should resolve with two keys") {
-                cryptoModule!.generateKeyPair { data in
+                let call = FlutterMethodCall(methodName: "generateKeyPair", arguments: [:])
+
+                cryptoModule!.generateKeyPair(call) { data in
                     if (data as? FlutterError) != nil {
                         resolved = false
                         return
@@ -108,10 +110,10 @@ final class AbrevvaCryptoTests: QuickSpec {
         describe("computeSharedSecret") {
             it("should resolve with a valid shared secret") {
                 let options: [String: Any] = [
-                    "privateKey": "0468f4f0ec2f08c558246a866ce477d903fa577373f8622e1aa2e64e2e2c456d",
-                    "peerPublicKey": "f764ef9667497e7bcb4cdbeb0bf86462638cf65637569a65a8b5ed23b9a79621",
+                    "privateKey": "8Bg60DKpRt9QP/h1/rmWeRDgV84DCjNM8dfaqOPtvVc=",
+                    "peerPublicKey": "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo=",
                 ]
-                let secret = "34b78ecc79b605c85e0d995f8143990ffcee19b276fa55418c5232915c43af2c"
+                let secret = "75a2ec9ed1dec71217026a24f553c91178d648957a805e88552c481b74aad56b"
                 let call = FlutterMethodCall(methodName: "computeSharedSecret", arguments: options)
 
                 cryptoModule!.computeSharedSecret(call) { data in
@@ -129,7 +131,7 @@ final class AbrevvaCryptoTests: QuickSpec {
             it("should return nil if secret cannot be computed") {
                 let options: [String: Any] = [
                     "key": "InvalidKey",
-                    "peerPublicKey": "f764ef9667497e7bcb4cdbeb0bf86462638cf65637569a65a8b5ed23b9a79621",
+                    "peerPublicKey": "dlhsz8pEjSywIDSm04cmZFv9Yxq1HPr5F597qG1zKOo=",
                 ]
                 let call = FlutterMethodCall(methodName: "computeSharedSecret", arguments: options)
 
