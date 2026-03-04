@@ -3,6 +3,40 @@ import UIKit
 import AbrevvaSDK
 import CryptoSwift
 
+private enum CryptoError: String {
+    case EncryptCryptoError
+    case EncryptEmptyResultError
+    case EncryptInvalidArgumentError
+    case EncryptFileCryptoError
+    case EncryptFileCryptoInvalidArgumentError
+    case EncryptFileInvalidArgumentError
+    case DecryptInvalidArgumentError
+    case DecryptEmptyResultError
+    case DecryptCryptoError
+    case DecryptFileReadError
+    case DecryptFileCryptoError
+    case DecryptFileInvalidArgumentError
+    case DecryptFileFromURLNetworkError
+    case DecryptFileFromURLNotFoundError
+    case DecryptFileFromURLInaccessibleError
+    case DecryptFileFromURLNoResponseDataError
+    case DecryptFileFromURLInvalidArgumentError
+    case DecryptFileFromURLCryptoError
+    case GenerateKeypairError
+    case ComputeSharedSecretError
+    case ComputeSharedSecretInvalidArgumentError
+    case ComputeED25519PublicKeyError
+    case SignCryptoError
+    case SignInvalidArgumentError
+    case VerifyCryptoError
+    case VerifyFailedError
+    case RandomError
+    case DeriveInvalidArgumentError
+    case DeriveEmptyResultError
+    case DeriveCryptoError
+    case VerifyInvalidArgumentError
+}
+
 public class AbrevvaCrypto: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {}
 
@@ -59,14 +93,14 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
 
             let ct = self.AesCcmImpl.encrypt(key: keyHex, iv: ivHex, adata: adataHex, pt: ptHex, tagLength: tagLength)
             if (ct.isEmpty) {
-                return result(FlutterError(code: "encrypt(): encrypt failed", message: nil, details: nil))
+                return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.EncryptEmptyResultError.rawValue, details: nil))
             }
             result([
                 "cipherText": [UInt8](ct[..<pt.count]).toHexString(),
                 "authTag": [UInt8](ct[pt.count...]).toHexString()
             ])
         } else {
-            result(FlutterError(code: "encrypt(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.EncryptInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -92,14 +126,14 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
                 tagLength: tagLength
             ).toHexString()
             if pt.isEmpty {
-                return result(FlutterError(code: "decrypt(): decryption failed", message: nil, details: nil))
+                return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptCryptoError.rawValue, details: nil))
             }
             result([
                 "plainText": pt,
                 "authOk": true
             ])
         } else {
-            result(FlutterError(code: "decrypt(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -126,9 +160,9 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
                     "sharedSecret": sharedSecret.toHexString()
                 ])
             }
-            result(FlutterError(code: "computeSharedSecret(): computation failed", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.ComputeSharedSecretError.rawValue, details: nil))
         } else {
-            result(FlutterError(code: "computeSharedSecret(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.ComputeSharedSecretInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -142,13 +176,13 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
             let sharedSecretHex = [UInt8](hex: "0x" + sharedSecret)
             let operationResult = self.AesGcmImpl.encryptFile(key: sharedSecretHex, pathPt: ptPath, pathCt: ctPath)
             if operationResult == false {
-                return result(FlutterError(code: "encryptFile(): encryption failed", message: nil, details: nil))
+                return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.EncryptFileCryptoError.rawValue, details: nil))
             }
             result([
                 "opOk": operationResult
             ])
         } else {
-            result(FlutterError(code: "encryptFile(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.EncryptFileCryptoInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -166,26 +200,18 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
             do {
                 data = try Data(contentsOf: url, options: .mappedIfSafe)
             } catch {
-                return result(FlutterError(
-                    code: "decryptFile(): failed to load data from file",
-                    message: nil,
-                    details: nil
-                ))
+                return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileReadError.rawValue, details: error))
             }
 
             let operationResult = self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data, pathPt: ptPath)
             if operationResult == false {
-                return result(FlutterError(
-                    code: "decryptFile(): encryption has failed",
-                    message: nil,
-                    details: nil
-                ))
+                return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileCryptoError.rawValue, details: nil))
             }
             result([
                 "opOk": operationResult
             ])
         } else {
-            result(FlutterError(code: "decryptFile(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -197,32 +223,38 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
            let urlStr = (args["url"] ?? "") as? String {
 
             let sharedSecretHex = [UInt8](hex: "0x" + sharedSecret)
-            let url = URL(string: urlStr)
-            let data: Data
-
-            do {
-                data = try Data(contentsOf: url!)
-            } catch {
-                return result(FlutterError(
-                    code: "decryptFileFromURL(): failed to load data",
-                    message: nil,
-                    details: nil
-                ))
+            
+            let session = URLSession(configuration: URLSessionConfiguration.default)
+            var request = URLRequest(url: URL(string: urlStr)!)
+            
+            
+            let task = session.dataTask(with: request) { data, response, error in
+                if error != nil {
+                    return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileFromURLNetworkError.rawValue, details: nil))
+                }
+                
+                if let response = response as? HTTPURLResponse {
+                    if response.statusCode == 200 {
+                        let success = self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data!, pathPt: ptPath)
+                        if !success {
+                            return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileFromURLCryptoError.rawValue, details: nil))
+                        }
+                        result([
+                            "opOk": true
+                            
+                        ])
+                    } else if response.statusCode == 404 {
+                        return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileFromURLNotFoundError.rawValue, details: nil))
+                    } else {
+                        return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileFromURLInaccessibleError.rawValue, details: nil))
+                    }
+                } else {
+                    return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileFromURLNoResponseDataError.rawValue, details: nil))
+                }
             }
-
-            let operationResult = self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data, pathPt: ptPath)
-            if operationResult == false {
-                return result(FlutterError(
-                    code: "decryptFileFromURL(): decryption has failed",
-                    message: nil,
-                    details: nil
-                ))
-            }
-            result([
-                "opOk": operationResult
-            ])
+            task.resume()
         } else {
-            result(FlutterError(code: "decryptFileFromURL(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DecryptFileFromURLInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -232,14 +264,11 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
            let numBytes = (args["numBytes"] ?? 0) as? Int {
 
             let rnd = self.SimpleSecureRandomImpl.random(numBytes).toHexString()
-            if rnd.isEmpty {
-                return result(FlutterError(code: "random(): random generation failed", message: nil, details: nil))
-            }
             result([
                 "value": rnd
             ])
         } else {
-            result(FlutterError(code: "random(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.RandomError.rawValue, details: nil))
         }
     }
 
@@ -257,14 +286,14 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
 
             let derived = self.HKDFImpl.derive(key: keyHex, salt: saltHex, info: infoHex, length: length).toHexString()
             if derived.isEmpty {
-                return result(FlutterError(code: "derive(): derivation failed", message: nil, details: nil))
+                return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DeriveEmptyResultError.rawValue, details: nil))
             } else {
                 result([
                     "value": derived
                 ])
             }
         } else {
-            result(FlutterError(code: "derive(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.DeriveInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -276,9 +305,9 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
             if let publicKey = self.X25519Impl.computeED25519PublicKey(privateKeyData: privateKeyData) {
                 return result(["publicKey": publicKey.base64EncodedString()])
             }
-            result(FlutterError(code: "computeED25519PublicKey(): computation failed", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.ComputeED25519PublicKeyError.rawValue, details: nil))
         } else {
-            result(FlutterError(code: "computeED25519PublicKey(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.ComputeSharedSecretInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -291,9 +320,9 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
             if let signature = self.X25519Impl.sign(privateKeyData: privateKeyData, data: data) {
                 return result(["signature": signature.base64EncodedString()])
             }
-            result(FlutterError(code: "sign(): sign failed", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.SignCryptoError.rawValue, details: nil))
         } else {
-            result(FlutterError(code: "sign(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.SignInvalidArgumentError.rawValue, details: nil))
         }
     }
 
@@ -306,13 +335,13 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
 
             let success = self.X25519Impl.verify(publicKeyData: publicKeyData, data: data, signature: signatureData)
             if (!success) {
-                return result(FlutterError(code: "verify(): verify failed", message: nil, details: nil))
+                return result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.VerifyFailedError.rawValue, details: nil))
             }
             result([
                 "opOk": success
             ])
         } else {
-            result(FlutterError(code: "verify(): invalid args", message: nil, details: nil))
+            result(FlutterError(code: AbrevvaCrypto.description(), message: CryptoError.VerifyInvalidArgumentError.rawValue, details: nil))
         }
     }
 }
