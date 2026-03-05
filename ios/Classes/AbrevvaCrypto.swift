@@ -249,7 +249,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
                         return result(FlutterError(code: CryptoError.DecryptFileFromURLInaccessibleError.rawValue, message: AbrevvaCrypto.description(), details: response.statusCode))
                     }
                 } else {
-                    return result(FlutterError(code: CryptoError.DecryptFileFromURLNoResponseDataError.rawValue, message: AbrevvaCrypto.description(), details: response.statusCode))
+                    return result(FlutterError(code: CryptoError.DecryptFileFromURLNoResponseDataError.rawValue, message: AbrevvaCrypto.description(), details: nil))
                 }
             }
             task.resume()
