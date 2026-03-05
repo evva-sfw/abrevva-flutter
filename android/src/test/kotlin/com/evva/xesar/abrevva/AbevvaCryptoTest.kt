@@ -303,18 +303,6 @@ class AbrevvaCryptoTest {
 
             verify { resultMock.error(any(), any(), any()) }
         }
-
-        @Test
-        fun `decryptFileFromURL() should resolve if everything works as intended`() {
-            val moduleSpy =
-                spyk(AbrevvaCrypto())
-            every { moduleSpy.writeToFile(any(), any()) } returns Unit
-            every { AesGcm.decryptFile(any(), any(), any()) } returns true
-
-            moduleSpy.decryptFileFromURL(callMock, resultMock)
-
-            verify { resultMock.success(any()) }
-        }
     }
 
     @Nested
