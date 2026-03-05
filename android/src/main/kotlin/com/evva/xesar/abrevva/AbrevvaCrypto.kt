@@ -90,8 +90,8 @@ class AbrevvaCrypto : MethodCallHandler {
             pt = Hex.decode(call.argument<String>("pt"))
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.EncryptInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -108,8 +108,8 @@ class AbrevvaCrypto : MethodCallHandler {
 
             if (ct.isEmpty()) {
                 return result.error(
-                    AbrevvaCrypto::class.java.simpleName,
                     CryptoError.EncryptEmptyResultError.name,
+                    AbrevvaCrypto::class.java.simpleName,
                     null
                 )
             }
@@ -120,8 +120,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.EncryptCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -139,8 +139,8 @@ class AbrevvaCrypto : MethodCallHandler {
             ct = Hex.decode(call.argument<String>("ct"))
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -151,8 +151,8 @@ class AbrevvaCrypto : MethodCallHandler {
             val data: ByteArray = AesCcm.decrypt(key, iv, adata, ct, tagLength)
             if (data.isEmpty()) {
                 return result.error(
-                    AbrevvaCrypto::class.java.simpleName,
                     CryptoError.DecryptEmptyResultError.name,
+                    AbrevvaCrypto::class.java.simpleName,
                     null
                 )
             }
@@ -163,8 +163,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -181,8 +181,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             result.error(
-                AbrevvaCrypto::class.java.name,
                 CryptoError.GenerateKeypairError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -193,8 +193,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val privateKey = call.argument<String>("privateKey")
         if (privateKey == null || privateKey == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.ComputeSharedSecretInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -202,8 +202,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val peerPublicKey = call.argument<String>("peerPublicKey")
         if (peerPublicKey == null || peerPublicKey == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.ComputeSharedSecretInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -218,8 +218,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.ComputeSharedSecretError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -229,8 +229,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val ptPath = call.argument<String>("ptPath")
         if (ptPath == null || ptPath == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.EncryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -238,8 +238,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val ctPath = call.argument<String>("ctPath")
         if (ctPath == null || ctPath == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.EncryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -247,8 +247,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val sharedSecret = call.argument<String>("sharedSecret")
         if (sharedSecret == null || sharedSecret == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.EncryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -261,8 +261,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.EncryptFileCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -272,8 +272,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val sharedSecret = call.argument<String>("sharedSecret")
         if (sharedSecret == null || sharedSecret == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -281,8 +281,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val ctPath = call.argument<String>("ctPath")
         if (ctPath == null || ctPath == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -290,8 +290,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val ptPath = call.argument<String>("ptPath")
         if (ptPath == null || ptPath == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -304,8 +304,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -327,8 +327,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val sharedSecret = call.argument<String>("sharedSecret")
         if (sharedSecret == null || sharedSecret == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -336,8 +336,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val uri = call.argument<String>("url")
         if (uri == null || uri == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -345,8 +345,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val ptPath = call.argument<String>("ptPath")
         if (ptPath == null || ptPath == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -363,8 +363,8 @@ class AbrevvaCrypto : MethodCallHandler {
             statusCode = connection.responseCode
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileFromURLNetworkError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e
             )
         }
@@ -389,24 +389,24 @@ class AbrevvaCrypto : MethodCallHandler {
 
                 404 -> {
                     return result.error(
-                        statusCode.toString(),
+                        CryptoError.DecryptFileFromURLNotFoundError.name,
                         AbrevvaCrypto::class.java.simpleName,
-                        CryptoError.DecryptFileFromURLNotFoundError.name
+                        statusCode.toString()
                     )
                 }
 
                 else -> {
                     return result.error(
-                        statusCode.toString(),
+                        CryptoError.DecryptFileFromURLInaccessibleError.name,
                         AbrevvaCrypto::class.java.simpleName,
-                        CryptoError.DecryptFileFromURLInaccessibleError.name
+                        statusCode.toString(),
                     )
                 }
             }
         } catch (e: IOException) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DecryptFileFromURLNoResponseDataError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e
             )
         }
@@ -436,8 +436,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.RandomError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -453,8 +453,8 @@ class AbrevvaCrypto : MethodCallHandler {
             info = Hex.decode(call.argument<String>("info"))
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DeriveInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -464,8 +464,8 @@ class AbrevvaCrypto : MethodCallHandler {
             val derived: ByteArray = HKDF.derive(key, salt, info, length)
             if (derived.isEmpty()) {
                 return result.error(
-                    AbrevvaCrypto::class.java.simpleName,
                     CryptoError.DeriveEmptyResultError.name,
+                    AbrevvaCrypto::class.java.simpleName,
                     null
                 )
             }
@@ -473,8 +473,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.DeriveCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -485,8 +485,8 @@ class AbrevvaCrypto : MethodCallHandler {
             val privateKey = call.argument<String>("privateKey")
             if (privateKey == null || privateKey == "") {
                 return result.error(
-                    AbrevvaCrypto::class.java.simpleName,
                     CryptoError.ComputeED25519PublicKeyInvalidArgumentError.name,
+                    AbrevvaCrypto::class.java.simpleName,
                     null
                 )
             }
@@ -496,8 +496,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.ComputeED25519PublicKeyError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -516,8 +516,8 @@ class AbrevvaCrypto : MethodCallHandler {
             val data = call.argument<String>("data")
             if (data == null || data == "") {
                 return result.error(
-                    AbrevvaCrypto::class.java.simpleName,
                     CryptoError.SignInvalidArgumentError.name,
+                    AbrevvaCrypto::class.java.simpleName,
                     null
                 )
             }
@@ -527,8 +527,8 @@ class AbrevvaCrypto : MethodCallHandler {
             result.success(ret)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.SignCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
@@ -538,8 +538,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val publicKey = call.argument<String>("publicKey")
         if (publicKey == null || publicKey == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.VerifyInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -547,8 +547,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val data = call.argument<String>("data")
         if (data == null || data == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.VerifyInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -556,8 +556,8 @@ class AbrevvaCrypto : MethodCallHandler {
         val signature = call.argument<String>("signature")
         if (signature == null || signature == "") {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.VerifyInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 null
             )
         }
@@ -571,16 +571,17 @@ class AbrevvaCrypto : MethodCallHandler {
                 )
             if (!success) {
                 return result.error(
-                    AbrevvaCrypto::class.java.simpleName,
                     CryptoError.VerifyFailedError.name,
+                    AbrevvaCrypto::class.java.simpleName,
                     null
                 )
+
             }
             result.success(null)
         } catch (e: Exception) {
             return result.error(
-                AbrevvaCrypto::class.java.simpleName,
                 CryptoError.VerifyCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
                 e.toString()
             )
         }
