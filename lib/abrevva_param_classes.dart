@@ -176,9 +176,17 @@ enum AbrevvaCryptoError {
   randomError('RandomError'),
   deriveInvalidArgumentError('DeriveInvalidArgumentError'),
   deriveEmptyResultError('DeriveEmptyResultError'),
-  deriveCryptoError('DeriveCryptoError');
+  deriveCryptoError('DeriveCryptoError'),
+  unkownError('UnkownError');
 
   final String value;
 
   const AbrevvaCryptoError(this.value);
+
+  static AbrevvaCryptoError? fromString(String code) {
+    return AbrevvaCryptoError.values.firstWhere(
+      (e) => e.value == code,
+      orElse: () => AbrevvaCryptoError.encryptCryptoError,
+    );
+  }
 }
