@@ -237,19 +237,19 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
                     if response.statusCode == 200 {
                         let success = self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data!, pathPt: ptPath)
                         if !success {
-                            return result(FlutterError(code: CryptoError.DecryptFileFromURLCryptoError.rawValue, message: AbrevvaCrypto.description(), details: nil))
+                            return result(FlutterError(code: CryptoError.DecryptFileFromURLCryptoError.rawValue, message: AbrevvaCrypto.description(), details: response.statusCode))
                         }
                         result([
                             "opOk": true
                             
                         ])
                     } else if response.statusCode == 404 {
-                        return result(FlutterError(code: CryptoError.DecryptFileFromURLNotFoundError.rawValue, message: AbrevvaCrypto.description(), details: nil))
+                        return result(FlutterError(code: CryptoError.DecryptFileFromURLNotFoundError.rawValue, message: AbrevvaCrypto.description(), details: response.statusCode))
                     } else {
-                        return result(FlutterError(code: CryptoError.DecryptFileFromURLInaccessibleError.rawValue, message: AbrevvaCrypto.description(), details: nil))
+                        return result(FlutterError(code: CryptoError.DecryptFileFromURLInaccessibleError.rawValue, message: AbrevvaCrypto.description(), details: response.statusCode))
                     }
                 } else {
-                    return result(FlutterError(code: CryptoError.DecryptFileFromURLNoResponseDataError.rawValue, message: AbrevvaCrypto.description(), details: nil))
+                    return result(FlutterError(code: CryptoError.DecryptFileFromURLNoResponseDataError.rawValue, message: AbrevvaCrypto.description(), details: response.statusCode))
                 }
             }
             task.resume()
