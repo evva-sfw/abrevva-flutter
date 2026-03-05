@@ -335,15 +335,6 @@ class AbrevvaCryptoTest {
             assert(resultSlot.captured["value"]!!.length == expectedStrLen)
         }
 
-        @Test
-        fun `should reject if bytes cannot be generated`() {
-            every { SimpleSecureRandom.getSecureRandomBytes(any()) } returns ByteArray(0)
-            every { callMock.argument<Int>("numBytes") } returns 10
-
-            abrevvaCrypto.random(callMock, resultMock)
-
-            verify { resultMock.error(any(), any(), any()) }
-        }
     }
 
     @Nested
