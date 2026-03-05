@@ -1,11 +1,14 @@
 enum ComponentType {
-  handle, escutcheon, cylinder, wallreader, emzy, iobox, unknown
+  handle,
+  escutcheon,
+  cylinder,
+  wallreader,
+  emzy,
+  iobox,
+  unknown
 }
 
-enum BatteryStatus {
-  batteryFull, batteryEmpty, unknown
-
-}
+enum BatteryStatus { batteryFull, batteryEmpty, unknown }
 
 enum DisengageStatusType {
   /// Component
@@ -61,12 +64,26 @@ class BleDeviceManufacturerData {
   int? subFirmwareVersionPatch;
   String? subComponentIdentifier;
 
-  BleDeviceManufacturerData({this.companyIdentifier,
-  this.version, this.componentType, this.mainFirmwareVersionMajor, this.mainFirmwareVersionMinor,
-  this.mainFirmwareVersionPatch, this.componentHAL, this.batteryStatus, this.mainConstructionMode,
-  this.subComponentIdentifier, this.isOnline, this.officeModeEnabled, this.twoFactorRequired,
-  this.officeModeActive, this.identifier, this.subFirmwareVersionMajor, this.subFirmwareVersionMinor,
-  this.subFirmwareVersionPatch, this.subConstructionMode});
+  BleDeviceManufacturerData(
+      {this.companyIdentifier,
+      this.version,
+      this.componentType,
+      this.mainFirmwareVersionMajor,
+      this.mainFirmwareVersionMinor,
+      this.mainFirmwareVersionPatch,
+      this.componentHAL,
+      this.batteryStatus,
+      this.mainConstructionMode,
+      this.subComponentIdentifier,
+      this.isOnline,
+      this.officeModeEnabled,
+      this.twoFactorRequired,
+      this.officeModeActive,
+      this.identifier,
+      this.subFirmwareVersionMajor,
+      this.subFirmwareVersionMinor,
+      this.subFirmwareVersionPatch,
+      this.subConstructionMode});
 }
 
 class BleDeviceAdvertisementData {
@@ -75,7 +92,8 @@ class BleDeviceAdvertisementData {
   BleDeviceManufacturerData? manufacturerData;
   Map<Object?, Object?>? rawData;
 
-  BleDeviceAdvertisementData({this.isConnectable, this.manufacturerData, this.rawData, this.rssi});
+  BleDeviceAdvertisementData(
+      {this.isConnectable, this.manufacturerData, this.rawData, this.rssi});
 }
 
 class BleDevice {
@@ -122,4 +140,45 @@ class SignResult {
   String signature;
 
   SignResult(this.signature);
+}
+
+enum AbrevvaCryptoError {
+  encryptCryptoError('EncryptCryptoError'),
+  encryptEmptyResultError('EncryptEmptyResultError'),
+  encryptInvalidArgumentError('EncryptInvalidArgumentError'),
+  encryptFileCryptoError('EncryptFileCryptoError'),
+  encryptFileInvalidArgumentError('EncryptFileInvalidArgumentError'),
+  decryptInvalidArgumentError('DecryptInvalidArgumentError'),
+  decryptEmptyResultError('DecryptEmptyResultError'),
+  decryptCryptoError('DecryptCryptoError'),
+  decryptFileCryptoError('DecryptFileCryptoError'),
+  decryptFileInvalidArgumentError('DecryptFileInvalidArgumentError'),
+  decryptFileFromURLNetworkError('DecryptFileFromURLNetworkError'),
+  decryptFileFromURLNotFoundError('DecryptFileFromURLNotFoundError'),
+  decryptFileFromURLInaccessibleError('DecryptFileFromURLInaccessibleError'),
+  decryptFileFromURLNoResponseDataError(
+      'DecryptFileFromURLNoResponseDataError'),
+  decryptFileFromURLInvalidArgumentError(
+      'DecryptFileFromURLInvalidArgumentError'),
+  decryptFileFromURLCryptoError('DecryptFileFromURLCryptoError'),
+  generateKeypairError('GenerateKeypairError'),
+  computeSharedSecretError('ComputeSharedSecretError'),
+  computeSharedSecretInvalidArgumentError(
+      'ComputeSharedSecretInvalidArgumentError'),
+  computeED25519PublicKeyError('ComputeED25519PublicKeyError'),
+  computeED25519PublicKeyInvalidArgumentError(
+      'ComputeED25519PublicKeyInvalidArgumentError'),
+  signCryptoError('SignCryptoError'),
+  signInvalidArgumentError('SignInvalidArgumentError'),
+  verifyCryptoError('VerifyCryptoError'),
+  verifyFailedError('VerifyFailedError'),
+  verifyInvalidArgumentError('VerifyInvalidArgumentError'),
+  randomError('RandomError'),
+  deriveInvalidArgumentError('DeriveInvalidArgumentError'),
+  deriveEmptyResultError('DeriveEmptyResultError'),
+  deriveCryptoError('DeriveCryptoError');
+
+  final String value;
+
+  const AbrevvaCryptoError(this.value);
 }

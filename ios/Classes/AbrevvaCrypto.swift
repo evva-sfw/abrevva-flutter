@@ -8,12 +8,10 @@ private enum CryptoError: String {
     case EncryptEmptyResultError
     case EncryptInvalidArgumentError
     case EncryptFileCryptoError
-    case EncryptFileCryptoInvalidArgumentError
     case EncryptFileInvalidArgumentError
     case DecryptInvalidArgumentError
     case DecryptEmptyResultError
     case DecryptCryptoError
-    case DecryptFileReadError
     case DecryptFileCryptoError
     case DecryptFileInvalidArgumentError
     case DecryptFileFromURLNetworkError
@@ -26,15 +24,16 @@ private enum CryptoError: String {
     case ComputeSharedSecretError
     case ComputeSharedSecretInvalidArgumentError
     case ComputeED25519PublicKeyError
+    case ComputeED25519PublicKeyInvalidArgumentError
     case SignCryptoError
     case SignInvalidArgumentError
     case VerifyCryptoError
-    case VerifyFailedError
+    case erifyFailedError
+    case VerifyInvalidArgumentError
     case RandomError
     case DeriveInvalidArgumentError
     case DeriveEmptyResultError
     case DeriveCryptoError
-    case VerifyInvalidArgumentError
 }
 
 public class AbrevvaCrypto: NSObject, FlutterPlugin {
@@ -93,7 +92,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
 
             let ct = self.AesCcmImpl.encrypt(key: keyHex, iv: ivHex, adata: adataHex, pt: ptHex, tagLength: tagLength)
             if (ct.isEmpty) {
-                return result(FlutterError(code: CryptoError.EncryptEmptyResultError.rawValue, message: AbrevvaCrypto.description(), details: nil))
+                return result(FlutterError(code: CryptoError.EncryptCryptoError.rawValue, message: AbrevvaCrypto.description(), details: nil))
             }
             result([
                 "cipherText": [UInt8](ct[..<pt.count]).toHexString(),
@@ -182,7 +181,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
                 "opOk": operationResult
             ])
         } else {
-            result(FlutterError(code: CryptoError.EncryptFileCryptoInvalidArgumentError.rawValue, message: AbrevvaCrypto.description(), details: nil))
+            result(FlutterError(code: CryptoError.EncryptFileInvalidArgumentError.rawValue, message: AbrevvaCrypto.description(), details: nil))
         }
     }
 
@@ -200,7 +199,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
             do {
                 data = try Data(contentsOf: url, options: .mappedIfSafe)
             } catch {
-                return result(FlutterError(code: CryptoError.DecryptFileReadError.rawValue, message: AbrevvaCrypto.description(), details: error))
+                return result(FlutterError(code: CryptoError.DecryptFileCryptoError.rawValue, message: AbrevvaCrypto.description(), details: error))
             }
 
             let operationResult = self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data, pathPt: ptPath)
@@ -335,7 +334,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
 
             let success = self.X25519Impl.verify(publicKeyData: publicKeyData, data: data, signature: signatureData)
             if (!success) {
-                return result(FlutterError(code: CryptoError.VerifyFailedError.rawValue, message: AbrevvaCrypto.description(), details: nil))
+                return result(FlutterError(code: CryptoError.VerifyCryptoError.rawValue, message: AbrevvaCrypto.description(), details: nil))
             }
             result([
                 "opOk": success
