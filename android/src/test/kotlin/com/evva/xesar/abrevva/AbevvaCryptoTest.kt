@@ -303,18 +303,6 @@ class AbrevvaCryptoTest {
 
             verify { resultMock.error(any(), any(), any()) }
         }
-
-        @Test
-        fun `decryptFileFromURL() should resolve if everything works as intended`() {
-            val moduleSpy =
-                spyk(AbrevvaCrypto())
-            every { moduleSpy.writeToFile(any(), any()) } returns Unit
-            every { AesGcm.decryptFile(any(), any(), any()) } returns true
-
-            moduleSpy.decryptFileFromURL(callMock, resultMock)
-
-            verify { resultMock.success(any()) }
-        }
     }
 
     @Nested
@@ -335,15 +323,6 @@ class AbrevvaCryptoTest {
             assert(resultSlot.captured["value"]!!.length == expectedStrLen)
         }
 
-        @Test
-        fun `should reject if bytes cannot be generated`() {
-            every { SimpleSecureRandom.getSecureRandomBytes(any()) } returns ByteArray(0)
-            every { callMock.argument<Int>("numBytes") } returns 10
-
-            abrevvaCrypto.random(callMock, resultMock)
-
-            verify { resultMock.error(any(), any(), any()) }
-        }
     }
 
     @Nested

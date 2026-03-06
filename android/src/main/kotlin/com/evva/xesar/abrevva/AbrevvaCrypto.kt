@@ -11,11 +11,46 @@ import io.flutter.plugin.common.MethodChannel.Result
 import org.bouncycastle.util.encoders.Base64
 import org.bouncycastle.util.encoders.Hex
 import java.io.BufferedInputStream
+import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Paths
 import kotlin.io.encoding.ExperimentalEncodingApi
+
+private enum class CryptoError {
+    EncryptCryptoError,
+    EncryptEmptyResultError,
+    EncryptInvalidArgumentError,
+    EncryptFileCryptoError,
+    EncryptFileInvalidArgumentError,
+    DecryptInvalidArgumentError,
+    DecryptEmptyResultError,
+    DecryptCryptoError,
+    DecryptFileCryptoError,
+    DecryptFileInvalidArgumentError,
+    DecryptFileFromURLNetworkError,
+    DecryptFileFromURLNotFoundError,
+    DecryptFileFromURLInaccessibleError,
+    DecryptFileFromURLNoResponseDataError,
+    DecryptFileFromURLInvalidArgumentError,
+    DecryptFileFromURLCryptoError,
+    GenerateKeypairError,
+    ComputeSharedSecretError,
+    ComputeSharedSecretInvalidArgumentError,
+    ComputeED25519PublicKeyError,
+    ComputeED25519PublicKeyInvalidArgumentError,
+    SignCryptoError,
+    SignInvalidArgumentError,
+    VerifyCryptoError,
+    VerifyFailedError,
+    VerifyInvalidArgumentError,
+    RandomError,
+    DeriveInvalidArgumentError,
+    DeriveEmptyResultError,
+    DeriveCryptoError
+}
 
 class AbrevvaCrypto : MethodCallHandler {
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -43,53 +78,95 @@ class AbrevvaCrypto : MethodCallHandler {
     }
 
     fun encrypt(call: MethodCall, result: Result) {
+        val key: ByteArray
+        val iv: ByteArray
+        val adata: ByteArray
+        val pt: ByteArray
+
         try {
-            val key = Hex.decode(call.argument<String>("key"))
-            val iv = Hex.decode(call.argument<String>("iv"))
-            val adata = Hex.decode(call.argument<String>("adata"))
-            val pt = Hex.decode(call.argument<String>("pt"))
-            val tagLength = call.argument<Int>("tagLength")!!
+            key = Hex.decode(call.argument<String>("key"))
+            iv = Hex.decode(call.argument<String>("iv"))
+            adata = Hex.decode(call.argument<String>("adata"))
+            pt = Hex.decode(call.argument<String>("pt"))
+        } catch (e: Exception) {
+            return result.error(
+                CryptoError.EncryptInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
+        }
 
+        val tagLength = call.argument<Int>("tagLength") ?: 0
+
+        try {
             val ct: ByteArray = AesCcm.encrypt(key, iv, adata, pt, tagLength)
-            val cipherText = ByteArray(pt.size)
-            val authTag = ByteArray(tagLength)
+            val cipherTextData = ByteArray(pt.size)
+            val authTagData = ByteArray(tagLength)
 
-            System.arraycopy(ct, 0, cipherText, 0, pt.size)
-            System.arraycopy(ct, pt.size, authTag, 0, tagLength)
+            System.arraycopy(ct, 0, cipherTextData, 0, pt.size)
+            System.arraycopy(ct, pt.size, authTagData, 0, tagLength)
 
             if (ct.isEmpty()) {
-                return result.error("encrypt(): encryption failed", null, null)
+                return result.error(
+                    CryptoError.EncryptEmptyResultError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
             }
             val ret = mapOf(
-                "cipherText" to Hex.toHexString(cipherText),
-                "authTag" to Hex.toHexString(authTag)
+                "cipherText" to Hex.toHexString(cipherTextData),
+                "authTag" to Hex.toHexString(authTagData)
             )
             result.success(ret)
         } catch (e: Exception) {
-            result.error("encrypt(): encrypt failed", e.toString(), null)
+            result.error(
+                CryptoError.EncryptCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
     fun decrypt(call: MethodCall, result: Result) {
+        val key: ByteArray
+        val iv: ByteArray
+        val adata: ByteArray
+        val ct: ByteArray
         try {
-            val key = Hex.decode(call.argument<String>("key"))
-            val iv = Hex.decode(call.argument<String>("iv"))
-            val adata = Hex.decode(call.argument<String>("adata"))
-            val ct = Hex.decode(call.argument<String>("ct"))
-            val tagLength = call.argument<Int>("tagLength")!!
+            key = Hex.decode(call.argument<String>("key"))
+            iv = Hex.decode(call.argument<String>("iv"))
+            adata = Hex.decode(call.argument<String>("adata"))
+            ct = Hex.decode(call.argument<String>("ct"))
+        } catch (e: Exception) {
+            return result.error(
+                CryptoError.DecryptInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
+        }
 
-            val pt: ByteArray = AesCcm.decrypt(key, iv, adata, ct, tagLength)
+        val tagLength = call.argument<Int>("tagLength") ?: 0
 
-            if (pt.isEmpty()) {
-                return result.error("decrypt(): decryption failed", null, null)
+        try {
+            val data: ByteArray = AesCcm.decrypt(key, iv, adata, ct, tagLength)
+            if (data.isEmpty()) {
+                return result.error(
+                    CryptoError.DecryptEmptyResultError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
             }
             val ret = mapOf(
-                "plainText" to Hex.toHexString(pt),
+                "plainText" to Hex.toHexString(data),
                 "authOk" to true
             )
             result.success(ret)
         } catch (e: Exception) {
-            result.error("decrypt(): decrypt failed", e.toString(), null)
+            result.error(
+                CryptoError.DecryptCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
@@ -103,23 +180,35 @@ class AbrevvaCrypto : MethodCallHandler {
             )
             result.success(ret)
         } catch (e: Exception) {
-            result.error("generateKeyPair(): private key creation failed", e.toString(), null)
+            result.error(
+                CryptoError.GenerateKeypairError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
     @OptIn(ExperimentalEncodingApi::class)
     fun computeSharedSecret(call: MethodCall, result: Result) {
+        val privateKey = call.argument<String>("privateKey")
+        if (privateKey == null || privateKey == "") {
+            return result.error(
+                CryptoError.ComputeSharedSecretInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
+        val peerPublicKey = call.argument<String>("peerPublicKey")
+        if (peerPublicKey == null || peerPublicKey == "") {
+            return result.error(
+                CryptoError.ComputeSharedSecretInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
         try {
-            val privateKey = call.argument<String>("privateKey")
-            if (privateKey == null || privateKey == "") {
-                result.error("computeSharedSecret(): invalid private key", null, null)
-                return
-            }
-            val peerPublicKey = call.argument<String>("peerPublicKey")
-            if (peerPublicKey == null || peerPublicKey == "") {
-                result.error("computeSharedSecret(): invalid peer public key", null, null)
-                return
-            }
             val sharedSecret: ByteArray = X25519Wrapper.computeSharedSecret(
                 Base64.decode(privateKey),
                 Base64.decode(peerPublicKey)
@@ -128,63 +217,97 @@ class AbrevvaCrypto : MethodCallHandler {
             val ret = mapOf("sharedSecret" to Hex.toHexString(sharedSecret))
             result.success(ret)
         } catch (e: Exception) {
-            result.error("computeSharedSecret(): failed to create shared key", e.toString(), null)
+            return result.error(
+                CryptoError.ComputeSharedSecretError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
     fun encryptFile(call: MethodCall, result: Result) {
-        try {
-            val ptPath = call.argument<String>("ptPath")
-            if (ptPath == null || ptPath == "") {
-                result.error("encryptFile(): invalid ptPath", null, null)
-                return
-            }
-            val ctPath = call.argument<String>("ctPath")
-            if (ctPath == null || ctPath == "") {
-                result.error("encryptFile(): invalid ctPath", null, null)
-                return
-            }
-            val sharedSecret = call.argument<String>("sharedSecret")
-            if (sharedSecret == null || sharedSecret == "") {
-                result.error("encryptFile(): invalid shared secret", null, null)
-                return
-            }
+        val ptPath = call.argument<String>("ptPath")
+        if (ptPath == null || ptPath == "") {
+            return result.error(
+                CryptoError.EncryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
 
+        val ctPath = call.argument<String>("ctPath")
+        if (ctPath == null || ctPath == "") {
+            return result.error(
+                CryptoError.EncryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
+        val sharedSecret = call.argument<String>("sharedSecret")
+        if (sharedSecret == null || sharedSecret == "") {
+            return result.error(
+                CryptoError.EncryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
+        try {
             val sharedKey = Hex.decode(sharedSecret)
             val operationOk: Boolean = AesGcm.encryptFile(sharedKey, ptPath, ctPath)
 
             val ret = mapOf("opOk" to operationOk)
             result.success(ret)
         } catch (e: Exception) {
-            result.error("encryptFile(): failed to encrypt file", e.toString(), null)
+            return result.error(
+                CryptoError.EncryptFileCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
     fun decryptFile(call: MethodCall, result: Result) {
-        try {
-            val sharedSecret = call.argument<String>("sharedSecret")
-            if (sharedSecret == null || sharedSecret == "") {
-                result.error("decryptFile(): invalid shared secret", null, null)
-                return
-            }
-            val ctPath = call.argument<String>("ctPath")
-            if (ctPath == null || ctPath == "") {
-                result.error("decryptFile(): invalid ctPath", null, null)
-                return
-            }
-            val ptPath = call.argument<String>("ptPath")
-            if (ptPath == null || ptPath == "") {
-                result.error("decryptFile(): invalid ptPath", null, null)
-                return
-            }
+        val sharedSecret = call.argument<String>("sharedSecret")
+        if (sharedSecret == null || sharedSecret == "") {
+            return result.error(
+                CryptoError.DecryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
 
+        val ctPath = call.argument<String>("ctPath")
+        if (ctPath == null || ctPath == "") {
+            return result.error(
+                CryptoError.DecryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
+        val ptPath = call.argument<String>("ptPath")
+        if (ptPath == null || ptPath == "") {
+            return result.error(
+                CryptoError.DecryptFileInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
+        try {
             val sharedKey = Hex.decode(sharedSecret)
             val operationOk: Boolean = AesGcm.decryptFile(sharedKey, ctPath, ptPath)
 
             val ret = mapOf("opOk" to operationOk)
             result.success(ret)
         } catch (e: Exception) {
-            result.error("decryptFile(): failed to decrypt file", e.toString(), null)
+            return result.error(
+                CryptoError.DecryptFileCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
@@ -203,26 +326,92 @@ class AbrevvaCrypto : MethodCallHandler {
     fun decryptFileFromURL(call: MethodCall, result: Result) {
         val sharedSecret = call.argument<String>("sharedSecret")
         if (sharedSecret == null || sharedSecret == "") {
-            result.error("decryptFileFromURL(): invalid shared secret", null, null)
-            return
+            return result.error(
+                CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
         }
-        val url = call.argument<String>("url")
-        if (url == null || url == "") {
-            result.error("decryptFileFromURL(): invalid url", null, null)
-            return
+
+        val uri = call.argument<String>("url")
+        if (uri == null || uri == "") {
+            return result.error(
+                CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
         }
+
         val ptPath = call.argument<String>("ptPath")
         if (ptPath == null || ptPath == "") {
-            result.error("decryptFileFromURL(): invalid ptPath", null, null)
-            return
+            return result.error(
+                CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
         }
         val ctPath = Paths.get(ptPath).parent.toString() + "/blob"
+
+        val file = File(ctPath)
+        val url: URL
+        val connection: HttpURLConnection
+        val statusCode: Int
+
         try {
-            writeToFile(ctPath, url)
-        } catch (e: IOException) {
-            result.error("decryptFileFromURL(): failed to load data from url", e.toString(), null)
-            return
+            url = URL(uri)
+            connection = url.openConnection() as HttpURLConnection
+            statusCode = connection.responseCode
+        } catch (e: Exception) {
+            return result.error(
+                CryptoError.DecryptFileFromURLNetworkError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e
+            )
         }
+
+        try {
+            when (statusCode) {
+                200 -> {
+                    val inputStream = connection.inputStream
+                    val bufferedInputStream = BufferedInputStream(inputStream)
+                    val outputStream = FileOutputStream(file)
+                    val dataBuffer = ByteArray(4096)
+                    var bytesRead: Int
+
+                    while (bufferedInputStream.read(dataBuffer, 0, 4096)
+                            .also { bytesRead = it } != -1
+                    ) {
+                        outputStream.write(dataBuffer, 0, bytesRead)
+                    }
+                    outputStream.flush()
+                    outputStream.close()
+                }
+
+                404 -> {
+                    return result.error(
+                        CryptoError.DecryptFileFromURLNotFoundError.name,
+                        AbrevvaCrypto::class.java.simpleName,
+                        statusCode.toString()
+                    )
+                }
+
+                else -> {
+                    return result.error(
+                        CryptoError.DecryptFileFromURLInaccessibleError.name,
+                        AbrevvaCrypto::class.java.simpleName,
+                        statusCode.toString(),
+                    )
+                }
+            }
+        } catch (e: IOException) {
+            return result.error(
+                CryptoError.DecryptFileFromURLNoResponseDataError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e
+            )
+        }
+
+
         try {
             val sharedKey = Hex.decode(sharedSecret)
             val operationOk: Boolean = AesGcm.decryptFile(sharedKey, ctPath, ptPath)
@@ -230,7 +419,11 @@ class AbrevvaCrypto : MethodCallHandler {
             val ret = mapOf("opOk" to operationOk)
             result.success(ret)
         } catch (e: Exception) {
-            result.error("decryptFileFromURL(): failed to decrypt from file", e.toString(), null)
+            result.error(
+                AbrevvaCrypto::class.java.simpleName,
+                CryptoError.DecryptFileFromURLCryptoError.name,
+                e.toString()
+            )
         }
     }
 
@@ -238,32 +431,52 @@ class AbrevvaCrypto : MethodCallHandler {
         try {
             val numBytes = call.argument<Int>("numBytes")
             val rnd: ByteArray = SimpleSecureRandom.getSecureRandomBytes(numBytes!!)
-
-            if (rnd.isEmpty()) {
-                return result.error("random(): random generation failed", null, null)
-            }
             val ret = mapOf("value" to Hex.toHexString(rnd))
+
             result.success(ret)
         } catch (e: Exception) {
-            result.error("random(): random failed", e.toString(), null)
+            return result.error(
+                CryptoError.RandomError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
     fun derive(call: MethodCall, result: Result) {
+        val key: ByteArray
+        val salt: ByteArray
+        val info: ByteArray
         try {
-            val key = Hex.decode(call.argument<String>("key"))
-            val salt = Hex.decode(call.argument<String>("salt"))
-            val info = Hex.decode(call.argument<String>("info"))
-            val length = call.argument<Int>("length")
+            key = Hex.decode(call.argument<String>("key"))
+            salt = Hex.decode(call.argument<String>("salt"))
+            info = Hex.decode(call.argument<String>("info"))
+        } catch (e: Exception) {
+            return result.error(
+                CryptoError.DeriveInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
+        }
+        val length = call.argument<Int>("length") ?: 0
 
-            val derived: ByteArray = HKDF.derive(key, salt, info, length!!)
+        try {
+            val derived: ByteArray = HKDF.derive(key, salt, info, length)
             if (derived.isEmpty()) {
-                return result.error("derive(): key derivation failed", null, null)
+                return result.error(
+                    CryptoError.DeriveEmptyResultError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
             }
             val ret = mapOf(("value" to Hex.toHexString(derived)))
             result.success(ret)
         } catch (e: Exception) {
-            result.error("derive(): derive failed", e.toString(), null)
+            return result.error(
+                CryptoError.DeriveCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
@@ -271,14 +484,22 @@ class AbrevvaCrypto : MethodCallHandler {
         try {
             val privateKey = call.argument<String>("privateKey")
             if (privateKey == null || privateKey == "") {
-                return result.error("computeED25519PublicKey(): invalid private key", null, null)
+                return result.error(
+                    CryptoError.ComputeED25519PublicKeyInvalidArgumentError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
             }
             val publicKey = X25519Wrapper.computeED25519PublicKey(Base64.decode(privateKey))
-
             val ret = mapOf("publicKey" to Base64.toBase64String(publicKey))
+
             result.success(ret)
         } catch (e: Exception) {
-            result.error("computeED25519PublicKey(): computation failed", e.toString(), null)
+            return result.error(
+                CryptoError.ComputeED25519PublicKeyError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
@@ -286,35 +507,62 @@ class AbrevvaCrypto : MethodCallHandler {
         try {
             val privateKey = call.argument<String>("privateKey")
             if (privateKey == null || privateKey == "") {
-                return result.error("sign(): invalid private key", null, null)
+                return result.error(
+                    AbrevvaCrypto::class.java.simpleName,
+                    CryptoError.SignInvalidArgumentError.name,
+                    null
+                )
             }
             val data = call.argument<String>("data")
             if (data == null || data == "") {
-                return result.error("sign(): invalid data", null, null)
+                return result.error(
+                    CryptoError.SignInvalidArgumentError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
             }
             val signature = X25519Wrapper.sign(Base64.decode(privateKey), data.encodeToByteArray())
-
             val ret = mapOf("signature" to Base64.toBase64String(signature))
+
             result.success(ret)
         } catch (e: Exception) {
-            result.error("sign(): sign failed", e.toString(), null)
+            return result.error(
+                CryptoError.SignCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 
     fun verify(call: MethodCall, result: Result) {
+        val publicKey = call.argument<String>("publicKey")
+        if (publicKey == null || publicKey == "") {
+            return result.error(
+                CryptoError.VerifyInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
+        val data = call.argument<String>("data")
+        if (data == null || data == "") {
+            return result.error(
+                CryptoError.VerifyInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
+        val signature = call.argument<String>("signature")
+        if (signature == null || signature == "") {
+            return result.error(
+                CryptoError.VerifyInvalidArgumentError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                null
+            )
+        }
+
         try {
-            val publicKey = call.argument<String>("publicKey")
-            if (publicKey == null || publicKey == "") {
-                return result.error("verify(): invalid publicKey key", null, null)
-            }
-            val data = call.argument<String>("data")
-            if (data == null || data == "") {
-                return result.error("verify(): invalid data", null, null)
-            }
-            val signature = call.argument<String>("signature")
-            if (signature == null || signature == "") {
-                return result.error("verify(): invalid signature", null, null)
-            }
             val success =
                 X25519Wrapper.verify(
                     Base64.decode(publicKey),
@@ -322,11 +570,20 @@ class AbrevvaCrypto : MethodCallHandler {
                     Base64.decode(signature)
                 )
             if (!success) {
-                return result.error("verify(): bad signature", null, null)
+                return result.error(
+                    CryptoError.VerifyFailedError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
+
             }
             result.success(null)
         } catch (e: Exception) {
-            result.error("verify(): verify failed", e.toString(), null)
+            return result.error(
+                CryptoError.VerifyCryptoError.name,
+                AbrevvaCrypto::class.java.simpleName,
+                e.toString()
+            )
         }
     }
 }
