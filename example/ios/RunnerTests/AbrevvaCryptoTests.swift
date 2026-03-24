@@ -1,10 +1,9 @@
+@testable import abrevva
 import AbrevvaSDK
 import Flutter
 import Nimble
 import Quick
 import XCTest
-
-@testable import abrevva
 
 final class AbrevvaCryptoTests: QuickSpec {
     override class func spec() {

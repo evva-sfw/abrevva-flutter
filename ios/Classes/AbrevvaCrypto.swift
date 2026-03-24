@@ -222,16 +222,15 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
            let urlStr = (args["url"] ?? "") as? String {
 
             let sharedSecretHex = [UInt8](hex: "0x" + sharedSecret)
-            
+
             let session = URLSession(configuration: URLSessionConfiguration.default)
             var request = URLRequest(url: URL(string: urlStr)!)
-            
-            
+
             let task = session.dataTask(with: request) { data, response, error in
                 if error != nil {
                     return result(FlutterError(code: CryptoError.DecryptFileFromURLNetworkError.rawValue, message: AbrevvaCrypto.description(), details: nil))
                 }
-                
+
                 if let response = response as? HTTPURLResponse {
                     if response.statusCode == 200 {
                         let success = self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data!, pathPt: ptPath)
@@ -240,7 +239,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
                         }
                         result([
                             "opOk": true
-                            
+
                         ])
                     } else if response.statusCode == 404 {
                         return result(FlutterError(code: CryptoError.DecryptFileFromURLNotFoundError.rawValue, message: AbrevvaCrypto.description(), details: response.statusCode))
