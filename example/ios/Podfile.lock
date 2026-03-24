@@ -1,13 +1,13 @@
 PODS:
   - abrevva (2.0.0):
-    - AbrevvaSDK (= 3.4.0)
+    - AbrevvaSDK (= 3.4.2)
     - Flutter
-  - AbrevvaSDK (3.4.0):
+  - AbrevvaSDK (3.4.2):
     - CocoaMQTT
     - CryptoSwift
-  - CocoaMQTT (2.1.6):
-    - CocoaMQTT/Core (= 2.1.6)
-  - CocoaMQTT/Core (2.1.6):
+  - CocoaMQTT (2.2.3):
+    - CocoaMQTT/Core (= 2.2.3)
+  - CocoaMQTT/Core (2.2.3):
     - MqttCocoaAsyncSocket (~> 1.0.8)
   - CryptoSwift (1.8.4)
   - CwlCatchException (2.2.1):
@@ -25,13 +25,10 @@ PODS:
   - MqttCocoaAsyncSocket (1.0.8)
   - Nimble (14.0.0):
     - CwlPreconditionTesting (~> 2.2.0)
-  - path_provider_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - permission_handler_apple (9.3.0):
     - Flutter
   - Quick (7.6.2)
-  - SwiftFormat/CLI (0.58.7)
+  - SwiftFormat/CLI (0.60.1)
   - SwiftLint (0.54.0)
 
 DEPENDENCIES:
@@ -39,7 +36,6 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - Nimble
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - Quick
   - SwiftFormat/CLI (~> 0.49)
@@ -68,15 +64,13 @@ EXTERNAL SOURCES:
     :path: Flutter
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
-  path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
-  abrevva: f4ac5e8320e706730ef96eea398e025663e9cbd4
-  AbrevvaSDK: 0a0c7c0219bde5d36c84842ff1714d5793eddefb
-  CocoaMQTT: 1f206228b29318eabdacad0c2e4e88575922c27a
+  abrevva: dff9c694954c3c6dcbdb5584999bed3d55999671
+  AbrevvaSDK: aa2c9cbd1a07717519476eae4fb4f69834c5fa3a
+  CocoaMQTT: 2889e233a2427ed012d67c9f50c91053f7c1faf6
   CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
   CwlCatchException: 7acc161b299a6de7f0a46a6ed741eae2c8b4d75a
   CwlCatchExceptionSupport: 54ccab8d8c78907b57f99717fb19d4cc3bce02dc
@@ -87,10 +81,9 @@ SPEC CHECKSUMS:
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   MqttCocoaAsyncSocket: 77d3b74f76228dd5a05d1f9526eab101d415b30c
   Nimble: fcfcaab1cca78e301543f78669d70c166b4fadc3
-  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   Quick: b8bec97cd4b9f21da0472d45580f763b801fc353
-  SwiftFormat: 101eb1f937296342c837851bed442344261b2860
+  SwiftFormat: d32a8ff584c3e08fb5b0eb7f5dc610e02067df53
   SwiftLint: c1de071d9d08c8aba837545f6254315bc900e211
 
 PODFILE CHECKSUM: 6fd47a90073084ee862e7cddefc49f8d375b687c
