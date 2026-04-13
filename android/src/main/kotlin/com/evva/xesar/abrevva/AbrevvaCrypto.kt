@@ -314,18 +314,6 @@ class AbrevvaCrypto : MethodCallHandler {
         }
     }
 
-    fun writeToFile(ctPath: String, url: String) {
-        BufferedInputStream(URL(url).openStream()).use { `in` ->
-            FileOutputStream(ctPath).use { fileOutputStream ->
-                val dataBuffer = ByteArray(4096)
-                var bytesRead: Int
-                while (`in`.read(dataBuffer, 0, 4096).also { bytesRead = it } != -1) {
-                    fileOutputStream.write(dataBuffer, 0, bytesRead)
-                }
-            }
-        }
-    }
-
     fun decryptFileFromURL(call: MethodCall, result: Result) {
         CoroutineScope(Dispatchers.IO).launch {
             val sharedSecret = call.argument<String>("sharedSecret")

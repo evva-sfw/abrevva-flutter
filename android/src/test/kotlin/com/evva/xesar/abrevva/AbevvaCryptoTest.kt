@@ -12,6 +12,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.runs
@@ -30,7 +31,9 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
+import java.io.File
 import java.io.IOException
+import java.net.URL
 import java.util.stream.Stream
 import org.junit.jupiter.params.provider.Arguments as JunitArguments
 
@@ -278,14 +281,10 @@ class AbrevvaCryptoTest {
 
         @Test
         fun `decryptFileFromURL() should reject if ctPath-File is not accessible`() {
+            mockkConstructor(File::class)
+            every { anyConstructed<File>() } throws IOException("decryptFileFromURL() Fail Exception")
             val moduleSpy =
                 spyk(AbrevvaCrypto())
-            every {
-                moduleSpy.writeToFile(
-                    any(),
-                    any()
-                )
-            } throws IOException("decryptFileFromURL() Fail Exception")
 
             moduleSpy.decryptFileFromURL(callMock, resultMock)
 
@@ -293,11 +292,13 @@ class AbrevvaCryptoTest {
         }
 
         @Test
-        fun `decryptFileFromURL() should reject if decode fails`() {
+        fun `decryptFileFromURL() should reject if http connection fails`() {
+            mockkConstructor(File::class)
+            mockkConstructor(URL::class)
+
             val moduleSpy =
                 spyk(AbrevvaCrypto())
-            every { moduleSpy.writeToFile(any(), any()) } returns Unit
-            every { Hex.decode(any<String>()) } throws Exception("decryptFileFromURL() Fail Exception")
+            every { anyConstructed<URL>().openConnection() } throws Exception("decryptFileFromURL() Fail Exception")
 
             moduleSpy.decryptFileFromURL(callMock, resultMock)
 
