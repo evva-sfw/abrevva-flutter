@@ -8,6 +8,9 @@ import com.evva.xesar.abrevva.crypto.X25519Wrapper
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.bouncycastle.util.encoders.Base64
 import org.bouncycastle.util.encoders.Hex
 import java.io.BufferedInputStream
@@ -324,106 +327,115 @@ class AbrevvaCrypto : MethodCallHandler {
     }
 
     fun decryptFileFromURL(call: MethodCall, result: Result) {
-        val sharedSecret = call.argument<String>("sharedSecret")
-        if (sharedSecret == null || sharedSecret == "") {
-            return result.error(
-                CryptoError.DecryptFileFromURLInvalidArgumentError.name,
-                AbrevvaCrypto::class.java.simpleName,
-                null
-            )
-        }
-
-        val uri = call.argument<String>("url")
-        if (uri == null || uri == "") {
-            return result.error(
-                CryptoError.DecryptFileFromURLInvalidArgumentError.name,
-                AbrevvaCrypto::class.java.simpleName,
-                null
-            )
-        }
-
-        val ptPath = call.argument<String>("ptPath")
-        if (ptPath == null || ptPath == "") {
-            return result.error(
-                CryptoError.DecryptFileFromURLInvalidArgumentError.name,
-                AbrevvaCrypto::class.java.simpleName,
-                null
-            )
-        }
-        val ctPath = Paths.get(ptPath).parent.toString() + "/blob"
-
-        val file = File(ctPath)
-        val url: URL
-        val connection: HttpURLConnection
-        val statusCode: Int
-
-        try {
-            url = URL(uri)
-            connection = url.openConnection() as HttpURLConnection
-            statusCode = connection.responseCode
-        } catch (e: Exception) {
-            return result.error(
-                CryptoError.DecryptFileFromURLNetworkError.name,
-                AbrevvaCrypto::class.java.simpleName,
-                e
-            )
-        }
-
-        try {
-            when (statusCode) {
-                200 -> {
-                    val inputStream = connection.inputStream
-                    val bufferedInputStream = BufferedInputStream(inputStream)
-                    val outputStream = FileOutputStream(file)
-                    val dataBuffer = ByteArray(4096)
-                    var bytesRead: Int
-
-                    while (bufferedInputStream.read(dataBuffer, 0, 4096)
-                            .also { bytesRead = it } != -1
-                    ) {
-                        outputStream.write(dataBuffer, 0, bytesRead)
-                    }
-                    outputStream.flush()
-                    outputStream.close()
-                }
-
-                404 -> {
-                    return result.error(
-                        CryptoError.DecryptFileFromURLNotFoundError.name,
-                        AbrevvaCrypto::class.java.simpleName,
-                        statusCode.toString()
-                    )
-                }
-
-                else -> {
-                    return result.error(
-                        CryptoError.DecryptFileFromURLInaccessibleError.name,
-                        AbrevvaCrypto::class.java.simpleName,
-                        statusCode.toString(),
-                    )
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            val sharedSecret = call.argument<String>("sharedSecret")
+            if (sharedSecret == null || sharedSecret == "") {
+                result.error(
+                    CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
+                return@launch
             }
-        } catch (e: IOException) {
-            return result.error(
-                CryptoError.DecryptFileFromURLNoResponseDataError.name,
-                AbrevvaCrypto::class.java.simpleName,
-                e
-            )
-        }
+
+            val uri = call.argument<String>("url")
+            if (uri == null || uri == "") {
+                result.error(
+                    CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
+                return@launch
+            }
+
+            val ptPath = call.argument<String>("ptPath")
+            if (ptPath == null || ptPath == "") {
+                result.error(
+                    CryptoError.DecryptFileFromURLInvalidArgumentError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
+                return@launch
+            }
+            val ctPath = Paths.get(ptPath).parent.toString() + "/blob"
+
+            val file = File(ctPath)
+            val url: URL
+            val connection: HttpURLConnection
+            val statusCode: Int
+
+            try {
+                url = URL(uri)
+                connection = url.openConnection() as HttpURLConnection
+                statusCode = connection.responseCode
+            } catch (e: Exception) {
+                result.error(
+                    CryptoError.DecryptFileFromURLNetworkError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    e
+                )
+                return@launch
+            }
+
+            try {
+                when (statusCode) {
+                    200 -> {
+                        val inputStream = connection.inputStream
+                        val bufferedInputStream = BufferedInputStream(inputStream)
+                        val outputStream = FileOutputStream(file)
+                        val dataBuffer = ByteArray(4096)
+                        var bytesRead: Int
+
+                        while (bufferedInputStream.read(dataBuffer, 0, 4096)
+                                .also { bytesRead = it } != -1
+                        ) {
+                            outputStream.write(dataBuffer, 0, bytesRead)
+                        }
+                        outputStream.flush()
+                        outputStream.close()
+                    }
+
+                    404 -> {
+                        result.error(
+                            CryptoError.DecryptFileFromURLNotFoundError.name,
+                            AbrevvaCrypto::class.java.simpleName,
+                            statusCode.toString()
+                        )
+                        return@launch
+                    }
+
+                    else -> {
+                        result.error(
+                            CryptoError.DecryptFileFromURLInaccessibleError.name,
+                            AbrevvaCrypto::class.java.simpleName,
+                            statusCode.toString(),
+                        )
+                        return@launch
+                    }
+                }
+            } catch (e: IOException) {
+                result.error(
+                    CryptoError.DecryptFileFromURLNoResponseDataError.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    e
+                )
+                return@launch
+            }
 
 
-        try {
-            val sharedKey = Hex.decode(sharedSecret)
-            val operationOk: Boolean = AesGcm.decryptFile(sharedKey, ctPath, ptPath)
+            try {
+                val sharedKey = Hex.decode(sharedSecret)
+                val operationOk: Boolean = AesGcm.decryptFile(sharedKey, ctPath, ptPath)
 
-            val ret = mapOf("opOk" to operationOk)
-            result.success(ret)
-        } catch (e: Exception) {
-            result.error(
-                AbrevvaCrypto::class.java.simpleName,
-                CryptoError.DecryptFileFromURLCryptoError.name,
-                e.toString()
-            )
+                val ret = mapOf("opOk" to operationOk)
+                result.success(ret)
+            } catch (e: Exception) {
+                result.error(
+                    AbrevvaCrypto::class.java.simpleName,
+                    CryptoError.DecryptFileFromURLCryptoError.name,
+                    e.toString()
+                )
+            }
         }
     }
 
