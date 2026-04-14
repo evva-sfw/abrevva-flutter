@@ -263,7 +263,7 @@ class AbrevvaCryptoTest {
 
                 abrevvaCrypto.decryptFileFromURL(callMock, resultMock)
 
-                verify { resultMock.error(any(), any(), any()) }
+                coVerify(timeout = 500) { resultMock.error(any(), any(), any()) }
             }
 
             fun parameterizedArgs_decryptFileFromURL(): Stream<JunitArguments> {
