@@ -8,11 +8,11 @@ import com.evva.xesar.abrevva.crypto.X25519Wrapper
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.mockk.MockKAnnotations
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkConstructor
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.runs
@@ -32,7 +32,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
-import java.io.IOException
 import java.net.URL
 import java.util.stream.Stream
 import org.junit.jupiter.params.provider.Arguments as JunitArguments
@@ -281,28 +280,29 @@ class AbrevvaCryptoTest {
 
         @Test
         fun `decryptFileFromURL() should reject if ctPath-File is not accessible`() {
-            mockkConstructor(File::class)
-            every { anyConstructed<File>() } throws IOException("decryptFileFromURL() Fail Exception")
-            val moduleSpy =
-                spyk(AbrevvaCrypto())
+            val fileMock = mockk<File>()
+            every { fileMock.exists() } returns false
+            val moduleSpy = spyk(AbrevvaCrypto())
+            every { moduleSpy.pathToFile(any()) } returns fileMock
 
             moduleSpy.decryptFileFromURL(callMock, resultMock)
 
-            verify { resultMock.error(any(), any(), any()) }
+            coVerify(timeout = 500) { resultMock.error(any(), any(), any()) }
         }
 
         @Test
         fun `decryptFileFromURL() should reject if http connection fails`() {
-            mockkConstructor(File::class)
-            mockkConstructor(URL::class)
-
-            val moduleSpy =
-                spyk(AbrevvaCrypto())
-            every { anyConstructed<URL>().openConnection() } throws Exception("decryptFileFromURL() Fail Exception")
+            val fileMock = mockk<File>()
+            every { fileMock.exists() } returns true
+            val urlMock = mockk<URL>()
+            every { urlMock.openConnection() } throws Exception("decryptFileFromURL() Fail Exception")
+            val moduleSpy = spyk(AbrevvaCrypto())
+            every { moduleSpy.pathToFile(any()) } returns fileMock
+            every { moduleSpy.pathToUrl(any()) } returns urlMock
 
             moduleSpy.decryptFileFromURL(callMock, resultMock)
 
-            verify { resultMock.error(any(), any(), any()) }
+            coVerify(timeout = 500) { resultMock.error(any(), any(), any()) }
         }
     }
 

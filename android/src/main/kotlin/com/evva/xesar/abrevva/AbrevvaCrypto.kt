@@ -22,7 +22,7 @@ import java.net.URL
 import java.nio.file.Paths
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-private enum class CryptoError {
+enum class CryptoError {
     EncryptCryptoError,
     EncryptEmptyResultError,
     EncryptInvalidArgumentError,
@@ -39,6 +39,7 @@ private enum class CryptoError {
     DecryptFileFromURLNoResponseDataError,
     DecryptFileFromURLInvalidArgumentError,
     DecryptFileFromURLCryptoError,
+    DecryptFileFromURInvalidPath,
     GenerateKeypairError,
     ComputeSharedSecretError,
     ComputeSharedSecretInvalidArgumentError,
@@ -325,7 +326,6 @@ class AbrevvaCrypto : MethodCallHandler {
                 )
                 return@launch
             }
-
             val uri = call.argument<String>("url")
             if (uri == null || uri == "") {
                 result.error(
@@ -345,18 +345,30 @@ class AbrevvaCrypto : MethodCallHandler {
                 )
                 return@launch
             }
+
             val ctPath = Paths.get(ptPath).parent.toString() + "/blob"
 
-            val file = File(ctPath)
+            val file = pathToFile(ctPath)
+            if (!file.exists()) {
+                result.error(
+                    CryptoError.DecryptFileFromURInvalidPath.name,
+                    AbrevvaCrypto::class.java.simpleName,
+                    null
+                )
+                return@launch
+            }
+
             val url: URL
             val connection: HttpURLConnection
             val statusCode: Int
 
             try {
-                url = URL(uri)
+                url = pathToUrl(uri)
                 connection = url.openConnection() as HttpURLConnection
                 statusCode = connection.responseCode
             } catch (e: Exception) {
+                println("REACHED")
+
                 result.error(
                     CryptoError.DecryptFileFromURLNetworkError.name,
                     AbrevvaCrypto::class.java.simpleName,
@@ -585,5 +597,14 @@ class AbrevvaCrypto : MethodCallHandler {
                 e.toString()
             )
         }
+    }
+
+    // needed for testing; Mocking File() and URL() directly breaks Test-setup
+    fun pathToFile(path: String): File {
+        return File(path)
+    }
+
+    fun pathToUrl(uri: String): URL {
+        return URL(uri)
     }
 }
