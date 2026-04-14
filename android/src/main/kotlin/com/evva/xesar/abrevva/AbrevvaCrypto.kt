@@ -367,8 +367,6 @@ class AbrevvaCrypto : MethodCallHandler {
                 connection = url.openConnection() as HttpURLConnection
                 statusCode = connection.responseCode
             } catch (e: Exception) {
-                println("REACHED")
-
                 result.error(
                     CryptoError.DecryptFileFromURLNetworkError.name,
                     AbrevvaCrypto::class.java.simpleName,
