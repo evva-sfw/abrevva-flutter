@@ -349,14 +349,6 @@ class AbrevvaCrypto : MethodCallHandler {
             val ctPath = Paths.get(ptPath).parent.toString() + "/blob"
 
             val file = pathToFile(ctPath)
-            if (!file.exists()) {
-                result.error(
-                    CryptoError.DecryptFileFromURInvalidPath.name,
-                    AbrevvaCrypto::class.java.simpleName,
-                    null
-                )
-                return@launch
-            }
 
             val url: URL
             val connection: HttpURLConnection
