@@ -2,9 +2,9 @@
     "name": "flutter-abrevva",
     "devDependencies": {
         "@release-it/bumper": "^7.0.5",
-        "@release-it/conventional-changelog": "^10.0.1",
+        "@release-it/conventional-changelog": "^11.0.0",
         "auto-changelog": "^2.5.0",
-        "release-it": "^19.0.4"
+        "release-it": "^20.0.0"
     },
     "version": "3.0.4"
 }
