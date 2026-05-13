@@ -62,7 +62,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         methodChannel = bleChannel
 
         when (event) {
-            Lifecycle.Event.ON_START -> observerOnStart()
+            Lifecycle.Event.ON_CREATE -> observerOnCreate()
             else -> {}
         }
     }
@@ -96,9 +96,11 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         }
     }
 
-    fun observerOnStart() {
-        manager = BleManager(contextMain)
-        aliases = arrayOf()
+    fun observerOnCreate() {
+        if (!::manager.isInitialized) {
+            manager = BleManager(contextMain)
+            aliases = arrayOf()
+        }
     }
 
     fun evaluateSdkVersion(call: MethodCall, result: MethodChannel.Result) {
