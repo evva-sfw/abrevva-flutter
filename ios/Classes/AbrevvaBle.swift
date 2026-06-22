@@ -173,7 +173,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
     func stopScan(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let bleManager = self.getBleManager(result) else { return }
         bleManager.stopScan()
-        result("success")
+        result(nil)
     }
 
     @objc
@@ -189,13 +189,16 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         let timeout = optionsSwift["timeout"] as? Int ?? 10_000
 
         Task {
-            let success = await self.bleManager!.connect(
+            let error = await self.bleManager!.connect(
                 device, { address in
-                    self.connectStreamHandler.eventSink?(["value": address ])
+                    self.connectStreamHandler.eventSink?(["value": address])
                 },
                 timeout
             )
-            result(success)
+            if error != nil {
+                return result(FlutterError(code: "connect(): failed to connect to device", message: error!.localizedDescription, details: error))
+            }
+            result(nil)
         }
     }
 
@@ -205,12 +208,11 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
 
         Task {
-            let success = await self.bleManager!.disconnect(device)
-            if success {
-                result(nil)
-            } else {
-                result(FlutterError(code: "disconnect(): failed to disconnect from device", message: nil, details: nil))
+            let error = await self.bleManager!.disconnect(device)
+            if error != nil {
+                return result(FlutterError(code: "disconnect(): failed to disconnect from device", message: error!.localizedDescription, details: error))
             }
+            result(nil)
         }
     }
 
@@ -228,11 +230,10 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
 
         Task {
             let data = await device.read(characteristic.0, characteristic.1, timeout)
-            if data != nil {
-                result(["value": [UInt8](data!)])
-            } else {
-                result(FlutterError(code: "read(): failed to read data", message: nil, details: nil))
+            if data == nil {
+                return result(FlutterError(code: "read(): failed to read data", message: nil, details: nil))
             }
+            result(["value": [UInt8](data!)])
         }
     }
 
@@ -253,18 +254,44 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         let timeout = optionsSwift["timeout"] as? Int ?? nil
 
         Task {
-            let success = await device.write(
+            let error = await device.write(
                 characteristic.0,
                 characteristic.1,
                 stringToData(value),
                 writeType,
                 timeout
             )
-            if success {
-                result(nil)
-            } else {
-                result(FlutterError(code: "write(): failed to write data", message: nil, details: nil))
+            if error != nil {
+                return result(FlutterError(code: "write(): failed to write data", message: error!.localizedDescription, details: error))
             }
+            result(nil)
+        }
+    }
+
+    @objc
+    func signalize(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let optionsSwift = call.arguments as? [String: Any] else {
+            result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
+            return
+        }
+        guard let deviceID = optionsSwift["deviceId"] as? String else {
+            result(FlutterError(code: "getDevice(): deviceId required", message: nil, details: nil))
+            return
+        }
+        guard let device = self.bleDeviceMap[deviceID] else {
+            result(FlutterError(code: "getDevice(): device not found", message: nil, details: nil))
+            return
+        }
+        guard let bleManager = self.bleManager else {
+            result(FlutterError(code: "bleManager: not found", message: nil, details: nil))
+            return
+        }
+        Task {
+            let error = await bleManager.signalize(device)
+            if error != nil {
+                return result(FlutterError(code: "signalize(): failed to signalize", message: error!.localizedDescription, details: error))
+            }
+            result(nil)
         }
     }
 
@@ -323,11 +350,10 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
                 mobileAccessData,
                 isPermanentRelease
             )
-            let xvnData = response.1?.toHexString() ?? nil
-
             result([
                 "status": response.0.rawValue,
-                "xvnData": xvnData as Any
+                "xvnData": (response.1?.toHexString() ?? nil) as Any,
+                "error": response.2?.localizedDescription as Any
             ])
         }
     }
@@ -345,7 +371,7 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         let timeout = args["timeout"] as? Int ?? nil
 
         Task {
-            let success = await device.setNotifications(characteristic.0, characteristic.1, true, { value in
+            let error = await device.setNotifications(characteristic.0, characteristic.1, true, { value in
                 let key =
                     "notification|\(device.getAddress())|" +
                     "\(characteristic.0.uuidString.lowercased())|" +
@@ -358,11 +384,10 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
                     }
                 }
             }, timeout)
-            if success {
-                result(["value": success])
-            } else {
-                result(FlutterError(code: "stopNotifications(): failed to stop notifications", message: nil, details: nil))
+            if error != nil {
+                return result(FlutterError(code: "stopNotifications(): failed to stop notifications", message: error!.localizedDescription, details: error))
             }
+            result(nil)
         }
     }
 
@@ -380,36 +405,11 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         let timeout = optionsSwift["timeout"] as? Int ?? nil
 
         Task {
-            let success = await device.setNotifications(characteristic.0, characteristic.1, false, nil, timeout)
-            if success {
-                result(["value": success])
-            } else {
-                result(FlutterError(code: "stopNotifications(): failed to stop notifications", message: nil, details: nil))
+            let error = await device.setNotifications(characteristic.0, characteristic.1, false, nil, timeout)
+            if error != nil {
+                return result(FlutterError(code: "stopNotifications(): failed to stop notifications", message: error!.localizedDescription, details: error))
             }
-        }
-    }
-
-    @objc
-    func signalize(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard let optionsSwift = call.arguments as? [String: Any] else {
-            result(FlutterError(code: "Failed to convert NSDictionary to Swift dictionary", message: nil, details: nil))
-            return
-        }
-        guard let deviceID = optionsSwift["deviceId"] as? String else {
-            result(FlutterError(code: "getDevice(): deviceId required", message: nil, details: nil))
-            return
-        }
-        guard let device = self.bleDeviceMap[deviceID] else {
-            result(FlutterError(code: "getDevice(): device not found", message: nil, details: nil))
-            return
-        }
-        guard let bleManager = self.bleManager else {
-            result(FlutterError(code: "bleManager: not found", message: nil, details: nil))
-            return
-        }
-        Task {
-            let ret = await bleManager.signalize(device)
-            result(ret)
+            result(nil)
         }
     }
 

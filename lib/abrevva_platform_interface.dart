@@ -6,8 +6,8 @@ import 'abrevva_method_channel.dart';
 import 'abrevva_param_classes.dart';
 
 abstract class AbrevvaCodingStationPlatform extends PlatformInterface {
-    /// Constructs a FlutterPluginPlatform.
-  AbrevvaCodingStationPlatform(): super(token: _token);
+  /// Constructs a FlutterPluginPlatform.
+  AbrevvaCodingStationPlatform() : super(token: _token);
 
   static final Object _token = Object();
 
@@ -26,7 +26,8 @@ abstract class AbrevvaCodingStationPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<void> register(String url, String clientId, String username, String password) {
+  Future<void> register(
+      String url, String clientId, String username, String password) {
     throw UnimplementedError('register() has not been implemented.');
   }
 
@@ -82,8 +83,7 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
     throw UnimplementedError('decrypt() has not been implemented.');
   }
 
-  Future<bool> encryptFile(
-      String sharedSecret, String ptPath, String ctPath) {
+  Future<bool> encryptFile(String sharedSecret, String ptPath, String ctPath) {
     throw UnimplementedError('encryptFile() has not been implemented.');
   }
 
@@ -92,8 +92,7 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
     throw UnimplementedError('computeSharedSecret() has not been implemented.');
   }
 
-  Future<bool> decryptFile(
-      String sharedSecret, String ctPath, String ptPath) {
+  Future<bool> decryptFile(String sharedSecret, String ctPath, String ptPath) {
     throw UnimplementedError('decryptFile() has not been implemented.');
   }
 
@@ -108,7 +107,8 @@ abstract class AbrevvaCryptoPlatform extends PlatformInterface {
   }
 
   Future<ED25519PublicKeyResult> computeED25519PublicKey(String privateKey) {
-    throw UnimplementedError('computeED25519PublicKey() has not been implemented.');
+    throw UnimplementedError(
+        'computeED25519PublicKey() has not been implemented.');
   }
 
   Future<SignResult> sign(String privateKey, String data) {
@@ -182,25 +182,26 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
   }
 
   Future<void> startScan({
-      required void Function(BleDevice result) onScanResult,
-      void Function(bool success)? onScanStart,
-      void Function(bool success)? onScanStop,
-      String? macFilter,
-      bool? allowDuplicates,
-      int? timeout,
-    }) {
+    required void Function(BleDevice result) onScanResult,
+    void Function(bool success)? onScanStart,
+    void Function(bool success)? onScanStop,
+    String? macFilter,
+    bool? allowDuplicates,
+    int? timeout,
+  }) {
     throw UnimplementedError('startScan() has not been implemented.');
   }
 
-  Future<String?> stopScan() {
+  Future<void> stopScan() {
     throw UnimplementedError('stopScan() has not been implemented.');
   }
 
-  Future<bool> connect(String deviceId, int timeout, void Function(String address)? onDisconnect) {
+  Future<void> connect(String deviceId, int timeout,
+      void Function(String address)? onDisconnect) {
     throw UnimplementedError('connect() has not been implemented.');
   }
 
-  Future<bool> disconnect(String deviceId) {
+  Future<void> disconnect(String deviceId) {
     throw UnimplementedError('disconnect() has not been implemented.');
   }
 
@@ -209,9 +210,13 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
     throw UnimplementedError('read() has not been implemented.');
   }
 
-  Future<void> write(String deviceId, String service,
-      String characteristic, String value, int timeout) {
+  Future<void> write(String deviceId, String service, String characteristic,
+      String value, int timeout) {
     throw UnimplementedError('write() has not been implemented.');
+  }
+
+  Future<void> signalize(String deviceId) {
+    throw UnimplementedError('deviceId() has not been implemented.');
   }
 
   @Deprecated("Use disengageWithXvnResponse() instead.")
@@ -232,7 +237,8 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
       String mobileGroupId,
       String mobileAccessData,
       bool isPermanentRelease) {
-    throw UnimplementedError('disengageWithXvnResponse() has not been implemented.');
+    throw UnimplementedError(
+        'disengageWithXvnResponse() has not been implemented.');
   }
 
   Future<void> startNotifications(
@@ -240,17 +246,12 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
       String service,
       String characteristic,
       int timeout,
-      void Function(String result) callback
-    ) {
+      void Function(String result) callback) {
     throw UnimplementedError('startNotifications() has not been implemented.');
   }
 
-  Future<bool> stopNotifications(
+  Future<void> stopNotifications(
       String deviceId, String service, String characteristic, int timeout) {
     throw UnimplementedError('startNotifications() has not been implemented.');
-  }
-
-  Future<bool> signalize(String deviceId) {
-    throw UnimplementedError('deviceId() has not been implemented.');
   }
 }

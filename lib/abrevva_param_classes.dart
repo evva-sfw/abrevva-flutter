@@ -12,6 +12,7 @@ enum BatteryStatus { batteryFull, batteryEmpty, unknown }
 
 enum DisengageStatusType {
   /// Component
+  error,
   authorized,
   authorizedPermanentDisengage,
   authorizedPermanentEngage,
@@ -22,25 +23,27 @@ enum DisengageStatusType {
   signalLocalization,
   mediumDefectOnline,
   mediumBlacklisted,
-  error,
+  unknownStatusCode,
+
+  /// Crypto
+  accessCipherError,
 
   /// Interface
   unableToConnect,
   unableToSetNotifications,
   unableToReadChallenge,
-  unableToWriteMDF,
-  accessCipherError,
+  unableToWriteAccessData,
   bleAdapterDisabled,
   unknownDevice,
-  unknownStatusCode,
   timeout,
 }
 
 class DisengageResult {
   DisengageStatusType status;
   String? xvnData;
+  String? error;
 
-  DisengageResult({required this.status, this.xvnData});
+  DisengageResult({required this.status, this.xvnData, this.error});
 }
 
 class BleDeviceManufacturerData {

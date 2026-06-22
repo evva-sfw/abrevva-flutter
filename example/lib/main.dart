@@ -1,8 +1,9 @@
+import 'dart:async';
+
+import 'package:abrevva/abrevva.dart';
 import 'package:abrevva/abrevva_param_classes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:abrevva/abrevva.dart';
 
 void main() {
   runApp(const MyApp());
@@ -98,9 +99,9 @@ class _BleState extends State<BleWidget> {
 
   Future<void> _scanForDevices() async {
     scanResultList.clear();
-    return await AbrevvaBle.startScan( onScanResult: (device) {
+    return await AbrevvaBle.startScan(onScanResult: (device) {
       setState(() {
-              scanResultList.add(device);
+        scanResultList.add(device);
       });
     });
   }
@@ -126,20 +127,24 @@ class _BleState extends State<BleWidget> {
               return ListTile(
                 onTap: () async {
                   AbrevvaBle.stopScan();
-                  final result = await AbrevvaBle.disengageWithXvnResponse(
-                      'deviceId',
-                      'mobileId',
-                      'mobileDeviceKey',
-                      'mobileGroupId',
-                      'mobileAccessData',
-                      true
-                  );
+                  final disengageResult =
+                      await AbrevvaBle.disengageWithXvnResponse(
+                          result.deviceId,
+                          'mobileId',
+                          'mobileDeviceKey',
+                          'mobileGroupId',
+                          'mobileAccessData',
+                          true);
                   if (kDebugMode) {
-                    print("status=${result.status} xvnData=${result.xvnData}");
+                    print(
+                        "status=${disengageResult.status} xvnData=${disengageResult.xvnData} error=${disengageResult.error}");
                   }
                 },
-                title: Text("${result.advertisementData?.manufacturerData?.identifier}", style: const TextStyle(color: Colors.blueAccent)),
-                subtitle: Text('${result.advertisementData?.manufacturerData?.companyIdentifier}'),
+                title: Text(
+                    "${result.advertisementData?.manufacturerData?.identifier}",
+                    style: const TextStyle(color: Colors.blueAccent)),
+                subtitle: Text(
+                    '${result.advertisementData?.manufacturerData?.companyIdentifier}'),
               );
             }),
       ),
@@ -186,8 +191,7 @@ class _CryptoState extends State<CryptoWidget> {
                     child: const Text('random()')),
                 ElevatedButton(
                     onPressed: () {
-                      AbrevvaCrypto
-                          .generateKeyPair()
+                      AbrevvaCrypto.generateKeyPair()
                           .then((result) => setState(() {
                                 privateKey = result.privateKey;
                                 publicKey = result.publicKey;
@@ -198,37 +202,41 @@ class _CryptoState extends State<CryptoWidget> {
                     child: const Text('createKeyPair()')),
                 ElevatedButton(
                     onPressed: () {
-                      AbrevvaCrypto
-                          .computeED25519PublicKey(privateKey)
+                      AbrevvaCrypto.computeED25519PublicKey(privateKey)
                           .then((result) => setState(() {
-                        publicKey = result.publicKey;
-                        value =
-                        'computeED25519PublicKey() =>\npublicKey: ${result.publicKey}';
-                      }));
+                                publicKey = result.publicKey;
+                                value =
+                                    'computeED25519PublicKey() =>\npublicKey: ${result.publicKey}';
+                              }));
                     },
                     child: const Text('computeED25519PublicKey()')),
                 ElevatedButton(
                     onPressed: () {
-                      AbrevvaCrypto
-                          .sign(privateKey, '12345')
+                      AbrevvaCrypto.sign(privateKey, '12345')
                           .then((result) => setState(() {
-                        signature = result.signature;
-                        value =
-                        'sign() =>\nsignature: ${result.signature}';
-                      })).catchError((err) => setState(() {
-                        if (kDebugMode) { print(err); }
-                      }));
+                                signature = result.signature;
+                                value =
+                                    'sign() =>\nsignature: ${result.signature}';
+                              }))
+                          .catchError((err) => setState(() {
+                                if (kDebugMode) {
+                                  print(err);
+                                }
+                              }));
                     },
                     child: const Text('sign()')),
                 ElevatedButton(
                     onPressed: () {
-                      AbrevvaCrypto
-                          .verify(publicKey, '12345', signature).then((_) => setState(() {
-                        value = 'verify() =>\nvalid';
-                      })).catchError((err) => setState(() {
-                        if (kDebugMode) { print(err); }
-                        value = 'verify() =>\ninvalid';
-                      }));
+                      AbrevvaCrypto.verify(publicKey, '12345', signature)
+                          .then((_) => setState(() {
+                                value = 'verify() =>\nvalid';
+                              }))
+                          .catchError((err) => setState(() {
+                                if (kDebugMode) {
+                                  print(err);
+                                }
+                                value = 'verify() =>\ninvalid';
+                              }));
                     },
                     child: const Text('verify()'))
               ],
@@ -269,64 +277,54 @@ class _CodingStationState extends State<CodingStationWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       try {
-                        await AbrevvaCodingStation.register(url,clientId,username,password);
+                        await AbrevvaCodingStation.register(
+                            url, clientId, username, password);
                         setState(() {
                           value = 'register(): success';
-                          }
-                        );
+                        });
                       } catch (e) {
                         setState(() {
                           value = 'register(): $e';
-                          }
-                        );
+                        });
                       }
                     },
-                    child: const Text('register()')
-                    ),
+                    child: const Text('register()')),
                 ElevatedButton(
                     onPressed: () async {
                       try {
                         await AbrevvaCodingStation.connect();
                         setState(() {
                           value = 'connect(): success';
-                          }
-                        );
+                        });
                       } catch (e) {
                         setState(() {
                           value = 'connect(): $e';
-                          }
-                        );
+                        });
                       }
                     },
-                    child: const Text('connect()')
-                    ),
+                    child: const Text('connect()')),
                 ElevatedButton(
                     onPressed: () async {
                       try {
                         await AbrevvaCodingStation.write();
                         setState(() {
                           value = 'write(): success';
-                          }
-                        );
+                        });
                       } catch (e) {
                         setState(() {
                           value = 'write(): $e';
-                          }
-                        );
+                        });
                       }
                     },
-                    child: const Text('write()')
-                    ),
+                    child: const Text('write()')),
                 ElevatedButton(
                     onPressed: () async {
-                        await AbrevvaCodingStation.disconnect();
-                        setState(() {
-                          value = 'disconnect(): success';
-                          }
-                        );
+                      await AbrevvaCodingStation.disconnect();
+                      setState(() {
+                        value = 'disconnect(): success';
+                      });
                     },
-                    child: const Text('disconnect()')
-                    ),
+                    child: const Text('disconnect()')),
               ],
             )));
   }
