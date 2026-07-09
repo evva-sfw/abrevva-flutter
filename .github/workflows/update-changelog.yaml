@@ -1,0 +1,62 @@
+name: Update Changelog on Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+        # Create Github App Token
+        - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+          id: app-token
+          with:
+            # required
+            # Appid from this app: https://evva.ghe.com/apps/p-lehner/evva-bee
+            app-id: "5302"
+            # Private key from vault https://vault.service.consul:8200/ui/vault/secrets/secret/show/infrastructure/services/external/github-enterprise/github-apps/evva-bee
+            private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
+
+        # Get App User ID
+        - name: Get GitHub App User ID
+          id: get-user-id
+          run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+          env:
+            GH_TOKEN: ${{ steps.app-token.outputs.token }}
+            GH_HOST: evva.ghe.com
+        - run: |
+            git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+            git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+        - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2 
+          with:
+            fetch-depth: 0 # For release-it and auto-changelog to be able to generate the full changelog
+            fetch-tags: true
+            token: ${{ steps.app-token.outputs.token }}
+            ref: main
+
+        - name: Setup Node.js
+          uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+          with:
+            node-version: lts/*
+
+        - name: Install node dependencies
+          run: npm ci
+
+        - name: Generate changelog
+          run: |
+            npx auto-changelog -c .auto-changelog
+            cat CHANGELOG.md
+
+        - name: Commit & Push changes
+          uses: iarekylew00t/verified-bot-commit@126a6a11889ab05bcff72ec2403c326cd249b84c # v2.3.0
+          with:
+            ref: main 
+            token: ${{ steps.app-token.outputs.token }}
+            message: "docs: Updated changelog"
+            files: |
+              CHANGELOG.md

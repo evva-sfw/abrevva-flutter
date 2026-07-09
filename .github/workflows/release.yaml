@@ -1,0 +1,315 @@
+name: Release and publish 
+on:
+  workflow_dispatch:
+    inputs:
+      input_version:
+        type: choice
+        description: What type of release?
+        options:
+          - ""
+          - patch
+          - minor
+          - major
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+# Dont need permissions because we use github app and not the workflow permissions
+permissions: {}
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new-tag: ${{ steps.version.outputs.new-tag }}
+    steps:
+      # Create Github App Token
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        id: app-token
+        with:
+          # required
+          # Appid from this app: https://evva.ghe.com/apps/p-lehner/evva-bee
+          app-id: "5302"
+          # Private key from vault https://vault.service.consul:8200/ui/vault/secrets/secret/show/infrastructure/services/external/github-enterprise/github-apps/evva-bee
+          private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
+
+      # Get GitHub App User ID
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_HOST: evva.ghe.com
+      - run: |
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      # Copy repo to action runner
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0 # For release-it and auto-changelog to be able to generate the full changelog
+          fetch-tags: true
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+          # Make sure the value of GITHUB_TOKEN will persist in repo's config for release-it to use it later
+          # In this case it is a short lived app-token, so its ok
+          persist-credentials: true
+      
+      # Install node dependencies (releaseit + autochangelog)
+      - name: Install node dependencies
+        run: npm ci
+
+      # Get the latest tag info, increment it accordingly, update the package.json file so it is built with new version
+      - name: Update version info for build
+        id: version
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.input_version }}
+          BOT_GITHUB_TOKEN:  ${{ steps.app-token.outputs.token }}
+        # Files to be modified are copied to temp location so repo is returned to original state after build is complete
+        run: |
+            npx release-it ${{ github.event.inputs.input_version }} --no-git.commit --no-git.tag --no-git.push --no-github.release --ci
+            echo "New version will be $(cat version)"
+            NEW_TAG=$(cat version)
+            echo "new-tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+
+
+  publish:
+    needs: bump-version
+    runs-on: ubuntu-latest
+    environment: pub.dev # is configured in repo settings with secrets
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      # Create Github App Token
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        id: app-token
+        with:
+          # required
+          # Appid from this app: https://evva.ghe.com/apps/p-lehner/evva-bee
+          app-id: "5302"
+          # Private key from vault https://vault.service.consul:8200/ui/vault/secrets/secret/show/infrastructure/services/external/github-enterprise/github-apps/evva-bee
+          private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
+
+      # Get GitHub App User ID
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_HOST: evva.ghe.com
+      - run: |
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      # Copy repo to action runner
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0 # For release-it and auto-changelog to be able to generate the full changelog
+          fetch-tags: true
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+          # Make sure the value of GITHUB_TOKEN will persist in repo's config for release-it to use it later
+          # In this case it is a short lived app-token, so its ok
+          persist-credentials: true
+          ssh-key: ${{ secrets.BOT_SSH_PRIVATE_KEY }} # IS THIS REQUIRED? WAS FROM OLD RELEASE WORKFLOW
+        
+
+      - name: Update version in package.json files for build
+        id: update-version
+        env:
+            VERSION_TYPE: ${{ github.event.inputs.input_version }}
+            BOT_GITHUB_TOKEN:  ${{ steps.app-token.outputs.token }}
+            NEW_TAG: ${{ needs.bump-version.outputs.new-tag }}
+                # Files to be modified are copied to temp location so repo is returned to original state after build is complete
+        run: |
+            echo '::group:: Preparing files with updated versions'
+            echo "New version will be $NEW_TAG"
+            mkdir -p /tmp/abrevva-flutter
+            cp ${{ github.workspace }}/package.json /tmp/abrevva-flutter/package.json
+            cp ${{ github.workspace }}/package-lock.json /tmp/abrevva-flutter/package-lock.json
+
+            jq --arg version "$NEW_TAG" '.version = $version' ${{ github.workspace }}/package.json > temp.json && mv temp.json ${{ github.workspace }}/package.json
+            jq --arg version "$NEW_TAG" '.version = $version' ${{ github.workspace }}/package-lock.json > temp.json && mv temp.json ${{ github.workspace }}/package-lock.json
+            jq --arg version "$NEW_TAG" '.packages[""].version = $version' ${{ github.workspace }}/package-lock.json > temp.json && mv temp.json ${{ github.workspace }}/package-lock.json
+            echo '::endgroup::'
+            echo '::group:: Reading package.json'
+            cat ${{ github.workspace }}/package.json
+            echo '::endgroup::'
+            echo '::group:: Reading package-lock.json'
+            cat ${{ github.workspace }}/package-lock.json
+            echo '::endgroup::'
+ 
+################################################################################# Below is original release flow
+      - name: Debug inputs
+        run: |
+          echo "Type of release:${{ github.event.inputs.input_version }} from user ${GITHUB_ACTOR}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: lts/*
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 # v4.0
+        with:
+          channel: stable
+          version: latest
+          cache: true
+          cache-sdk: true
+          cache-key: flutter-cache
+
+      - name: Update Flutter SDK
+        run: flutter upgrade
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Cache node_modules
+        id: node-modules
+        uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
+        with:
+          path: |
+            node_modules
+            test-app/node_modules
+            .yarn/cache
+          key: node-modules
+
+      - name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e640591a934b1fd28eef1dcaf5e5 # v6.2.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: GPG user IDs
+        run: |
+          echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
+          echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
+          echo "name:        ${{ steps.import-gpg.outputs.name }}"
+          echo "email:       ${{ steps.import-gpg.outputs.email }}"
+
+      - name: git config
+        run: |
+          git config user.name "${{ steps.import-gpg.outputs.name }}"
+          git config user.email "${{ steps.import-gpg.outputs.email }}"
+
+      - name: Git Status
+        run: git status
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: flutter-actions/setup-pubdev-credentials@2bee905b7704ff12e0d8366e69253e8429438170 # v1.1
+
+#########################################################################
+
+    # Return repo to original checked out state
+      - name: Remove created files and return to original repo state
+        run: |
+          cp /tmp/abrevva-react-native/package.json ${{ github.workspace }}/package.json 
+          cp /tmp/abrevva-react-native/package-lock.json ${{ github.workspace }}/package-lock.json 
+
+    # Create Github release - use --no-npm.publish so the release it uses git tags instead
+      - name: Run release-it only create release on github
+        env:
+          BOT_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          npx release-it ${{ github.event.inputs.input_version }} --ci
+
+
+########################################################################## Below from original release flow
+
+      - name: Attest
+        uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
+        with:
+          subject-path: "${{ github.workspace }}/*.tgz"
+
+##############################################################################
+
+# jobs:
+#   release_publish:
+#     runs-on: ubuntu-latest
+#     environment: pub.dev # is configured in repo settings with secrets
+#     permissions:
+#       contents: write
+#       id-token: write
+#       attestations: write
+#     steps:
+#       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+#         with:
+#           fetch-depth: 0
+#           ssh-key: ${{ secrets.BOT_SSH_PRIVATE_KEY }}
+
+    #   - name: Debug inputs
+    #     run: |
+    #       echo "Type of release:${{ github.event.inputs.input_version }} from user ${GITHUB_ACTOR}"
+
+    #   - name: Setup Node.js
+    #     uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+    #     with:
+    #       node-version: lts/*
+
+    #   - name: Setup Flutter SDK
+    #     uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 # v4.0
+    #     with:
+    #       channel: stable
+    #       version: latest
+    #       cache: true
+    #       cache-sdk: true
+    #       cache-key: flutter-cache
+
+    #   - name: Update Flutter SDK
+    #     run: flutter upgrade
+
+    #   - name: Install dependencies
+    #     run: flutter pub get
+
+    #   - name: Cache node_modules
+    #     id: node-modules
+    #     uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
+    #     with:
+    #       path: |
+    #         node_modules
+    #         test-app/node_modules
+    #         .yarn/cache
+    #       key: node-modules
+
+    #   - name: Import GPG key
+    #     id: import-gpg
+    #     uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e640591a934b1fd28eef1dcaf5e5 # v6.2.0
+    #     with:
+    #       gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+    #       git_user_signingkey: true
+    #       git_commit_gpgsign: true
+
+    #   - name: GPG user IDs
+    #     run: |
+    #       echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
+    #       echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
+    #       echo "name:        ${{ steps.import-gpg.outputs.name }}"
+    #       echo "email:       ${{ steps.import-gpg.outputs.email }}"
+
+    #   - name: git config
+    #     run: |
+    #       git config user.name "${{ steps.import-gpg.outputs.name }}"
+    #       git config user.email "${{ steps.import-gpg.outputs.email }}"
+
+    #   - name: Git Status
+    #     run: git status
+
+    #   - name: Install dependencies
+    #     run: npm ci
+
+    #   - uses: flutter-actions/setup-pubdev-credentials@2bee905b7704ff12e0d8366e69253e8429438170 # v1.1
+
+    #   - name: Run release-it
+    #     run: npx release-it ${{ github.event.inputs.input_version }} --ci
+    #     env:
+    #       BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+    #   - name: Attest
+    #     uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
+    #     with:
+    #       subject-path: "${{ github.workspace }}/*.tgz"
