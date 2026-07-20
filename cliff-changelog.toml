@@ -1,0 +1,94 @@
+# git-cliff ~ configuration file for changelog generation!!
+# https://git-cliff.org/docs/configuration
+# REPLACE <REPO> WITH YOUR REPO!!!!
+
+
+[changelog]
+# A Tera template to be rendered for each release in the changelog.
+# See https://keats.github.io/tera/docs/#introduction
+body = """
+{% if version %}\
+    {% if previous.version %}\
+        ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/evva-sfw/abrevva-flutter/compare/{{ previous.version }}...{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% else %}\
+        ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/evva-sfw/abrevva-flutter/releases/tag/{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% endif %}\
+{% else %}\
+    ## [unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+            {% if commit.breaking %}[**breaking**] {% endif %}\
+            {{ commit.message | upper_first }}\
+    {% endfor %}
+{% endfor %}
+"""
+# Remove leading and trailing whitespaces from the changelog's body.
+trim = true
+# Render body even when there are no releases to process.
+render_always = true
+# An array of regex based postprocessors to modify the changelog.
+postprocessors = [
+    # Replace the placeholder <REPO> with a URL.
+    { pattern = '<REPO>', replace = "https://github.com/evva-sfw/abrevva-react-native" },
+    { pattern = '((\w+\s)?#([0-9]+))', replace = "[#${3}](https://github.com/evva-sfw/abrevva-react-native/pull/${3})" },
+
+]
+# render body even when there are no releases to process
+# render_always = true
+# output file path
+# output = "test.md"
+
+[git]
+# Parse commits according to the conventional commits specification.
+# See https://www.conventionalcommits.org
+conventional_commits = true
+# Exclude commits that do not match the conventional commits specification.
+filter_unconventional = true
+# Require all commits to be conventional.
+# Takes precedence over filter_unconventional.
+require_conventional = false
+# Split commits on newlines, treating each line as an individual commit.
+split_commits = false
+# An array of regex based parsers to modify commit messages prior to further processing.
+commit_preprocessors = [
+    # { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](<REPO>/pull/${2}))" },
+]
+# Prevent commits that are breaking from being excluded by commit parsers.
+protect_breaking_commits = false
+# An array of regex based parsers for extracting data from the commit message.
+# Assigns commits to groups.
+# Optionally sets the commit's scope and can decide to exclude commits from further processing.
+commit_parsers = [
+    { message = "(?m)^feat.*\\(\\#\\d+\\)$", group = "🎉 Features" },
+    { message = "(?m)^fix.*\\(\\#\\d+\\)$", group = "🐛 Bug Fixes" },
+    { message = "(?m)^refactor.*\\(\\#\\d+\\)$", group = "🔀 Code Refactoring" },
+    { message = "(?m)^docs.*\\(\\#\\d+\\)$", group = "📝 Documentation" },
+    { message = "(?m)^perf.*\\(\\#\\d+\\)$", group = "⚡️ Performance Improvements" },
+    { message = "(?m)^style.*\\(\\#\\d+\\)$", group = "🎨 Styles" },
+    { message = "(?m)^test.*\\(\\#\\d+\\)$", group = "🧪 Tests" },
+    { message = "(?m)^build.*\\(\\#\\d+\\)$", group = "⚙️ Build System" },
+    { message = "(?m)^ci.*\\(\\#\\d+\\)$", group = "🚀 Continuous Integration" },
+    { message = "(?m)^chore.*\\(\\#\\d+\\)$", group = "🧹 Chore" },
+    { message = "(?m)^revert.*\\(\\#\\d+\\)$", group = "⏪️ Reverts" },
+    { message = "(?m).*\\(\\#\\d+\\)$", group = "💼 Other" },
+]
+# Exclude commits that are not matched by any commit parser.
+filter_commits = true
+# Fail on a commit that is not matched by any commit parser.
+fail_on_unmatched_commit = false
+# An array of link parsers for extracting external references, and turning them into URLs, using regex.
+link_parsers = []
+# Include only the tags that belong to the current branch.
+use_branch_tags = false
+# Order releases topologically instead of chronologically.
+topo_order = false
+# Order commits topologically instead of chronologically.
+topo_order_commits = true
+# Order of commits in each group/release within the changelog.
+# Allowed values: newest, oldest
+sort_commits = "oldest"
+# Process submodules commits
+recurse_submodules = false
