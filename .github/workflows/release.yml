@@ -57,6 +57,17 @@ jobs:
             exit 1
           fi
 
+      - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
+        env:
+          git_cliff_version: "2.13.1"
+        run: |
+          set -e
+          wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xvzf git-cliff-*.tar.gz
+          mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
+          rm -rf "./git-cliff-${git_cliff_version}" *.tgz
+          command -v git-cliff
+
       - name: Declare release type
         env:
           USER_INPUT_VERSION: "${{ github.event.inputs.input_version }}"
@@ -145,7 +156,7 @@ jobs:
         env:
           git_cliff_version: "2.13.1"
         run: |
-          set +e
+          set -e
           wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
           mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
@@ -221,7 +232,7 @@ jobs:
         env:
           git_cliff_version: "2.13.1"
         run: |
-          set +e
+          set -e
           wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
           mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
