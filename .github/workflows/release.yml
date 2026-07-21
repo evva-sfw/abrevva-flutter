@@ -96,7 +96,7 @@ jobs:
           token:  ${{ steps.app-token.outputs.token }}
           message: "chore: updated version in pubspec.yaml file"
           files: |
-            oubspec.yaml
+            pubspec.yaml
 
   publish:
     needs: bump-version
@@ -216,7 +216,7 @@ jobs:
           fetch-tags: true
           token: ${{ steps.app-token.outputs.token }}
           ref: main
-          
+
       - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
         env:
           git_cliff_version: "2.13.1"
