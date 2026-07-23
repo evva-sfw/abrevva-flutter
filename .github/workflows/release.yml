@@ -165,6 +165,9 @@ jobs:
           rm -rf "./git-cliff-${git_cliff_version}" *.tgz
           command -v git-cliff
 
+      - name: Setup Flutter
+        uses: ./.github/actions/flutter-setup
+
       - name: Publish flutter package
         run: |
           rm -f *.tgz
