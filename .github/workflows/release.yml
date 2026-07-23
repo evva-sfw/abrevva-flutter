@@ -10,7 +10,9 @@ on:
           - patch
           - minor
           - major
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # Dont need permissions because we use github app and not the workflow permissions
 permissions: {}
@@ -95,7 +97,7 @@ jobs:
         run: |
             echo '::group:: Preparing files with updated versions'
             echo "New version will be $NEW_TAG"
-            sed -i "s/version: .*/version: $NEW_TAG/" ${{ github.workspace}}/pubspec.yaml
+            sed -i "s/^version: .*/version: $NEW_TAG/" ${{ github.workspace}}/pubspec.yaml
             echo '::endgroup::'
             echo '::group:: Reading pubspec.yaml'
             cat ${{ github.workspace }}/pubspec.yaml
@@ -129,7 +131,6 @@ jobs:
         id: app-token
         with:
           # required
-          # Appid from this app: https://evva.ghe.com/apps/p-lehner/evva-bee
           client-id: ${{ vars.GLOBAL_APP_EVVA_BEE_APP_ID }}
           private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
 
