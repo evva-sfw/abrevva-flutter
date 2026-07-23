@@ -89,7 +89,7 @@ jobs:
             NEW_TAG=$(cat version)
             echo "new-tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Update version in pubspec.yaml and commit changes
+      - name: Update version in pubspec.yaml
         env:
             NEW_TAG: ${{ steps.version.outputs.new-tag }}
         run: |

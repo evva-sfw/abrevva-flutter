@@ -1,0 +1,33 @@
+name: Run Claude Review
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ['main']
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  call-ai-review-action:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+
+    # Copy repo to action runner
+    - name: Checkout repository
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+    # Call action to carry out code review
+    - name: Call AI Review composite action
+      uses: SFW/action-ai-review@dbd0c638cf959094f46d4e9d8838a53d5c80272b # v0.0.2
+      with:
+        setup-key: "${{ secrets.GLOBAL_NETBIRD_SETUP_KEY }}" # Required to access EVVA LLM to run claude action
+        management-url: "${{ vars.GLOBAL_NETBIRD_MANAGEMENT_URL }}" # Required to access EVVA LLM to run claude action
+        anthropic-base-url: "${{ vars.GLOBAL_SFW_INFERENCE_API_BASEURL }}" # URL to EVVA LLM
+        anthropic-api-key: "${{ secrets.GLOBAL_SFW_INFERENCE_API_TOKEN }}" # API Key to access EVVA LLM
+        anthropic-model: "${{ vars.GLOBAL_SFW_INFERENCE_API_MODEL }}" # EVVA LLM model to use
+        evva-ai-review-private-key: "${{ secrets.GLOBAL_APP_AI_REVIEW_PRIVATE_KEY }}" # Bot private key to post comments
+        skills-to-apply: "" # Skill names that are in the action-ai-review repo
+        custom-skills: "false" # Set to "true" if you want to use custom skills defined in your repo in 'skills' folder.
+        show-full-output: "false"
