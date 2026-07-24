@@ -67,7 +67,7 @@ jobs:
           wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
           mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
-          rm -rf "./git-cliff-${git_cliff_version}" *.tgz
+          rm -rf "./git-cliff-${git_cliff_version}" *.tar.gz
           command -v git-cliff
 
       - name: Declare release type
@@ -90,6 +90,7 @@ jobs:
             echo "New version will be $(cat version)"
             NEW_TAG=$(cat version)
             echo "new-tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+            rm version
 
       - name: Update version in pubspec.yaml
         env:
@@ -162,7 +163,7 @@ jobs:
           wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
           mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
-          rm -rf "./git-cliff-${git_cliff_version}" *.tgz
+          rm -rf "./git-cliff-${git_cliff_version}" *.tar.gz
           command -v git-cliff
 
       - name: Setup Flutter
@@ -240,7 +241,7 @@ jobs:
           wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
           mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
-          rm -rf "./git-cliff-${git_cliff_version}" *.tgz
+          rm -rf "./git-cliff-${git_cliff_version}" *.tar.gz
           command -v git-cliff
 
       - name: Generate changelog using git cliff and cliff-changelog config
