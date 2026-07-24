@@ -169,8 +169,17 @@ jobs:
           rm -rf "./git-cliff-${GIT_CLIFF_VERSION}" *.tar.gz
           command -v git-cliff
 
-      - name: Setup Flutter
-        uses: ./.github/actions/flutter-setup
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 # v4.0
+        with:
+          channel: stable
+          version: latest
+          cache: true
+          cache-sdk: true
+          cache-key: flutter-cache
+
+      - name: Update Flutter SDK
+        run: flutter upgrade
 
       - name: Publish flutter package
         run: |
