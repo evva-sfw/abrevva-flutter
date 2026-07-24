@@ -16,6 +16,9 @@ concurrency:
 
 # Dont need permissions because we use github app and not the workflow permissions
 permissions: {}
+env:
+  GIT_CLIFF_VERSION: "2.13.1"
+
 jobs:
   bump-version:
     if:  github.ref == 'refs/heads/main'
@@ -61,13 +64,13 @@ jobs:
 
       - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
         env:
-          git_cliff_version: "2.13.1"
+          GIT_CLIFF_VERSION: ${{ env.GIT_CLIFF_VERSION }}
         run: |
           set -e
-          wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
+          wget "https://github.com/orhun/git-cliff/releases/download/v${GIT_CLIFF_VERSION}/git-cliff-${GIT_CLIFF_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
-          mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
-          rm -rf "./git-cliff-${git_cliff_version}" *.tar.gz
+          mv "./git-cliff-${GIT_CLIFF_VERSION}/git-cliff" "/usr/local/bin/git-cliff"
+          rm -rf "./git-cliff-${GIT_CLIFF_VERSION}" *.tar.gz
           command -v git-cliff
 
       - name: Declare release type
@@ -157,13 +160,13 @@ jobs:
 
       - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
         env:
-          git_cliff_version: "2.13.1"
+          GIT_CLIFF_VERSION: ${{ env.GIT_CLIFF_VERSION }}
         run: |
           set -e
-          wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
+          wget "https://github.com/orhun/git-cliff/releases/download/v${GIT_CLIFF_VERSION}/git-cliff-${GIT_CLIFF_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
-          mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
-          rm -rf "./git-cliff-${git_cliff_version}" *.tar.gz
+          mv "./git-cliff-${GIT_CLIFF_VERSION}/git-cliff" "/usr/local/bin/git-cliff"
+          rm -rf "./git-cliff-${GIT_CLIFF_VERSION}" *.tar.gz
           command -v git-cliff
 
       - name: Setup Flutter
@@ -235,13 +238,13 @@ jobs:
 
       - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
         env:
-          git_cliff_version: "2.13.1"
+          GIT_CLIFF_VERSION: ${{ env.GIT_CLIFF_VERSION }}
         run: |
           set -e
-          wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
+          wget "https://github.com/orhun/git-cliff/releases/download/v${GIT_CLIFF_VERSION}/git-cliff-${GIT_CLIFF_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           tar -xvzf git-cliff-*.tar.gz
-          mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
-          rm -rf "./git-cliff-${git_cliff_version}" *.tar.gz
+          mv "./git-cliff-${GIT_CLIFF_VERSION}/git-cliff" "/usr/local/bin/git-cliff"
+          rm -rf "./git-cliff-${GIT_CLIFF_VERSION}" *.tar.gz
           command -v git-cliff
 
       - name: Generate changelog using git cliff and cliff-changelog config
