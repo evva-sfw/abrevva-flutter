@@ -211,7 +211,6 @@ jobs:
         with:
           # required
           client-id: ${{ vars.GLOBAL_APP_EVVA_BEE_APP_ID }}
-          # Private key from vault https://vault.service.consul:8200/ui/vault/secrets/secret/show/infrastructure/services/external/github-enterprise/github-apps/evva-bee
           private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
 
       # Get GitHub App User ID
