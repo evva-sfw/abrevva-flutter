@@ -58,7 +58,7 @@ jobs:
           path: example/ios/Pods
           key: pods-cache--${{ hashFiles('example/ios/podfile.lock') }}
       - name: Cache Xcode DerivedData
-        uses: irgaly/xcode-cache@fd644652c5d3fd1f794edcdf839eb1dc03a9021f # v1.8.1
+        uses: irgaly/xcode-cache@4141f139f00e335c6e1031fb93e667181f86146f # v1.9.2
         with:
           key: xcode-cache-deriveddata-${{ github.workflow }}-${{ github.sha }}
           restore-keys: xcode-cache-deriveddata-${{ github.workflow }}-

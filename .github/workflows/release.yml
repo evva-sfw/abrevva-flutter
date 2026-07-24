@@ -1,4 +1,4 @@
-name: release
+name: Release and publish changelog
 on:
   workflow_dispatch:
     inputs:
@@ -6,94 +6,253 @@ on:
         type: choice
         description: What type of release?
         options:
+          - ""
           - patch
           - minor
           - major
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
+# Dont need permissions because we use github app and not the workflow permissions
+permissions: {}
 jobs:
-  release_publish:
+  bump-version:
+    if:  github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: pub.dev # is configured in repo settings with secrets
+    outputs:
+      new-tag: ${{ steps.version.outputs.new-tag }}
+    steps:
+
+      # Create Github App Token
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          # required
+          client-id: ${{ vars.GLOBAL_APP_EVVA_BEE_APP_ID }}
+          private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
+
+      # Get GitHub App User ID
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_HOST: github.com
+      - run: |
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0 # For git-cliff to generate full logs
+          fetch-tags: true
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+
+      # Check required git cliff files present in repo
+      - name: Check required git cliff files in repo
+        run: |
+          if [[ ! -f cliff.toml || ! -f cliff-changelog.toml ]]; then
+            echo "Error: Both cliff.toml and cliff-changelog.toml files must be present in repo root"
+            exit 1
+          fi
+
+      - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
+        env:
+          git_cliff_version: "2.13.1"
+        run: |
+          set -e
+          wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xvzf git-cliff-*.tar.gz
+          mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
+          rm -rf "./git-cliff-${git_cliff_version}" *.tgz
+          command -v git-cliff
+
+      - name: Declare release type
+        env:
+          USER_INPUT_VERSION: "${{ github.event.inputs.input_version }}"
+        run: |
+          if [[ ! -z "$USER_INPUT_VERSION" ]] ; then
+            echo "Type of release:"$USER_INPUT_VERSION" from user ${GITHUB_ACTOR}"
+          else
+            echo "User did not select release type. It will be automatically determined..."
+          fi
+
+      # Get the latest tag info, increment it accordingly, update the package.json file so it is built with new version
+      - name: Update version info for build
+        id: version
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.input_version }}
+        run: |
+            git-cliff --bump ${{ github.event.inputs.input_version }} --bumped-version > version
+            echo "New version will be $(cat version)"
+            NEW_TAG=$(cat version)
+            echo "new-tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Update version in pubspec.yaml
+        env:
+            NEW_TAG: ${{ steps.version.outputs.new-tag }}
+        run: |
+            echo '::group:: Preparing files with updated versions'
+            echo "New version will be $NEW_TAG"
+            sed -i "s/^version: .*/version: $NEW_TAG/" ${{ github.workspace}}/pubspec.yaml
+            echo '::endgroup::'
+            echo '::group:: Reading pubspec.yaml'
+            cat ${{ github.workspace }}/pubspec.yaml
+            echo '::endgroup::'
+
+      - name: Commit & Push changes
+        uses: iarekylew00t/verified-bot-commit@126a6a11889ab05bcff72ec2403c326cd249b84c # v2.3.0
+        with:
+          ref: main
+          token:  ${{ steps.app-token.outputs.token }}
+          message: "chore: updated version in pubspec.yaml file"
+          files: |
+            pubspec.yaml
+
+  publish:
+    needs: bump-version
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
         with:
-          fetch-depth: 0
-          ssh-key: ${{ secrets.BOT_SSH_PRIVATE_KEY }}
+          egress-policy: audit
 
-      - name: Debug inputs
-        run: |
-          echo "Type of release:${{ github.event.inputs.input_version }} from user ${GITHUB_ACTOR}"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      # Create Github App Token
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
         with:
-          node-version: lts/*
+          # required
+          client-id: ${{ vars.GLOBAL_APP_EVVA_BEE_APP_ID }}
+          private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
 
-      - name: Setup Flutter SDK
-        uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 # v4.0
-        with:
-          channel: stable
-          version: latest
-          cache: true
-          cache-sdk: true
-          cache-key: flutter-cache
-
-      - name: Update Flutter SDK
-        run: flutter upgrade
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Cache node_modules
-        id: node-modules
-        uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
-        with:
-          path: |
-            node_modules
-            test-app/node_modules
-            .yarn/cache
-          key: node-modules
-
-      - name: Import GPG key
-        id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e640591a934b1fd28eef1dcaf5e5 # v6.2.0
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-
-      - name: GPG user IDs
-        run: |
-          echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
-          echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
-          echo "name:        ${{ steps.import-gpg.outputs.name }}"
-          echo "email:       ${{ steps.import-gpg.outputs.email }}"
-
-      - name: git config
-        run: |
-          git config user.name "${{ steps.import-gpg.outputs.name }}"
-          git config user.email "${{ steps.import-gpg.outputs.email }}"
-
-      - name: Git Status
-        run: git status
-
-      - name: Install dependencies
-        run: npm ci
-
-      - uses: flutter-actions/setup-pubdev-credentials@2bee905b7704ff12e0d8366e69253e8429438170 # v1.1
-
-      - name: Run release-it
-        run: npx release-it ${{ github.event.inputs.input_version }} --ci
+      # Get GitHub App User ID
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
         env:
-          BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_HOST: github.com
+      - run: |
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0 # For git cliff to be able to generate the full changelog
+          fetch-tags: true
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+
+
+      - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
+        env:
+          git_cliff_version: "2.13.1"
+        run: |
+          set -e
+          wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xvzf git-cliff-*.tar.gz
+          mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
+          rm -rf "./git-cliff-${git_cliff_version}" *.tgz
+          command -v git-cliff
+
+      - name: Setup Flutter
+        uses: ./.github/actions/flutter-setup
+
+      - name: Publish flutter package
+        run: |
+          rm -f *.tgz
+          flutter pub get
+          flutter pub publish --to-archive abrevva_${{ needs.bump-version.outputs.new-tag }}.tgz
+
+      - name: Create Signed Tag via GH CLI and fetch new tag
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
+        run: |
+          gh release create "$TAG_NAME" --target $(git rev-parse HEAD) --notes "Generating..." --title "$TAG_NAME" *.tgz
+          git fetch --tags
+
+      - name: Generate release notes and put in Github temporary location
+        env:
+          TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
+        run: git-cliff -c cliff.toml --current --output ${{ runner.temp }}/RELEASE_NOTES.md
+
+      - name: Create a release on Github with release notes and provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
+        run: |
+          gh release edit "$TAG_NAME" --notes-file "${{ runner.temp }}/RELEASE_NOTES.md" --latest
 
       - name: Attest
-        uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: "${{ github.workspace }}/*.tgz"
+
+  update-changelog:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Create Github App Token
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          # required
+          client-id: ${{ vars.GLOBAL_APP_EVVA_BEE_APP_ID }}
+          private-key: ${{ secrets.GLOBAL_APP_EVVA_BEE_PRIVATE_KEY }}
+
+      # Get GitHub App User ID
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_HOST: github.com
+      - run: |
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0 # For git-cliff to be able to generate the full changelog
+          fetch-tags: true
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+
+      - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
+        env:
+          git_cliff_version: "2.13.1"
+        run: |
+          set -e
+          wget "https://github.com/orhun/git-cliff/releases/download/v${git_cliff_version}/git-cliff-${git_cliff_version}-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xvzf git-cliff-*.tar.gz
+          mv "./git-cliff-${git_cliff_version}/git-cliff" "/usr/local/bin/git-cliff"
+          rm -rf "./git-cliff-${git_cliff_version}" *.tgz
+          command -v git-cliff
+
+      - name: Generate changelog using git cliff and cliff-changelog config
+        run: |
+          git-cliff -c cliff-changelog.toml -o CHANGELOG.md
+          cat CHANGELOG.md
+
+      - name: Commit & Push changes
+        uses: iarekylew00t/verified-bot-commit@126a6a11889ab05bcff72ec2403c326cd249b84c # v2.3.0
+        with:
+          ref: main
+          token:  ${{ steps.app-token.outputs.token }}
+          message: "docs: Updated changelog"
+          files: |
+            CHANGELOG.md
