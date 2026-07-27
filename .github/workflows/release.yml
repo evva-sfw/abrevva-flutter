@@ -170,7 +170,7 @@ jobs:
           command -v git-cliff
 
       - name: Setup Flutter SDK
-        uses: flutter-actions/setup-flutter@03a3a60436d95e16d110127785240139a633ce70 # v4.0
+        uses: flutter-actions/setup-flutter@adb607ae976a9e00473569facfc69813c637a060 # v4.3
         with:
           channel: stable
           version: latest
