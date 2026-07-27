@@ -202,7 +202,7 @@ jobs:
 
       - name: Create a release on Github with release notes and provenance
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
         run: |
           gh release edit "$TAG_NAME" --notes-file "${{ runner.temp }}/RELEASE_NOTES.md" --latest
