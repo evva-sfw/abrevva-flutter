@@ -373,9 +373,9 @@ public class AbrevvaBle: NSObject, FlutterPlugin {
         Task {
             let error = await device.setNotifications(characteristic.0, characteristic.1, true, { value in
                 let key =
-                    "notification|\(device.getAddress())|" +
-                    "\(characteristic.0.uuidString.lowercased())|" +
-                    "\(characteristic.1.uuidString.lowercased())"
+                "notification|\(device.getAddress())|" +
+                    "\(characteristic.0.uuidString)|" +
+                    "\(characteristic.1.uuidString)".lowercased()
                 DispatchQueue.main.async {
                     if value != nil {
                         self.startNotificationsStreamHandler.eventSink?([key: ["value": dataToString(value!)]])
