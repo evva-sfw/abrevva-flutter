@@ -542,7 +542,7 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
       String characteristic,
       int timeout,
       void Function(String result) callback) async {
-    final key = "notification|$deviceId|${service}|${characteristic.toLowerCase()}";
+    final key = "notification|$deviceId|${service.toLowerCase()}|${characteristic.toLowerCase()}";
     _notificationStreams[key] = _startNotificationsEventChannel
         .receiveBroadcastStream()
         .listen((event) {
