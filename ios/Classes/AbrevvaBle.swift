@@ -17,7 +17,8 @@ internal class AbrevvaBleStreamHandler: NSObject, FlutterStreamHandler {
     }
 }
 
-public class AbrevvaBle: NSObject, FlutterPlugin {
+@MainActor
+public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
     public static func register(with registrar: any FlutterPluginRegistrar) {
 
     }

@@ -1,7 +1,8 @@
 import Flutter
 import UIKit
 
-public class AbrevvaPlugin: NSObject, FlutterPlugin {
+@MainActor
+public class AbrevvaPlugin: NSObject, @preconcurrency FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
 
         /// Register `AbrevvaCrypto` Method Channel

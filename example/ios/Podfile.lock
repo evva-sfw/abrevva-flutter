@@ -23,8 +23,6 @@ PODS:
   - MqttCocoaAsyncSocket (1.0.8)
   - Nimble (14.0.0):
     - CwlPreconditionTesting (~> 2.2.0)
-  - permission_handler_apple (9.3.0):
-    - Flutter
   - Quick (7.6.2)
   - SwiftFormat/CLI (0.60.1)
   - SwiftLint (0.54.0)
@@ -33,7 +31,6 @@ DEPENDENCIES:
   - abrevva (from `.symlinks/plugins/abrevva/ios`)
   - Flutter (from `Flutter`)
   - Nimble
-  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - Quick
   - SwiftFormat/CLI (~> 0.49)
   - SwiftLint (~> 0.54.0)
@@ -59,8 +56,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/abrevva/ios"
   Flutter:
     :path: Flutter
-  permission_handler_apple:
-    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   abrevva: dff9c694954c3c6dcbdb5584999bed3d55999671
@@ -72,14 +67,13 @@ SPEC CHECKSUMS:
   CwlMachBadInstructionHandler: dae4fdd124d45c9910ac240287cc7b898f4502a1
   CwlPosixPreconditionTesting: ecd095aa2129e740b44301c34571e8d85906fb88
   CwlPreconditionTesting: 67a0047dd4de4382b93442c0e3f25207f984f35a
-  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
   MqttCocoaAsyncSocket: 77d3b74f76228dd5a05d1f9526eab101d415b30c
   Nimble: fcfcaab1cca78e301543f78669d70c166b4fadc3
-  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   Quick: b8bec97cd4b9f21da0472d45580f763b801fc353
   SwiftFormat: d32a8ff584c3e08fb5b0eb7f5dc610e02067df53
   SwiftLint: c1de071d9d08c8aba837545f6254315bc900e211
 
-PODFILE CHECKSUM: 6fd47a90073084ee862e7cddefc49f8d375b687c
+PODFILE CHECKSUM: d145a3d07a614d1efbf8bf29bce94c1373744f68
 
 COCOAPODS: 1.16.2

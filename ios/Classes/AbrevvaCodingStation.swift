@@ -3,7 +3,8 @@ import AbrevvaSDK
 import CryptoSwift
 import Flutter
 
-public class AbrevvaCodingStation: NSObject, FlutterPlugin {
+@MainActor
+public class AbrevvaCodingStation: NSObject, @preconcurrency FlutterPlugin {
 
     private let codingStation = CodingStation()
     private var mqttConnectionOptions: MqttConnectionOptions?
