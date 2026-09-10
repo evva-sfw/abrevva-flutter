@@ -1,18 +1,24 @@
 import 'dart:ffi';
 
 import 'package:abrevva/abrevva_param_classes.dart';
+
 import 'abrevva_platform_interface.dart';
 
 class AbrevvaCodingStation {
-  static Future<void> register(String url, String clientId, String username, String password) {
-    return AbrevvaCodingStationPlatform.instance.register(url, clientId, username, password);
+  static Future<void> register(
+      String url, String clientId, String username, String password) {
+    return AbrevvaCodingStationPlatform.instance
+        .register(url, clientId, username, password);
   }
+
   static Future<void> connect() {
     return AbrevvaCodingStationPlatform.instance.connect();
   }
+
   static Future<void> write() {
     return AbrevvaCodingStationPlatform.instance.write();
   }
+
   static Future<void> disconnect() {
     return AbrevvaCodingStationPlatform.instance.disconnect();
   }
@@ -63,7 +69,8 @@ class AbrevvaCrypto {
         .decryptFileFromURL(sharedSecret, url, ptPath);
   }
 
-  static Future<ED25519PublicKeyResult> computeED25519PublicKey(String privateKey) {
+  static Future<ED25519PublicKeyResult> computeED25519PublicKey(
+      String privateKey) {
     return AbrevvaCryptoPlatform.instance.computeED25519PublicKey(privateKey);
   }
 
@@ -94,7 +101,8 @@ class AbrevvaBle {
     return AbrevvaBlePlatform.instance.isLocationEnabled();
   }
 
-  static Future<void> startEnabledNotifications(void Function(bool result) callback) {
+  static Future<void> startEnabledNotifications(
+      void Function(bool result) callback) {
     return AbrevvaBlePlatform.instance.startEnabledNotifications(callback);
   }
 
@@ -115,28 +123,28 @@ class AbrevvaBle {
   }
 
   static Future<void> startScan({
-      required void Function(BleDevice result) onScanResult,
-      void Function(bool success)? onScanStart,
-      void Function(bool success)? onScanStop,
-      String? macFilter,
-      bool? allowDuplicates,
-      int? timeout,
-    }) {
+    required void Function(BleDevice result) onScanResult,
+    void Function(bool success)? onScanStart,
+    void Function(bool success)? onScanStop,
+    String? macFilter,
+    bool? allowDuplicates,
+    int? timeout,
+  }) {
     return AbrevvaBlePlatform.instance.startScan(
-      onScanResult: onScanResult,
-      onScanStart: onScanStart,
-      onScanStop: onScanStop,
-      macFilter: macFilter,
-      allowDuplicates: allowDuplicates,
-      timeout: timeout
-    );
+        onScanResult: onScanResult,
+        onScanStart: onScanStart,
+        onScanStop: onScanStop,
+        macFilter: macFilter,
+        allowDuplicates: allowDuplicates,
+        timeout: timeout);
   }
 
   static Future<String?> stopScan() {
     return AbrevvaBlePlatform.instance.stopScan();
   }
 
-  static Future<bool> connect(String deviceId, int timeout, void Function(String address)? onDisconnect) {
+  static Future<bool> connect(String deviceId, int timeout,
+      void Function(String address)? onDisconnect) {
     return AbrevvaBlePlatform.instance.connect(deviceId, timeout, onDisconnect);
   }
 
@@ -145,12 +153,8 @@ class AbrevvaBle {
   }
 
   static Future<List<Uint8>> read(
-      String deviceId,
-      String service,
-      String characteristic,
-      int timeout
-    ) {
-      return AbrevvaBlePlatform.instance
+      String deviceId, String service, String characteristic, int timeout) {
+    return AbrevvaBlePlatform.instance
         .read(deviceId, service, characteristic, timeout);
   }
 
@@ -168,8 +172,8 @@ class AbrevvaBle {
       String mobileGroupId,
       String mobileAccessData,
       bool isPermanentRelease) {
-    return AbrevvaBlePlatform.instance.disengage(deviceId, mobileId, mobileDeviceKey,
-        mobileGroupId, mobileAccessData, isPermanentRelease);
+    return AbrevvaBlePlatform.instance.disengage(deviceId, mobileId,
+        mobileDeviceKey, mobileGroupId, mobileAccessData, isPermanentRelease);
   }
 
   static Future<DisengageResult> disengageWithXvnResponse(
@@ -179,8 +183,13 @@ class AbrevvaBle {
       String mobileGroupId,
       String mobileAccessData,
       bool isPermanentRelease) {
-    return AbrevvaBlePlatform.instance.disengageWithXvnResponse(deviceId, mobileId, mobileDeviceKey,
-        mobileGroupId, mobileAccessData, isPermanentRelease);
+    return AbrevvaBlePlatform.instance.disengageWithXvnResponse(
+        deviceId,
+        mobileId,
+        mobileDeviceKey,
+        mobileGroupId,
+        mobileAccessData,
+        isPermanentRelease);
   }
 
   static Future<void> startNotifications(
@@ -188,15 +197,9 @@ class AbrevvaBle {
       String service,
       String characteristic,
       int timeout,
-      void Function(String result) callback
-    ) {
+      void Function(String result) callback) {
     return AbrevvaBlePlatform.instance.startNotifications(
-      deviceId,
-      service,
-      characteristic,
-      timeout,
-      callback
-    );
+        deviceId, service, characteristic, timeout, callback);
   }
 
   static Future<bool> stopNotifications(
