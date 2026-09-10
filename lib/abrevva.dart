@@ -148,7 +148,7 @@ class AbrevvaBle {
     return AbrevvaBlePlatform.instance.connect(deviceId, timeout, onDisconnect);
   }
 
-  static Future<bool> disconnect(String deviceId) {
+  static Future<void> disconnect(String deviceId) {
     return AbrevvaBlePlatform.instance.disconnect(deviceId);
   }
 

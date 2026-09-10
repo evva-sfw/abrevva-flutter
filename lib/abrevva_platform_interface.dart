@@ -201,7 +201,7 @@ abstract class AbrevvaBlePlatform extends PlatformInterface {
     throw UnimplementedError('connect() has not been implemented.');
   }
 
-  Future<bool> disconnect(String deviceId) {
+  Future<void> disconnect(String deviceId) {
     throw UnimplementedError('disconnect() has not been implemented.');
   }
 

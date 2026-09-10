@@ -452,14 +452,10 @@ class MethodChannelAbrevvaBlePlatform extends AbrevvaBlePlatform {
   }
 
   @override
-  Future<bool> disconnect(String deviceId) async {
-    final result = await _methodChannel.invokeMethod<bool?>('disconnect', {
+  Future<void> disconnect(String deviceId) async {
+    await _methodChannel.invokeMethod<bool?>('disconnect', {
       'deviceId': deviceId,
     });
-    if (result == null) {
-      throw PlatformException(code: "disconnect(): error retrieving value");
-    }
-    return result;
   }
 
   @override
