@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import androidx.annotation.RequiresPermission
 import androidx.core.net.toUri
@@ -19,8 +21,11 @@ import com.evva.xesar.abrevva.util.stringToBytes
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -49,6 +54,9 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
     var startScanStreamHandler = AbrevvaStreamHandler()
     var startNotificationsStreamHandler = AbrevvaStreamHandler()
     var startEnabledNotificationsStreamHandler = AbrevvaStreamHandler()
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val pluginScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     fun eventObserver(
         source: LifecycleOwner,
@@ -449,7 +457,6 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun startNotifications(call: MethodCall, result: MethodChannel.Result) {
         val deviceId = call.argument<String>("deviceId") ?: ""
-        val timeout = call.argument<Int>("timeout")?.toLong() ?: 10_000
         val characteristic = getCharacteristic(call, result)
         val device = manager.getBleDevice(deviceId) ?: run {
             return result.error("connect(): device not found", null, null)
@@ -464,21 +471,24 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
             return
         }
 
-        GlobalScope.launch {
+        val key =
+            "notification|${deviceId}|${(characteristic.first)}|${(characteristic.second)}"
+
+        pluginScope.launch {
             val success = device.setNotifications(
                 characteristic.first,
                 characteristic.second, { data ->
-                    val key =
-                        "notification|${deviceId}|${(characteristic.first)}|${(characteristic.second)}"
-                    startNotificationsStreamHandler.eventSink?.success(
-                        mapOf(
-                            key to mapOf(
-                                "value" to bytesToString(
-                                    data
+                    mainHandler.post {
+                        startNotificationsStreamHandler.eventSink?.success(
+                            mapOf(
+                                key to mapOf(
+                                    "value" to bytesToString(
+                                        data
+                                    )
                                 )
                             )
                         )
-                    )
+                    }
                 })
             if (success) {
                 result.success(mapOf(
