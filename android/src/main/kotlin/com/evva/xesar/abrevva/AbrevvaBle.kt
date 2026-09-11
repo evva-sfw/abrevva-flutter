@@ -399,7 +399,9 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         GlobalScope.launch {
             val success = device.stopNotifications(characteristic.first, characteristic.second)
             if (success) {
-                result.success(true)
+                result.success(mapOf(
+                    "value" to true,
+                ))
             } else {
                 result.error("stopNotifications(): failed to unset notifications", null, null)
             }
@@ -479,7 +481,9 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
                     )
                 })
             if (success) {
-                result.success(success)
+                result.success(mapOf(
+                    "value" to true,
+                ))
             } else {
                 result.error("startNotifications(): failed to set notifications", null, null)
             }
