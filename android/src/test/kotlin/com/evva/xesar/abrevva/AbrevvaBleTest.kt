@@ -1,5 +1,7 @@
 package com.evva.xesar.abrevva
 
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import com.evva.xesar.abrevva.ble.BleDevice
 import com.evva.xesar.abrevva.ble.BleDeviceAdvertisementData
@@ -7,6 +9,7 @@ import com.evva.xesar.abrevva.ble.BleDeviceManufacturerData
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,6 +21,9 @@ class AbrevvaBleTest {
     @BeforeEach
     fun beforeEach() {
         MockKAnnotations.init(this)
+
+        mockkStatic(Looper::class)
+        every { Looper.getMainLooper() } returns mockk(relaxed = true)
 
         mockkStatic(View::class)
         every { View.generateViewId() } returns 0
