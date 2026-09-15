@@ -265,7 +265,7 @@ class AbrevvaBle : MethodChannel.MethodCallHandler {
         }
         manager.disconnect(device) { success: Boolean ->
             if (success) {
-                result.success(success)
+                result.success(null)
             } else {
                 result.error("disconnect(): failed to disconnect", null, null)
             }
