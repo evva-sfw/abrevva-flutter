@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'abrevva'
-  s.version          = '2.0.0'
+  s.version          = '2.0.1'
   s.summary          = 'A new Flutter plugin project.'
   s.description      = <<-DESC
 A new Flutter plugin project.
@@ -15,7 +15,7 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'AbrevvaSDK', '3.4.2'
+  s.dependency 'AbrevvaSDK', '3.5.0'
   s.platform = :ios, '16.0'
 
   # Flutter.framework does not contain a i386 slice.
