@@ -1,14 +1,21 @@
 # git-cliff ~ configuration file for release note generation!!
 # https://git-cliff.org/docs/configuration
 # REPLACE <REPO> WITH YOUR REPO!!!!
+# DOCKER IMAGE URL SHOULD BE UPDATED!!
 
 [changelog]
 # A Tera template to be rendered for each release in the changelog.
 # See https://keats.github.io/tera/docs/#introduction
 
+
+
 body = """
 {% if version %}\
-    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% if previous.version %}\
+        ## [{{ version | trim_start_matches(pat="v") }}](<REPO>/compare/{{ previous.version }}...{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% else %}\
+        ## [{{ version | trim_start_matches(pat="v") }}](<REPO>/releases/tag/{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% endif %}\
 {% else %}\
     ## [unreleased]
 {% endif %}\
@@ -17,20 +24,20 @@ body = """
     {% for commit in commits %}
         - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
             {% if commit.breaking %}[**breaking**] {% endif %}\
-            {{ commit.message | upper_first }} \
-            ([{{ commit.id | truncate(length=7, end="") }}](<REPO>/commit/{{ commit.id }}))
+            {{ commit.message | upper_first }}\
     {% endfor %}
 {% endfor %}
 """
-
 # Remove leading and trailing whitespaces from the changelog's body.
 trim = true
 # Render body even when there are no releases to process.
 render_always = true
 # An array of regex based postprocessors to modify the changelog.
 postprocessors = [
-    # Replace the placeholder <REPO> with a URL. Do not include a trailing slash
-    { pattern = '<REPO>', replace = "https://github.com/evva-sfw/abrevva-flutter" },
+    # Replace the placeholder <REPO> with a URL.
+    { pattern = '<REPO>', replace = "https://evva.ghe.com/SFW/abrevva-flutter" },
+    { pattern = '((\w+\s)?#([0-9]+))', replace = "[#${3}](https://evva.ghe.com/SFW/abrevva-flutter/pull/${3})" },
+
 ]
 # render body even when there are no releases to process
 # render_always = true
@@ -50,11 +57,7 @@ require_conventional = false
 split_commits = false
 # An array of regex based parsers to modify commit messages prior to further processing.
 commit_preprocessors = [
-    # Replace issue numbers with link templates to be updated in `changelog.postprocessors`.
-    #{ pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](<REPO>/issues/${2}))"},
-    # Check spelling of the commit message using https://github.com/crate-ci/typos.
-    # If the spelling is incorrect, it will be fixed automatically.
-    #{ pattern = '.*', replace_command = 'typos --write-changes -' },
+    # { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](<REPO>/pull/${2}))" },
 ]
 # Prevent commits that are breaking from being excluded by commit parsers.
 protect_breaking_commits = false
@@ -62,26 +65,22 @@ protect_breaking_commits = false
 # Assigns commits to groups.
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
 commit_parsers = [
-    { message = "^feat", group = "<!-- 0 -->🎉 Features" },
-    { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
-    { message = "^refactor", group = "<!-- 2 -->🔀 Code Refactoring" },
-    { message = "^docs", group = "<!-- 3 -->📝 Documentation" },
-    { message = "^perf", group = "<!-- 4 -->⚡️ Performance Improvements" },
-    { message = "^style", group = "<!-- 5 -->🎨 Styles" },
-    { message = "^test", group = "<!-- 6 -->🧪 Tests" },
-    { message = "^chore\\(release\\): prepare for", skip = true },
-    { message = "^chore\\(deps.*\\)", skip = true },
-    { message = "^chore\\(pr\\)", skip = true },
-    { message = "^chore\\(pull\\)", skip = true },
-    { message = "^build", group = "<!-- 7 -->⚙️ Build System" },
-    { message = "^ci", group = "<!-- 8 -->🚀 Continuous Integration" },
-    { message = "^chore", group = "<!-- 9 -->🧹 Chore" },
-    { body = ".*security", group = "<!-- 10 -->🛡️ Security Fix" },
-    { message = "^revert", group = "<!-- 11 -->⏪️ Reverts" },
-    { message = ".*", group = "<!-- 12 -->💼 Other" },
+    { message = "(?m)^feat.*\\(\\#\\d+\\)$", group = "🎉 Features" },
+    { message = "(?m)^fix.*\\(\\#\\d+\\)$", group = "🐛 Bug Fixes" },
+    { message = "(?m)^refactor.*\\(\\#\\d+\\)$", group = "🔀 Code Refactoring" },
+    { message = "(?m)^docs.*\\(\\#\\d+\\)$", group = "📝 Documentation" },
+    { message = "(?m)^perf.*\\(\\#\\d+\\)$", group = "⚡️ Performance Improvements" },
+    { message = "(?m)^style.*\\(\\#\\d+\\)$", group = "🎨 Styles" },
+    { message = "(?m)^test.*\\(\\#\\d+\\)$", group = "🧪 Tests" },
+    { message = "(?m)^build.*\\(\\#\\d+\\)$", group = "⚙️ Build System" },
+    { message = "(?m)^ci.*\\(\\#\\d+\\)$", group = "🚀 Continuous Integration" },
+    { message = "(?m)^chore.*\\(\\#\\d+\\)$", group = "🧹 Chore" },
+    { message = "(?m)^sec.*\\(\\#\\d+\\)$", group = "🛡️ Security" },
+    { message = "(?m)^revert.*\\(\\#\\d+\\)$", group = "⏪️ Reverts" },
+    { message = "(?m).*\\(\\#\\d+\\)$", group = "💼 Other" },
 ]
 # Exclude commits that are not matched by any commit parser.
-filter_commits = false
+filter_commits = true
 # Fail on a commit that is not matched by any commit parser.
 fail_on_unmatched_commit = false
 # An array of link parsers for extracting external references, and turning them into URLs, using regex.

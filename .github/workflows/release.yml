@@ -6,7 +6,7 @@ on:
         type: choice
         description: What type of release?
         options:
-          - ""
+          - "infer"
           - patch
           - minor
           - major
@@ -54,11 +54,11 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: main
 
-      # Check required git cliff files present in repo
+     # Check required git cliff files present in repo
       - name: Check required git cliff files in repo
         run: |
-          if [[ ! -f cliff.toml || ! -f cliff-changelog.toml ]]; then
-            echo "Error: Both cliff.toml and cliff-changelog.toml files must be present in repo root"
+          if [[ ! -f cliff.toml ]]; then
+            echo "Error: cliff.toml file must be present in repo root"
             exit 1
           fi
 
@@ -89,7 +89,12 @@ jobs:
         env:
           VERSION_TYPE: ${{ github.event.inputs.input_version }}
         run: |
-            git-cliff --bump ${{ github.event.inputs.input_version }} --bumped-version > version
+            set -e
+            if [[ "$VERSION_TYPE" == 'infer' ]]; then
+              git-cliff --bump --bumped-version > version
+            else
+              git-cliff --bump $VERSION_TYPE --bumped-version > version
+            fi
             echo "New version will be $(cat version)"
             NEW_TAG=$(cat version)
             echo "new-tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
@@ -157,7 +162,6 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: main
 
-
       - name: Download and install git-cliff binary # git cliff versions https://github.com/orhun/git-cliff/releases
         env:
           GIT_CLIFF_VERSION: ${{ env.GIT_CLIFF_VERSION }}
@@ -192,19 +196,27 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
         run: |
+          set -e
           gh release create "$TAG_NAME" --target $(git rev-parse HEAD) --notes "Generating..." --title "$TAG_NAME" *.tgz
+          for i in {1..5}; do
+            set +e
+            git fetch --tags origin "$TAG_NAME" && break
+            set -e
+            echo "Tag not fetchable yet, retrying..."
+            sleep 0.5
+            if [[ "$i" == 5 ]]; then
+              echo "Tag $TAG_NAME still not fetchable after 5 attempts"
+              exit i
+            fi
+          done
           git fetch --tags
-
-      - name: Generate release notes and put in Github temporary location
-        env:
-          TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
-        run: git-cliff -c cliff.toml --current --output ${{ runner.temp }}/RELEASE_NOTES.md
 
       - name: Create a release on Github with release notes and provenance
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
         run: |
+          git-cliff -c cliff.toml --current --output ${{ runner.temp }}/RELEASE_NOTES.md
           gh release edit "$TAG_NAME" --notes-file "${{ runner.temp }}/RELEASE_NOTES.md" --latest
 
       - name: Attest
@@ -258,7 +270,7 @@ jobs:
 
       - name: Generate changelog using git cliff and cliff-changelog config
         run: |
-          git-cliff -c cliff-changelog.toml -o CHANGELOG.md
+          git-cliff -c cliff.toml -o CHANGELOG.md
           cat CHANGELOG.md
 
       - name: Commit & Push changes
