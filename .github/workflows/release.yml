@@ -196,6 +196,7 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
         run: |
+          set -e
           gh release create "$TAG_NAME" --target $(git rev-parse HEAD) --notes "Generating..." --title "$TAG_NAME" *.tgz
           for i in {1..5}; do
             set +e
