@@ -211,16 +211,12 @@ jobs:
           done
           git fetch --tags
 
-      - name: Generate release notes and put in Github temporary location
-        env:
-          TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
-        run: git-cliff -c cliff.toml --current --output ${{ runner.temp }}/RELEASE_NOTES.md
-
       - name: Create a release on Github with release notes and provenance
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TAG_NAME: ${{ needs.bump-version.outputs.new-tag }}
         run: |
+          git-cliff -c cliff.toml --current --output ${{ runner.temp }}/RELEASE_NOTES.md
           gh release edit "$TAG_NAME" --notes-file "${{ runner.temp }}/RELEASE_NOTES.md" --latest
 
       - name: Attest
