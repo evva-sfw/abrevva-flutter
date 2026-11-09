@@ -162,11 +162,7 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
             self.startScanStreamHandler.eventSink?(["event": "onScanStart", "value": error == nil])
         }, { error in
             self.startScanStreamHandler.eventSink?(["event": "onScanStop", "value": error == nil])
-        },
-        macFilter,
-        allowDuplicates,
-        timeout
-        )
+        }, macFilter, allowDuplicates, timeout)
         result(nil)
     }
 
@@ -174,7 +170,7 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
     func stopScan(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let bleManager = self.getBleManager(result) else { return }
         bleManager.stopScan()
-        result("success")
+        result(nil)
     }
 
     @objc

@@ -50,15 +50,15 @@ android {
         consumerProguardFiles 'proguard-consumer-rules.pro'
     }
     repositories {
-        mavenLocal()
         google()
+        mavenLocal()
         mavenCentral()
     }
     dependencies {
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'io.mockk:mockk:1.14.11'
         testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
-        implementation group: "com.evva.xesar", name: "abrevva-sdk-android", version: "5.0.0"
+        implementation group: "com.evva.xesar", name: "abrevva-sdk-android", version: "4.2.0"
     }
 
     testOptions {

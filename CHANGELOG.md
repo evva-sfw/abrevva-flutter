@@ -1,3 +1,8 @@
+## [3.1.0](https://github.com/evva-sfw/abrevva-flutter/compare/3.0.6...3.1.0) - 2026-09-16
+
+### 🎉 Features
+
+- Release/3.1.0 ([#77](https://github.com/evva-sfw/abrevva-flutter/pull/77))
 ## [3.0.6](https://github.com/evva-sfw/abrevva-flutter/compare/3.0.5...3.0.6) - 2026-07-27
 
 ### 🚀 Continuous Integration
