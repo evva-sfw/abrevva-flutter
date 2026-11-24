@@ -3,7 +3,10 @@ import Foundation
 import AbrevvaSDK
 import CoreBluetooth
 
-internal class AbrevvaBleStreamHandler: NSObject, FlutterStreamHandler {
+/// Holds Flutter's event sink for a stream whose lifecycle is managed on the main actor.
+/// Flutter's Objective-C stream protocol does not declare actor isolation.
+@MainActor
+internal class AbrevvaBleStreamHandler: NSObject, @preconcurrency FlutterStreamHandler {
     internal var eventSink: FlutterEventSink?
 
     func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
@@ -17,6 +20,8 @@ internal class AbrevvaBleStreamHandler: NSObject, FlutterStreamHandler {
     }
 }
 
+/// Bridges Flutter BLE calls on the main actor to the actor-isolated SDK.
+/// The imported Flutter plugin protocol has no concurrency annotations.
 @MainActor
 public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
     public static func register(with registrar: any FlutterPluginRegistrar) {
@@ -64,7 +69,7 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         case "startNotifications":
             startNotifications(call, result: result)
         default:
-            result(FlutterMethodNotImplemented)
+            result(FlutterConcurrencyCompatibility.methodNotImplemented)
         }
     }
 
@@ -77,13 +82,18 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
     internal let startNotificationsStreamHandler = AbrevvaBleStreamHandler()
     internal let startEnabledNotificationsEventChannel = AbrevvaBleStreamHandler()
 
+    /// Creates the SDK BLE manager and reports whether initialization succeeded.
+    ///
+    /// - parameter call:   Flutter method call for initialization.
+    /// - parameter result: Flutter callback completed on the main actor with success or an initialization error.
+    ///
     @objc
     func initialize(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         self.bleManager = BleManager { success, message in
             if success {
                 result(success)
             } else {
-                result(FlutterError(code: message!, message: nil, details: nil))
+                result(FlutterError(code: message ?? "BLE initialization failed", message: nil, details: nil))
             }
         }
     }
@@ -126,6 +136,11 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         result(FlutterError(code: "openBluetoothSettings(): is not available on iOS", message: nil, details: nil))
     }
 
+    /// Opens the app's settings page when iOS can resolve its settings URL.
+    ///
+    /// - parameter call:   Flutter method call requesting app settings.
+    /// - parameter result: Flutter callback completed on the main actor with success or an error.
+    ///
     @objc
     func openAppSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else {
@@ -133,14 +148,12 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
             return
         }
 
-        DispatchQueue.main.async {
-            if UIApplication.shared.canOpenURL(settingsURL) {
-                UIApplication.shared.open(settingsURL, completionHandler: { _ in
-                    result(nil)
-                })
-            } else {
-                result(FlutterError(code: "openAppSettings(): cannot open app settings", message: nil, details: nil))
-            }
+        if UIApplication.shared.canOpenURL(settingsURL) {
+            UIApplication.shared.open(settingsURL, completionHandler: { _ in
+                result(nil)
+            })
+        } else {
+            result(FlutterError(code: "openAppSettings(): cannot open app settings", message: nil, details: nil))
         }
     }
 
@@ -173,9 +186,14 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         result(nil)
     }
 
+    /// Connects to the selected scanned device and reports the connection result.
+    ///
+    /// - parameter call:   Flutter method call containing the device and optional timeout.
+    /// - parameter result: Flutter callback completed on the main actor with the connection status.
+    ///
     @objc
     func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard self.getBleManager(result) != nil else { return }
+        guard let bleManager = self.getBleManager(result) else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
 
         guard let optionsSwift = call.arguments as? [String: Any] else {
@@ -186,7 +204,7 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         let timeout = optionsSwift["timeout"] as? Int ?? 10_000
 
         Task {
-            let success = await self.bleManager!.connect(
+            let success = await bleManager.connect(
                 device, { address in
                     self.connectStreamHandler.eventSink?(["value": address ])
                 },
@@ -196,13 +214,18 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         }
     }
 
+    /// Disconnects from the selected scanned device and reports whether disconnection succeeded.
+    ///
+    /// - parameter call:   Flutter method call containing the device identifier.
+    /// - parameter result: Flutter callback completed on the main actor with success or an error.
+    ///
     @objc
     func disconnect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard self.getBleManager(result) != nil else { return }
+        guard let bleManager = self.getBleManager(result) else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
 
         Task {
-            let success = await self.bleManager!.disconnect(device)
+            let success = await bleManager.disconnect(device)
             if success {
                 result(nil)
             } else {
@@ -211,6 +234,11 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         }
     }
 
+    /// Reads a characteristic from the selected connected device.
+    ///
+    /// - parameter call:   Flutter method call containing the device, service, characteristic, and optional timeout.
+    /// - parameter result: Flutter callback completed on the main actor with the characteristic bytes or an error.
+    ///
     @objc
     func read(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard self.getBleManager(result) != nil else { return }
@@ -224,12 +252,11 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         let timeout = optionsSwift["timeout"] as? Int ?? nil
 
         Task {
-            let data = await device.read(characteristic.0, characteristic.1, timeout)
-            if data != nil {
-                result(["value": [UInt8](data!)])
-            } else {
+            guard let data = await device.read(characteristic.0, characteristic.1, timeout) else {
                 result(FlutterError(code: "read(): failed to read data", message: nil, details: nil))
+                return
             }
+            result(["value": [UInt8](data)])
         }
     }
 
@@ -265,10 +292,15 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         }
     }
 
+    /// Disengages the selected device using the legacy status-only API.
+    ///
+    /// - parameter call:   Flutter method call containing the device and access data.
+    /// - parameter result: Flutter callback completed on the main actor with the disengagement status.
+    ///
     @objc
     @available(*, deprecated, message: "Use disengageWithXvnResponse() instead.")
     func disengage(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard self.getBleManager(result) != nil else { return }
+        guard let bleManager = self.getBleManager(result) else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
 
         guard let optionsSwift = call.arguments as? [String: Any] else {
@@ -283,7 +315,7 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         let isPermanentRelease = optionsSwift["isPermanentRelease"] as? Bool ?? false
 
         Task {
-            let status = await self.bleManager!.disengage(
+            let status = await bleManager.disengage(
                 device,
                 mobileID,
                 mobileDeviceKey,
@@ -295,9 +327,14 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         }
     }
 
+    /// Disengages the selected device and returns its status with the optional XVN response.
+    ///
+    /// - parameter call:   Flutter method call containing the device and access data.
+    /// - parameter result: Flutter callback completed on the main actor with the status and response data.
+    ///
     @objc
     func disengageWithXvnResponse(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard self.getBleManager(result) != nil else { return }
+        guard let bleManager = self.getBleManager(result) else { return }
         guard let device = self.getDevice(call, result: result, checkConnection: false) else { return }
 
         guard let optionsSwift = call.arguments as? [String: Any] else {
@@ -312,7 +349,7 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         let isPermanentRelease = optionsSwift["isPermanentRelease"] as? Bool ?? false
 
         Task {
-            let response = await self.bleManager!.disengageWithXvnResponse(
+            let response = await bleManager.disengageWithXvnResponse(
                 device,
                 mobileID,
                 mobileDeviceKey,
@@ -329,6 +366,11 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
         }
     }
 
+    /// Enables characteristic notifications and forwards their payloads through the Flutter event stream.
+    ///
+    /// - parameter call:   Flutter method call containing the device, characteristic, and optional timeout.
+    /// - parameter result: Flutter callback completed on the main actor with success or an error.
+    ///
     @objc
     func startNotifications(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else {
@@ -347,13 +389,11 @@ public class AbrevvaBle: NSObject, @preconcurrency FlutterPlugin {
                     "notification|\(device.getAddress())|" +
                     "\(characteristic.0.uuidString.lowercased())|" +
                     "\(characteristic.1.uuidString.lowercased())"
-                DispatchQueue.main.async {
-                    if value != nil {
-                        self.startNotificationsStreamHandler.eventSink?([key: ["value": dataToString(value!)]])
-                    } else {
-                        self.startNotificationsStreamHandler.eventSink?(["status": "error", "description": "error in setNotifications()"])
-                    }
+                guard let value else {
+                    self.startNotificationsStreamHandler.eventSink?(["status": "error", "description": "error in setNotifications()"])
+                    return
                 }
+                self.startNotificationsStreamHandler.eventSink?([key: ["value": dataToString(value)]])
             }, timeout)
             if success {
                 result(["value": success])

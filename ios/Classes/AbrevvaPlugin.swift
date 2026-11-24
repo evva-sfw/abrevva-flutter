@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 
+/// Registers Flutter channels on the main actor; Flutter's Objective-C plugin protocol lacks actor annotations.
 @MainActor
 public class AbrevvaPlugin: NSObject, @preconcurrency FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {

@@ -3,6 +3,8 @@ import AbrevvaSDK
 import CryptoSwift
 import Flutter
 
+/// Bridges Flutter coding-station calls on the main actor to the actor-isolated SDK.
+/// The imported Flutter plugin protocol has no concurrency annotations.
 @MainActor
 public class AbrevvaCodingStation: NSObject, @preconcurrency FlutterPlugin {
 
@@ -22,7 +24,7 @@ public class AbrevvaCodingStation: NSObject, @preconcurrency FlutterPlugin {
         case "disconnect":
             disconnect(call, result: result)
         default:
-            result(FlutterMethodNotImplemented)
+            result(FlutterConcurrencyCompatibility.methodNotImplemented)
         }
     }
 

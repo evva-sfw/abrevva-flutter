@@ -5,14 +5,92 @@ import Nimble
 import Quick
 import XCTest
 
+/// Provides synchronized mutable state for callbacks captured by the legacy Quick example DSL.
+/// Uses a lock to contain the DSL's nonisolated closure boundary under Swift 6 concurrency checking.
+private final class CryptoTestState: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storedCryptoModule: AbrevvaCrypto?
+    private var storedResolved: Bool?
+    private var storedCallbackCount = 0
+    private var storedErrorCode: String?
+
+    /// Crypto module created for the current Quick example.
+    /// Access is synchronized across the legacy DSL's captured closures.
+    var cryptoModule: AbrevvaCrypto? {
+        get {
+            self.lock.lock()
+            defer { lock.unlock() }
+            return self.storedCryptoModule
+        }
+        set {
+            self.lock.lock()
+            defer { lock.unlock() }
+            self.storedCryptoModule = newValue
+        }
+    }
+
+    /// Whether the current crypto operation completed successfully.
+    /// Access is synchronized across the legacy DSL's captured closures.
+    var resolved: Bool? {
+        get {
+            self.lock.lock()
+            defer { lock.unlock() }
+            return self.storedResolved
+        }
+        set {
+            self.lock.lock()
+            defer { lock.unlock() }
+            self.storedResolved = newValue
+        }
+    }
+
+    /// Number of Flutter callback results recorded for the current example.
+    /// Reads are synchronized with callback writes.
+    var callbackCount: Int {
+        self.lock.lock()
+        defer { lock.unlock() }
+        return self.storedCallbackCount
+    }
+
+    /// Flutter error code recorded for the current example, if the result was an error.
+    /// Reads are synchronized with callback writes.
+    var errorCode: String? {
+        self.lock.lock()
+        defer { lock.unlock() }
+        return self.storedErrorCode
+    }
+
+    /// Records one Flutter callback result for completion assertions.
+    ///
+    /// Updates the synchronized callback count and error code together.
+    ///
+    /// - parameter result: Value returned by the Flutter result callback.
+    ///
+    func recordResult(_ result: Any?) {
+        self.lock.lock()
+        defer { lock.unlock() }
+        self.storedCallbackCount += 1
+        self.storedErrorCode = (result as? FlutterError)?.code
+    }
+
+    /// Clears the recorded callback count and error before the next example.
+    /// Called by Quick's setup hook to isolate completion assertions between examples.
+    func resetCallbackResult() {
+        self.lock.lock()
+        defer { lock.unlock() }
+        self.storedCallbackCount = 0
+        self.storedErrorCode = nil
+    }
+}
+
 final class AbrevvaCryptoTests: QuickSpec {
     override class func spec() {
-        var cryptoModule: AbrevvaCrypto?
-        var resolved: Bool?
+        let state = CryptoTestState()
 
         beforeEach {
-            cryptoModule = AbrevvaCrypto()
-            resolved = nil
+            state.cryptoModule = AbrevvaCrypto()
+            state.resolved = nil
+            state.resetCallbackResult()
         }
 
         describe("encrypt()") {
@@ -26,27 +104,27 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 let call = FlutterMethodCall(methodName: "encrypt", arguments: options)
 
-                cryptoModule?.encrypt(call) { data in
+                state.cryptoModule?.encrypt(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
 
             it("should reject if encryption fails") {
                 let call = FlutterMethodCall(methodName: "encrypt", arguments: [:])
 
-                cryptoModule?.encrypt(call) { data in
+                state.cryptoModule?.encrypt(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
             }
         }
 
@@ -61,29 +139,29 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 let call = FlutterMethodCall(methodName: "decrypt", arguments: options)
 
-                cryptoModule?.decrypt(call) { data in
+                state.cryptoModule?.decrypt(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
 
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
 
             it("should reject if decryption fails") {
                 let call = FlutterMethodCall(methodName: "decrypt", arguments: [:])
 
-                cryptoModule?.decrypt(call) { data in
+                state.cryptoModule?.decrypt(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
 
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
             }
         }
 
@@ -91,18 +169,18 @@ final class AbrevvaCryptoTests: QuickSpec {
             it("should resolve with two keys") {
                 let call = FlutterMethodCall(methodName: "generateKeyPair", arguments: [:])
 
-                cryptoModule!.generateKeyPair(call) { data in
+                state.cryptoModule!.generateKeyPair(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let pair = data as! [String: String]
                     expect(pair["privateKey"]).toNot(beNil())
                     expect(pair["publicKey"]).toNot(beNil())
-                    resolved = true
+                    state.resolved = true
                 }
 
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
         }
 
@@ -115,17 +193,17 @@ final class AbrevvaCryptoTests: QuickSpec {
                 let secret = "75a2ec9ed1dec71217026a24f553c91178d648957a805e88552c481b74aad56b"
                 let call = FlutterMethodCall(methodName: "computeSharedSecret", arguments: options)
 
-                cryptoModule!.computeSharedSecret(call) { data in
+                state.cryptoModule!.computeSharedSecret(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as? [String: String]
                     expect(dataMap?["sharedSecret"]).to(equal(secret))
-                    resolved = true
+                    state.resolved = true
                 }
 
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
             it("should return nil if secret cannot be computed") {
                 let options: [String: Any] = [
@@ -134,17 +212,17 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 let call = FlutterMethodCall(methodName: "computeSharedSecret", arguments: options)
 
-                cryptoModule!.computeSharedSecret(call) { data in
+                state.cryptoModule!.computeSharedSecret(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as! [String: Any]
                     expect(dataMap["sharedSecret"]).to(beNil())
-                    resolved = true
+                    state.resolved = true
                 }
 
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
             }
         }
 
@@ -169,15 +247,15 @@ final class AbrevvaCryptoTests: QuickSpec {
                 let pt = "feedfacedeadbeeffeedfacedeadbeef"
                 let call = FlutterMethodCall(methodName: "encryptFile", arguments: options)
                 FileManager.default.createFile(atPath: "\(directoryPath)/pt", contents: Data(hex: pt))
-                cryptoModule!.encryptFile(call) { data in
+                state.cryptoModule!.encryptFile(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
 
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
             it("should reject if encryption failed") {
                 let options: [String: String] = [
@@ -189,14 +267,27 @@ final class AbrevvaCryptoTests: QuickSpec {
                 FileManager.default.createFile(atPath: "\(directoryPath)/pt", contents: Data(hex: pt))
                 let call = FlutterMethodCall(methodName: "encryptFile", arguments: options)
 
-                cryptoModule!.encryptFile(call) { data in
+                state.cryptoModule!.encryptFile(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
+            }
+        }
+
+        describe("decryptFileFromURL") {
+            it("should report invalid arguments exactly once") {
+                let call = FlutterMethodCall(methodName: "decryptFileFromURL", arguments: [:])
+
+                state.cryptoModule!.decryptFileFromURL(call) { result in
+                    state.recordResult(result)
+                }
+
+                expect(state.callbackCount).to(equal(1))
+                expect(state.errorCode).to(equal("DecryptFileFromURLInvalidArgumentError"))
             }
         }
 
@@ -221,14 +312,14 @@ final class AbrevvaCryptoTests: QuickSpec {
                 let call = FlutterMethodCall(methodName: "encryptFile", arguments: options)
                 FileManager.default.createFile(atPath: "\(directoryPath)/ct", contents: Data(hex: ct))
 
-                cryptoModule!.decryptFile(call) { data in
+                state.cryptoModule!.decryptFile(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
             it("should reject if decryption failed") {
                 let options: NSDictionary = [
@@ -241,14 +332,14 @@ final class AbrevvaCryptoTests: QuickSpec {
                 let call = FlutterMethodCall(methodName: "encryptFile", arguments: options)
                 FileManager.default.createFile(atPath: "\(directoryPath)/ct", contents: Data(hex: ct))
 
-                cryptoModule!.decryptFile(call) { data in
+                state.cryptoModule!.decryptFile(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
             }
         }
 
@@ -257,16 +348,16 @@ final class AbrevvaCryptoTests: QuickSpec {
                 let options: NSDictionary = ["numBytes": 4]
                 let call = FlutterMethodCall(methodName: "random", arguments: options)
 
-                cryptoModule!.random(call) { data in
+                state.cryptoModule!.random(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as! [String: String?]
                     expect((dataMap["value"]!!).count).to(equal(8))
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
         }
 
@@ -280,18 +371,18 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 let call = FlutterMethodCall(methodName: "derive", arguments: options)
 
-                cryptoModule!.derive(call) { data in
+                state.cryptoModule!.derive(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as! [String: String?]
                     let derivedKey =
                         "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
                     expect((dataMap["value"]!!)).to(equal(derivedKey))
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
             it("should reject on failed derivation") {
                 let options: NSDictionary = [
@@ -302,9 +393,9 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 let call = FlutterMethodCall(methodName: "derive", arguments: options)
 
-                cryptoModule!.derive(call) { data in
+                state.cryptoModule!.derive(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as! [String: String?]
@@ -312,7 +403,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                         "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
                     expect((dataMap["value"]!!)).to(equal(derivedKey))
                 }
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
             }
         }
 
@@ -324,17 +415,17 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 let call = FlutterMethodCall(methodName: "sign", arguments: options)
 
-                cryptoModule!.sign(call) { data in
+                state.cryptoModule!.sign(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as! [String: String?]
 
                     expect(dataMap["signature"]).toNot(beNil())
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
             it("should reject on failed signature") {
                 let options: NSDictionary = [
@@ -343,17 +434,17 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 let call = FlutterMethodCall(methodName: "sign", arguments: options)
 
-                cryptoModule!.sign(call) { data in
+                state.cryptoModule!.sign(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as! [String: String?]
 
                     expect(dataMap["signature"]).toNot(beNil())
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
             }
         }
 
@@ -365,7 +456,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 var signature = ""
                 var call = FlutterMethodCall(methodName: "sign", arguments: options)
-                cryptoModule!.sign(call) { data in
+                state.cryptoModule!.sign(call) { data in
                     let dataMap = data as! [String: String?]
                     signature = dataMap["signature"]!!
                 }
@@ -377,17 +468,17 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 call = FlutterMethodCall(methodName: "verify", arguments: options)
 
-                cryptoModule!.verify(call) { data in
+                state.cryptoModule!.verify(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                     let dataMap = data as! [String: Bool]
 
                     expect(dataMap["opOk"]).to(beTrue())
-                    resolved = true
+                    state.resolved = true
                 }
-                expect(resolved!).to(beTrue())
+                expect(state.resolved!).to(beTrue())
             }
 
             it("should fail if the signature is invalid") {
@@ -397,7 +488,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 var signature = ""
                 var call = FlutterMethodCall(methodName: "sign", arguments: options)
-                cryptoModule!.sign(call) { data in
+                state.cryptoModule!.sign(call) { data in
                     let dataMap = data as! [String: String?]
                     signature = dataMap["signature"]!!
                 }
@@ -409,13 +500,13 @@ final class AbrevvaCryptoTests: QuickSpec {
                 ]
                 call = FlutterMethodCall(methodName: "verify", arguments: options)
 
-                cryptoModule!.verify(call) { data in
+                state.cryptoModule!.verify(call) { data in
                     if (data as? FlutterError) != nil {
-                        resolved = false
+                        state.resolved = false
                         return
                     }
                 }
-                expect(resolved!).to(beFalse())
+                expect(state.resolved!).to(beFalse())
             }
         }
 
@@ -427,7 +518,7 @@ final class AbrevvaCryptoTests: QuickSpec {
                 let call = FlutterMethodCall(methodName: "computeED25519PublicKey", arguments: options)
                 var publicKey: String?
 
-                cryptoModule!.computeED25519PublicKey(call) { data in
+                state.cryptoModule!.computeED25519PublicKey(call) { data in
                     let dataMap = data as! [String: String?]
                     publicKey = dataMap["publicKey"] as? String
                 }

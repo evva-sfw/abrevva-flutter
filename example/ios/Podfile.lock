@@ -1,5 +1,5 @@
 PODS:
-  - abrevva (2.0.1):
+  - abrevva (3.1.0):
     - AbrevvaSDK (= 3.5.0)
     - Flutter
   - AbrevvaSDK (3.5.0):
@@ -58,7 +58,7 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  abrevva: 8a0b5e36356cd8a536f5baaf8feb007c7dca0b2f
+  abrevva: cf476ab3dea13515a9584e6bd99e92741ddc9a01
   AbrevvaSDK: 3fbdbf3df1633d9c8b4bd74cc8c157b5486c1c2c
   CocoaMQTT: a13957f6582a22999c3bf9593c81dbd4d2692cb7
   CryptoSwift: e2e7776512f250e66205955da748e7a4e4abffe0

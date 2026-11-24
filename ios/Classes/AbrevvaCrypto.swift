@@ -28,7 +28,7 @@ private enum CryptoError: String {
     case SignCryptoError
     case SignInvalidArgumentError
     case VerifyCryptoError
-    case erifyFailedError
+    case VerifyFailedError
     case VerifyInvalidArgumentError
     case RandomError
     case DeriveInvalidArgumentError
@@ -36,7 +36,10 @@ private enum CryptoError: String {
     case DeriveCryptoError
 }
 
-public class AbrevvaCrypto: NSObject, FlutterPlugin {
+/// Handles synchronous cryptographic operations and Flutter replies on the main actor.
+/// Flutter's Objective-C plugin protocol does not declare its actor isolation.
+@MainActor
+public class AbrevvaCrypto: NSObject, @preconcurrency FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {}
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -66,7 +69,7 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
         case "verify":
             verify(call, result: result)
         default:
-            result(FlutterMethodNotImplemented)
+            result(FlutterConcurrencyCompatibility.methodNotImplemented)
         }
     }
 
@@ -214,61 +217,67 @@ public class AbrevvaCrypto: NSObject, FlutterPlugin {
         }
     }
 
+    /// Downloads and decrypts a file, returning the Flutter result on the main actor.
+    ///
+    /// - parameter call:   Flutter method call containing the URL, output path, and shared secret.
+    /// - parameter result: Flutter callback completed exactly once with the operation result or an error.
+    ///
     @objc
     func decryptFileFromURL(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        if let args = call.arguments as? [String: Any],
-           let sharedSecret = (args["sharedSecret"] ?? "") as? String,
-           let ptPath = (args["ptPath"] ?? "") as? String,
-           let urlStr = (args["url"] ?? "") as? String {
+        guard let args = call.arguments as? [String: Any],
+              let sharedSecret = args["sharedSecret"] as? String,
+              let ptPath = args["ptPath"] as? String,
+              let urlString = args["url"] as? String,
+              let url = URL(string: urlString) else {
+            result(FlutterError(
+                code: CryptoError.DecryptFileFromURLInvalidArgumentError.rawValue,
+                message: AbrevvaCrypto.description(),
+                details: nil
+            ))
+            return
+        }
 
-            let sharedSecretHex = [UInt8](hex: "0x" + sharedSecret)
+        let sharedSecretHex = [UInt8](hex: "0x" + sharedSecret)
+        let request = URLRequest(url: url)
 
-            let session = URLSession(configuration: URLSessionConfiguration.default)
-            let request = URLRequest(url: URL(string: urlStr)!)
-
-            let task = session.dataTask(with: request) { data, response, error in
-                if error != nil {
-                    return result(FlutterError(code: CryptoError.DecryptFileFromURLNetworkError.rawValue, message: AbrevvaCrypto.description(), details: nil))
-                }
-
-                if let response = response as? HTTPURLResponse {
-                    if response.statusCode == 200 {
-                        let success = self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data!, pathPt: ptPath)
-                        if !success {
-                            return result(FlutterError(
-                                code: CryptoError.DecryptFileFromURLCryptoError.rawValue,
-                                message: AbrevvaCrypto.description(),
-                                details: response.statusCode
-                            ))
-                        }
-                        result([
-                            "opOk": true
-
-                        ])
-                    } else if response.statusCode == 404 {
-                        return result(FlutterError(
-                            code: CryptoError.DecryptFileFromURLNotFoundError.rawValue,
-                            message: AbrevvaCrypto.description(),
-                            details: response.statusCode
-                        ))
-                    } else {
-                        return result(FlutterError(
-                            code: CryptoError.DecryptFileFromURLInaccessibleError.rawValue,
-                            message: AbrevvaCrypto.description(),
-                            details: response.statusCode
-                        ))
-                    }
-                } else {
-                    return result(FlutterError(
+        Task {
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    result(FlutterError(
                         code: CryptoError.DecryptFileFromURLNoResponseDataError.rawValue,
                         message: AbrevvaCrypto.description(),
                         details: nil
                     ))
+                    return
                 }
+                guard httpResponse.statusCode == 200 else {
+                    let errorCode = httpResponse.statusCode == 404
+                        ? CryptoError.DecryptFileFromURLNotFoundError
+                        : CryptoError.DecryptFileFromURLInaccessibleError
+                    result(FlutterError(
+                        code: errorCode.rawValue,
+                        message: AbrevvaCrypto.description(),
+                        details: httpResponse.statusCode
+                    ))
+                    return
+                }
+                guard self.AesGcmImpl.decryptFile(key: sharedSecretHex, data: data, pathPt: ptPath) else {
+                    result(FlutterError(
+                        code: CryptoError.DecryptFileFromURLCryptoError.rawValue,
+                        message: AbrevvaCrypto.description(),
+                        details: httpResponse.statusCode
+                    ))
+                    return
+                }
+                result(["opOk": true])
+            } catch {
+                result(FlutterError(
+                    code: CryptoError.DecryptFileFromURLNetworkError.rawValue,
+                    message: AbrevvaCrypto.description(),
+                    details: nil
+                ))
             }
-            task.resume()
-        } else {
-            result(FlutterError(code: CryptoError.DecryptFileFromURLInvalidArgumentError.rawValue, message: AbrevvaCrypto.description(), details: nil))
         }
     }
 
